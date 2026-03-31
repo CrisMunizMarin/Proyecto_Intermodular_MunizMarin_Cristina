@@ -1,37 +1,222 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>daw.cristina_muniz</groupId>
-  <artifactId>ProyectoIntermodular</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>ProyectoIntermodular</name>
-  
-  <dependencies>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<version>5.10.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.10.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.26</version>
-		</dependency>
-	</dependencies>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.1.2</version>
-			</plugin>
-		</plugins>
-	</build>
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ===================================================== -->
+    <!-- INFORMACIÓN DEL PROYECTO                              -->
+    <!-- ===================================================== -->
+    <groupId>com.mentorcore</groupId>
+    <artifactId>Proyecto_Intermodular_MunizMarin_Cristina</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>MentorCore</name>
+    <description>
+        Aplicación web para la gestión de Formaciones en Empresa (FE)
+        del departamento de Informática del CIFP La Laboral - Gijón.
+        Proyecto Intermodular 2º DAW - Cristina Muñiz Marín - 2025/2026
+    </description>
+
+    <!-- ===================================================== -->
+    <!-- SPRING BOOT PARENT: gestiona versiones automáticamente -->
+    <!-- ===================================================== -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.5</version>
+        <relativePath/>
+    </parent>
+
+    <!-- ===================================================== -->
+    <!-- PROPIEDADES GLOBALES DEL PROYECTO                     -->
+    <!-- ===================================================== -->
+    <properties>
+        <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <!-- ===================================================== -->
+    <!-- DEPENDENCIAS                                           -->
+    <!-- ===================================================== -->
+    <dependencies>
+
+        <!-- ===================================================== -->
+        <!-- SPRING BOOT - CORE WEB MVC + Thymeleaf            -->
+        <!-- Controladores, vistas, peticiones HTTP             -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Motor de plantillas HTML renderizado en servidor   -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- Integración Thymeleaf con Spring Security          -->
+        <!-- Permite usar sec:authorize en las plantillas HTML  -->
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+        </dependency>
+
+        <!-- ===================================================== -->
+        <!-- SPRING SECURITY                                    -->
+        <!-- Autenticación, autorización RBAC, CSRF, BCrypt     -->
+        <!-- RNF3, RNF4 - RF1                                   -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- ===================================================== -->
+        <!-- SPRING DATA JPA + HIBERNATE                        -->
+        <!-- Acceso a datos, repositorios, ORM                  -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- ===================================================== -->
+        <!-- VALIDACIÓN DE DATOS (JSR-380)                      -->
+        <!-- @NotNull, @Email, @Size en DTOs y entidades        -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- ===================================================== -->
+        <!-- ENVÍO DE EMAILS                                    -->
+        <!-- Recuperación de contraseña y notificaciones        -->
+        <!-- RF1, RF16                                          -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- ===================================================== -->
+        <!-- ACTUATOR                                           -->
+        <!-- Monitorización y métricas de la aplicación        -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- ===================================================== -->
+        <!-- BASE DE DATOS - MySQL                              -->
+        <!-- Driver de conexión con MySQL 8.x                   -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ===================================================== -->
+        <!-- LOMBOK                                             -->
+        <!-- Reduce código repetitivo: getters, setters,        -->
+        <!-- constructores, toString, etc.                      -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ===================================================== -->
+        <!-- GENERACIÓN DE PDF                                  -->
+        <!-- Informes descargables de seguimiento FE            -->
+        <!-- RF8, RF14                                          -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.3.30</version>
+        </dependency>
+
+        <!-- ===================================================== -->
+        <!-- DEVTOOLS                                           -->
+        <!-- Hot-reload en desarrollo: reinicio automático      -->
+        <!-- Solo activo en desarrollo, no en producción        -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ===================================================== -->
+        <!-- TESTING                                            -->
+        <!-- JUnit 5 + Spring Boot Test + Mockito               -->
+        <!-- ===================================================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Spring Security Test: @WithMockUser en tests       -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- ===================================================== -->
+    <!-- BUILD Y PLUGINS                                        -->
+    <!-- ===================================================== -->
+    <build>
+        <plugins>
+
+            <!-- Plugin principal de Spring Boot               -->
+            <!-- Genera el JAR ejecutable con mvn package       -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Excluir Lombok del JAR final          -->
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- Compilador Java 17                            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <encoding>UTF-8</encoding>
+                    <!-- Necesario para que Lombok funcione    -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
 </project>
