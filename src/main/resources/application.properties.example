@@ -1,0 +1,78 @@
+# =====================================================
+# MENTORCORE - Plantilla de configuración
+# =====================================================
+# Copia este archivo y renómbralo application.properties
+# Rellena los valores marcados con TU_...
+# =====================================================
+
+server.port=8080
+
+# Base de datos MySQL
+spring.datasource.url=jdbc:mysql://localhost:3306/mentorcore_dev?useSSL=false&serverTimezone=Europe/Madrid&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+spring.datasource.username=TU_USUARIO_MYSQL
+spring.datasource.password=TU_PASSWORD_MYSQL
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA / Hibernate
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+
+# Thymeleaf
+spring.thymeleaf.cache=false
+spring.thymeleaf.encoding=UTF-8
+
+# Subida de archivos
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=50MB
+mentorcore.uploads.ruta-base=src/main/resources/static/uploads
+
+# Email (opcional en desarrollo)
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=TU_EMAIL@gmail.com
+spring.mail.password=TU_PASSWORD_EMAIL
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+```
+
+---
+
+## PASO 4 — Hacer el commit desde Eclipse
+
+Ahora ve a la vista de Git en Eclipse:
+
+**Window → Show View → Other → Git → Git Staging**
+
+Verás tres zonas:
+```
+┌─────────────────────────────────────┐
+│  Unstaged Changes (cambios sin add) │
+├─────────────────────────────────────┤
+│  Staged Changes (listos para commit)│
+├─────────────────────────────────────┤
+│  Commit Message                     │
+└─────────────────────────────────────┘
+```
+
+**Lo que deberías ver en Unstaged Changes:**
+- `application.properties` con icono de eliminado
+- `application-dev.properties` con icono de eliminado
+- `uploads/` con icono de eliminado
+- `.gitignore` con icono de modificado
+- `application.properties.example` con icono de nuevo
+
+**Arrastra todos esos archivos a Staged Changes** haciendo clic en el botón **++** (Add all) o arrastrando uno a uno.
+
+Luego en el campo **Commit Message** escribe:
+```
+chore: eliminar archivos de configuración del repositorio
+
+- Eliminados application.properties y application-dev.properties del tracking de Git
+- Eliminada carpeta uploads/ del repositorio
+- Añadido application.properties.example como plantilla sin credenciales
+- Actualizado .gitignore con reglas correctas para el proyecto

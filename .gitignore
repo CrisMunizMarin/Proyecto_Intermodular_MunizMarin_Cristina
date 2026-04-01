@@ -1,0 +1,44 @@
+# =====================================================
+# MENTORCORE - Archivos excluidos del repositorio
+# =====================================================
+
+# -----------------------------------------------
+# SEGURIDAD: archivos con contraseñas y credenciales
+# -----------------------------------------------
+src/main/resources/application.properties
+src/main/resources/application-dev.properties
+
+# -----------------------------------------------
+# MAVEN: archivos generados al compilar
+# -----------------------------------------------
+target/
+*.class
+*.jar
+*.war
+
+# -----------------------------------------------
+# ECLIPSE: archivos internos del IDE
+# -----------------------------------------------
+.classpath
+.project
+.settings/
+.factorypath
+
+# -----------------------------------------------
+# UPLOADS: archivos subidos por los usuarios
+# nunca deben estar en el repositorio
+# -----------------------------------------------
+src/main/resources/static/uploads/documentos/
+src/main/resources/static/uploads/justificantes/
+
+# -----------------------------------------------
+# SISTEMAS OPERATIVOS
+# -----------------------------------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------------------------------
+# LOGS
+# -----------------------------------------------
+*.log
+logs/
