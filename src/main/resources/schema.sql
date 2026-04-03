@@ -76,8 +76,7 @@ CREATE TABLE IF NOT EXISTS curso_academico (
 -- RF2, RF3, RF13
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS alumno (
-    id                  BIGINT          NOT NULL AUTO_INCREMENT,
-    id_usuario          BIGINT          NOT NULL UNIQUE,
+    id_usuario          BIGINT          NOT NULL,
     id_curso            BIGINT          NOT NULL,
     id_tutor_centro     BIGINT          NOT NULL,
     grupo               VARCHAR(20),
@@ -98,8 +97,7 @@ CREATE TABLE IF NOT EXISTS alumno (
 -- RF4, RF5, RF6, RF8
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS tutor_centro (
-    id                      BIGINT          NOT NULL AUTO_INCREMENT,
-    id_usuario              BIGINT          NOT NULL UNIQUE,
+    id_usuario              BIGINT          NOT NULL,
     departamento            VARCHAR(100),
     especialidad            VARCHAR(100),
     num_expediente_docente  VARCHAR(30),
@@ -113,8 +111,7 @@ CREATE TABLE IF NOT EXISTS tutor_centro (
 -- RF7, RF9, RF19
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS tutor_empresa (
-    id                      BIGINT          NOT NULL AUTO_INCREMENT,
-    id_usuario              BIGINT          NOT NULL UNIQUE,
+    id_usuario              BIGINT          NOT NULL,
     id_empresa              BIGINT          NOT NULL,
     cargo                   VARCHAR(100),
     departamento_empresa    VARCHAR(100),
@@ -368,6 +365,17 @@ CREATE TABLE IF NOT EXISTS log_auditoria (
     resultado           ENUM('EXITO','ERROR','DENEGADO'),
     PRIMARY KEY (id),
     CONSTRAINT fk_log_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- TABLA: administrador
+-- Perfil extendido del usuario con rol ADMIN
+-- RF10, RF11, RF12
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS administrador (
+    id_usuario  BIGINT  NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_administrador_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
