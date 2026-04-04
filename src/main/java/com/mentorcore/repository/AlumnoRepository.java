@@ -17,29 +17,26 @@ import java.util.Optional;
 @Repository
 public interface AlumnoRepository extends JpaRepository<Alumno, Long> {
 
-    // Buscar por tutor centro asignado (RF4 - Dashboard del tutor)
+    // Buscar por tutor centro asignado (RF4)
     List<Alumno> findByTutorCentro(TutorCentro tutorCentro);
 
     // Buscar por curso académico (RF13)
     List<Alumno> findByCursoAcademico_Id(Long idCurso);
 
-    // Buscar por grupo dentro de un curso (RF4)
+    // Buscar por grupo (RF4)
     List<Alumno> findByGrupo(String grupo);
 
-    // Buscar alumno por su usuario base (RF1)
-    Optional<Alumno> findByIdUsuario(Long idUsuario);
-
-    // Buscar por DNI (RF11 - gestión de usuarios)
+    // Buscar por DNI (RF11)
     Optional<Alumno> findByDni(String dni);
 
-    // Alumnos de un tutor centro en un curso concreto (RF4)
+    // Alumnos de un tutor centro en un año académico concreto (RF4)
     @Query("SELECT a FROM Alumno a WHERE a.tutorCentro.id = :idTutor " +
            "AND a.cursoAcademico.anioAcademico = :anio")
     List<Alumno> findByTutorCentroAndAnioAcademico(
             @Param("idTutor") Long idTutor,
             @Param("anio") String anioAcademico);
 
-    // Búsqueda por nombre o apellidos (RF15 - búsqueda avanzada)
+    // Búsqueda por nombre o apellidos (RF15)
     @Query("SELECT a FROM Alumno a WHERE " +
            "LOWER(a.nombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
            "LOWER(a.apellidos) LIKE LOWER(CONCAT('%', :texto, '%'))")

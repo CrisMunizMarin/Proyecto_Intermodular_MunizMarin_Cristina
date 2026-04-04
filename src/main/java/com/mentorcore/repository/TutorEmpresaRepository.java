@@ -17,14 +17,16 @@ import java.util.Optional;
 @Repository
 public interface TutorEmpresaRepository extends JpaRepository<TutorEmpresa, Long> {
 
-    // Buscar por usuario base (RF1)
-    Optional<TutorEmpresa> findByIdUsuario(Long idUsuario);
+    // findById(Long id) ya viene en JpaRepository
 
     // Tutores de una empresa concreta (RF18)
     List<TutorEmpresa> findByEmpresa(Empresa empresa);
     List<TutorEmpresa> findByEmpresa_Id(Long idEmpresa);
 
-    // Buscar por nombre o apellidos (RF15)
+    // Buscar tutor empresa por email
+    Optional<TutorEmpresa> findByEmail(String email);
+
+    // Búsqueda por nombre o apellidos (RF15)
     @Query("SELECT t FROM TutorEmpresa t WHERE " +
            "LOWER(t.nombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
            "LOWER(t.apellidos) LIKE LOWER(CONCAT('%', :texto, '%'))")

@@ -16,8 +16,8 @@ import java.util.Optional;
 @Repository
 public interface TutorCentroRepository extends JpaRepository<TutorCentro, Long> {
 
-    // Buscar por usuario base (RF1)
-    Optional<TutorCentro> findByIdUsuario(Long idUsuario);
+    // findById(Long id) ya viene en JpaRepository y funciona directamente
+    // porque el id de TutorCentro ES el id del Usuario
 
     // Buscar por departamento (RF13)
     List<TutorCentro> findByDepartamento(String departamento);
@@ -26,7 +26,10 @@ public interface TutorCentroRepository extends JpaRepository<TutorCentro, Long> 
     @Query("SELECT t FROM TutorCentro t WHERE t.estado = 'ACTIVO'")
     List<TutorCentro> findAllActivos();
 
-    // Buscar por nombre o apellidos (RF15)
+    // Buscar tutor por email (para login y gestión)
+    Optional<TutorCentro> findByEmail(String email);
+
+    // Búsqueda por nombre o apellidos (RF15)
     @Query("SELECT t FROM TutorCentro t WHERE " +
            "LOWER(t.nombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +
            "LOWER(t.apellidos) LIKE LOWER(CONCAT('%', :texto, '%'))")
