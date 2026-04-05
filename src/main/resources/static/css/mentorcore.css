@@ -1,0 +1,120 @@
+/* =====================================================
+   MENTORCORE - Estilos Globales
+   Paleta: Verde #329b9c | Rosa #fc7298 | Violeta #432aa5
+   ===================================================== */
+
+/* Variables de color */
+:root {
+    --mc-verde:      #329b9c;
+    --mc-rosa:       #fc7298;
+    --mc-rosa-claro: #ecb8cf;
+    --mc-lila:       #b4abcf;
+    --mc-violeta:    #432aa5;
+    --mc-fondo:      #f0eef8;
+}
+
+/* Reset básico */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--mc-fondo);
+    color: #333;
+}
+
+/* Sidebar */
+.sidebar {
+    min-height: calc(100vh - 56px);
+    background-color: #2c2c54;
+    padding-top: 1rem;
+}
+
+.sidebar a {
+    color: #ccc;
+    text-decoration: none;
+    display: block;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    margin: 2px 8px;
+    transition: all 0.2s;
+}
+
+.sidebar a:hover,
+.sidebar a.activo {
+    background-color: var(--mc-violeta);
+    color: white;
+}
+
+.sidebar .nav-seccion {
+    color: var(--mc-lila);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 1rem 1.2rem 0.3rem;
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.card-header-mc {
+    background-color: var(--mc-violeta);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    padding: 1rem 1.5rem;
+}
+
+.img{
+	width: 7em;
+}
+
+/* Botones personalizados */
+.btn-mc-primary {
+    background-color: var(--mc-violeta);
+    color: white;
+    border: none;
+}
+
+.btn-mc-primary:hover {
+    background-color: #3a24a0;
+    color: white;
+}
+
+.btn-mc-secondary {
+    background-color: var(--mc-verde);
+    color: white;
+    border: none;
+}
+
+.btn-mc-secondary:hover {
+    background-color: #277d7e;
+    color: white;
+}
+
+/* Badges de estado */
+.badge-pendiente    { background-color: #ffc107; color: #333; }
+.badge-validado     { background-color: #28a745; }
+.badge-rechazado    { background-color: #dc3545; }
+.badge-justificada  { background-color: var(--mc-verde); }
+
+/* Tabla */
+.table-mc thead {
+    background-color: var(--mc-violeta);
+    color: white;
+}
+
+/* Alertas */
+.alert {
+    border: none;
+    border-left: 4px solid;
+}
+.alert-danger  { border-left-color: var(--mc-rosa); }
+.alert-success { border-left-color: var(--mc-verde); }
+.alert-warning { border-left-color: #ffc107; }
+
+/* Formularios */
+.form-control:focus {
+    border-color: var(--mc-violeta);
+    box-shadow: 0 0 0 0.2rem rgba(67, 42, 165, 0.15);
+}

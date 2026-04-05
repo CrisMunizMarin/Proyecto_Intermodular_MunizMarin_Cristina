@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <title th:text="${titulo != null ? titulo + ' | MentorCore' : 'MentorCore'}">
+        MentorCore
+    </title>
+
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+          rel="stylesheet">
+    <!-- CSS propio -->
+    <link th:href="@{/css/mentorcore.css}" rel="stylesheet">
+
+    <!-- CSS adicional por página -->
+    <th:block th:replace="${cssExtra}"></th:block>
+</head>
+<body>
+
+<!-- NAVBAR SUPERIOR -->
+<nav class="navbar navbar-expand-lg navbar-dark"
+     style="background-color: #432aa5;">
+    <div class="container-fluid">
+
+        <!-- Logo y nombre -->
+        <a class="navbar-brand fw-bold" th:href="@{/}">
+            <i class="fas fa-graduation-cap me-2"></i>MentorCore
+        </a>
+
+        <!-- Menú usuario autenticado -->
+        <div class="ms-auto d-flex align-items-center" sec:authorize="isAuthenticated()">
+
+            <!-- Nombre del usuario -->
+            <span class="text-white me-3">
+                <i class="fas fa-user-circle me-1"></i>
+                <span sec:authentication="name"></span>
+            </span>
+
+            <!-- Botón cerrar sesión -->
+            <form th:action="@{/auth/logout}" method="post" class="d-inline">
+                <input type="hidden" th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-sign-out-alt me-1"></i>Salir
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- SIDEBAR (solo si hay usuario autenticado) -->
+        <div class="col-md-2 sidebar p-0" sec:authorize="isAuthenticated()">
+            <th:block th:replace="${sidebar}"></th:block>
+        </div>
+
+        <!-- CONTENIDO -->
+        <main class="col-md-10 p-4" sec:authorize="isAuthenticated()">
+            <th:block th:replace="${contenido}"></th:block>
+        </main>
+
+        <!-- SIN SIDEBAR: para páginas de auth -->
+        <main class="col-12 p-4" sec:authorize="!isAuthenticated()">
+            <th:block th:replace="${contenido}"></th:block>
+        </main>
+
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+<!-- JS propio -->
+<script th:src="@{/js/main.js}"></script>
+
+<!-- JS adicional por página -->
+<th:block th:replace="${jsExtra}"></th:block>
+</body>
+</html>
