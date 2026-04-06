@@ -1,6 +1,7 @@
 package com.mentorcore.repository;
 
 import com.mentorcore.model.Alumno;
+import com.mentorcore.model.CursoAcademico;
 import com.mentorcore.model.TutorCentro;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,6 +29,15 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Long> {
 
     // Buscar por DNI (RF11)
     Optional<Alumno> findByDni(String dni);
+    
+   // Buscar por curso académico completo (RF13)
+    List<Alumno> findByCursoAcademico(CursoAcademico cursoAcademico);
+
+    // Buscar por nombre de usuario heredado de Usuario (RF1)
+    Optional<Alumno> findByNombreUsuario(String nombreUsuario);
+
+    // Comprobar existencia por DNI (RNF5)
+    boolean existsByDni(String dni);
 
     // Alumnos de un tutor centro en un año académico concreto (RF4)
     @Query("SELECT a FROM Alumno a WHERE a.tutorCentro.id = :idTutor " +
