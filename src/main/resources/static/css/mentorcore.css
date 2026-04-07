@@ -7,10 +7,10 @@
 :root {
     --mc-verde:      #329b9c;
     --mc-rosa:       #fc7298;
-    --mc-rosa-claro: #ecb8cf;
-    --mc-lila:       #b4abcf;
-    --mc-violeta:    #432aa5;
-    --mc-fondo:      #f0eef8;
+    --mc-rosa-suave: #ecb8cf;
+    --mc-lavanda:    #b4abcf;
+    --mc-indigo:     #432aa5;
+	--mc-fondo:      #F3F5F7;
 }
 
 /* Reset básico */
@@ -39,12 +39,12 @@ body {
 
 .sidebar a:hover,
 .sidebar a.activo {
-    background-color: var(--mc-violeta);
+    background-color: var(--mc-indigo);
     color: white;
 }
 
 .sidebar .nav-seccion {
-    color: var(--mc-lila);
+    color: var(--mc-lavanda);
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -59,7 +59,7 @@ body {
 }
 
 .card-header-mc {
-    background-color: var(--mc-violeta);
+    background-color: var(--mc-indigo);
     color: white;
     border-radius: 8px 8px 0 0;
     padding: 1rem 1.5rem;
@@ -71,7 +71,7 @@ body {
 
 /* Botones personalizados */
 .btn-mc-primary {
-    background-color: var(--mc-violeta);
+    background-color: var(--mc-indigo;
     color: white;
     border: none;
 }
@@ -100,7 +100,7 @@ body {
 
 /* Tabla */
 .table-mc thead {
-    background-color: var(--mc-violeta);
+    background-color: var(--mc-indigo);
     color: white;
 }
 
@@ -115,6 +115,6 @@ body {
 
 /* Formularios */
 .form-control:focus {
-    border-color: var(--mc-violeta);
+    border-color: var(--mc-indigofunt);
     box-shadow: 0 0 0 0.2rem rgba(67, 42, 165, 0.15);
 }
