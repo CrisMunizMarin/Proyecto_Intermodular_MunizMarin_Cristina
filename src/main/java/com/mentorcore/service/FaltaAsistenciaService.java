@@ -1,9 +1,11 @@
 package com.mentorcore.service;
 
 import com.mentorcore.model.Alumno;
+import com.mentorcore.model.Asignacion;
 import com.mentorcore.model.Documento;
 import com.mentorcore.model.FaltaAsistencia;
-import com.mentorcore.model.Usuario;
+import com.mentorcore.model.TutorCentro;
+import com.mentorcore.model.TutorEmpresa;
 import com.mentorcore.model.enums.EstadoFaltaEnum;
 import com.mentorcore.model.enums.TipoFaltaEnum;
 import com.mentorcore.repository.FaltaAsistenciaRepository;
@@ -57,7 +59,7 @@ public class FaltaAsistenciaService {
      */
     @Transactional(readOnly = true)
     public List<FaltaAsistencia> findByAlumnoAndEstado(Alumno alumno,
-                                                        EstadoFaltaEnum estado) {
+                                                       EstadoFaltaEnum estado) {
         return faltaAsistenciaRepository.findByAlumnoAndEstado(alumno, estado);
     }
 
@@ -79,7 +81,7 @@ public class FaltaAsistenciaService {
     }
 
     /**
-     * Cuenta las faltas injustificadas de un alumno. RF4 (dashboard)
+     * Cuenta las faltas injustificadas de un alumno. RF4
      */
     @Transactional(readOnly = true)
     public long contarInjustificadas(Alumno alumno) {
@@ -88,7 +90,7 @@ public class FaltaAsistenciaService {
     }
 
     /**
-     * Cuenta las faltas justificadas de un alumno. RF4 (dashboard)
+     * Cuenta las faltas justificadas de un alumno. RF4
      */
     @Transactional(readOnly = true)
     public long contarJustificadas(Alumno alumno) {
@@ -97,39 +99,31 @@ public class FaltaAsistenciaService {
     }
 
 
-    // REGISTRO DE FALTA (RF18)
+    // REGISTRO DE FALTA
 
     /**
      * Registra una nueva falta de asistencia. RF18
      * Solo puede registrarla el TutorEmpresa asignado al alumno.
-     * Máximo 1 falta por alumno por día.
-     *
-     * @param alumno       alumno al que se registra la falta
-     * @param registradoPor usuario (TutorEmpresa) que la registra
-     * @param fechaFalta   fecha de la falta
-     * @param tipo         JUSTIFICADA o INJUSTIFICADA
-     * @param observacion  nota opcional del tutor empresa
      */
     @Transactional
-    public FaltaAsistencia registrar(Alumno alumno, Usuario registradoPor,
-                                      LocalDate fechaFalta, TipoFaltaEnum tipo,
-                                      String observacion) {
+    public FaltaAsistencia registrar(Alumno alumno, Asignacion asignacion,
+                                     TutorEmpresa registradoPor,
+                                     LocalDate fechaFalta, TipoFaltaEnum tipo,
+                                     String observacion) {
 
-        // Verificar que no existe ya una falta ese día (RF19)
         if (faltaAsistenciaRepository.existsByAlumnoAndFechaFalta(alumno, fechaFalta)) {
             throw new IllegalStateException(
                     "Ya existe una falta registrada para el alumno '"
-                    + alumno.getNombreUsuario() + "' el " + fechaFalta);
+                            + alumno.getNombreUsuario() + "' el " + fechaFalta);
         }
 
         FaltaAsistencia falta = new FaltaAsistencia();
         falta.setAlumno(alumno);
-        falta.setRegistradoPor(null);
+        falta.setAsignacion(asignacion);
+        falta.setRegistradoPor(registradoPor);
         falta.setFechaFalta(fechaFalta);
         falta.setTipo(tipo);
         falta.setObservacion(observacion);
-
-        // Estado inicial según el tipo registrado
         falta.setEstado(tipo == TipoFaltaEnum.JUSTIFICADA
                 ? EstadoFaltaEnum.JUSTIFICADA
                 : EstadoFaltaEnum.INJUSTIFICADA);
@@ -142,14 +136,10 @@ public class FaltaAsistenciaService {
     }
 
 
-    //GESTIÓN DE JUSTIFICANTES (RF22)
+    // GESTIÓN DE JUSTIFICANTES
 
     /**
      * Adjunta un justificante a una falta injustificada. RF22
-     * Cambia el estado a PENDIENTE_REVISION para que el TutorCentro lo revise.
-     *
-     * @param idFalta    ID de la falta a justificar
-     * @param documento  documento justificante ya subido mediante DocumentoService
      */
     @Transactional
     public void adjuntarJustificante(Long idFalta, Documento documento) {
@@ -158,11 +148,10 @@ public class FaltaAsistenciaService {
         if (falta.getEstado() != EstadoFaltaEnum.INJUSTIFICADA) {
             throw new IllegalStateException(
                     "Solo se puede adjuntar justificante a faltas INJUSTIFICADAS. " +
-                    "Estado actual: " + falta.getEstado());
+                            "Estado actual: " + falta.getEstado());
         }
 
-        falta.setJustificante(documento);
-        falta.setEstado(EstadoFaltaEnum.PENDIENTE_REVISION);
+        falta.adjuntarJustificante(documento);
         faltaAsistenciaRepository.save(falta);
 
         log.info("Justificante adjuntado a falta id={} (alumno '{}', fecha {})",
@@ -170,69 +159,58 @@ public class FaltaAsistenciaService {
     }
 
     /**
-     * El TutorCentro aprueba el justificante → estado JUSTIFICADA. RF22
-     *
-     * @param idFalta    ID de la falta
-     * @param validadoPor usuario (TutorCentro) que valida
+     * El TutorCentro aprueba el justificante. RF22
      */
     @Transactional
-    public void aprobarJustificante(Long idFalta, Usuario validadoPor) {
+    public void aprobarJustificante(Long idFalta, TutorCentro validadoPor) {
         FaltaAsistencia falta = getOrThrow(idFalta);
 
         if (falta.getEstado() != EstadoFaltaEnum.PENDIENTE_REVISION) {
             throw new IllegalStateException(
                     "Solo se pueden aprobar faltas en estado PENDIENTE_REVISION. " +
-                    "Estado actual: " + falta.getEstado());
+                            "Estado actual: " + falta.getEstado());
         }
 
-        falta.setEstado(EstadoFaltaEnum.JUSTIFICADA);
         falta.setTipo(TipoFaltaEnum.JUSTIFICADA);
-        falta.setValidadoPor(null);
-        falta.setFechaValidacion(LocalDate.now().atStartOfDay());
+        falta.aprobarJustificante(validadoPor);
         faltaAsistenciaRepository.save(falta);
 
-        log.info("Justificante APROBADO — falta id={} (alumno '{}', fecha {})",
-                idFalta, falta.getAlumno().getNombreUsuario(), falta.getFechaFalta());
+        log.info("Justificante APROBADO — falta id={} (alumno '{}', fecha {}) por '{}'",
+                idFalta, falta.getAlumno().getNombreUsuario(),
+                falta.getFechaFalta(), validadoPor.getNombreUsuario());
     }
 
     /**
-     * El TutorCentro deniega el justificante → vuelve a INJUSTIFICADA. RF22
-     *
-     * @param idFalta ID de la falta
-     * @param motivo  razón del rechazo
+     * El TutorCentro deniega el justificante. RF22
      */
     @Transactional
-    public void denegarJustificante(Long idFalta, String motivo) {
+    public void denegarJustificante(Long idFalta, TutorCentro validadoPor, String motivo) {
         FaltaAsistencia falta = getOrThrow(idFalta);
 
         if (falta.getEstado() != EstadoFaltaEnum.PENDIENTE_REVISION) {
             throw new IllegalStateException(
                     "Solo se pueden denegar faltas en estado PENDIENTE_REVISION. " +
-                    "Estado actual: " + falta.getEstado());
+                            "Estado actual: " + falta.getEstado());
         }
 
-        falta.setEstado(EstadoFaltaEnum.INJUSTIFICADA);
-        falta.setJustificante(null);
+        falta.denegarJustificante(validadoPor);
         faltaAsistenciaRepository.save(falta);
 
-        log.warn("Justificante DENEGADO — falta id={} (alumno '{}', fecha {}). Motivo: {}",
+        log.warn("Justificante DENEGADO — falta id={} (alumno '{}', fecha {}) por '{}'. Motivo: {}",
                 idFalta, falta.getAlumno().getNombreUsuario(),
-                falta.getFechaFalta(), motivo);
+                falta.getFechaFalta(), validadoPor.getNombreUsuario(), motivo);
     }
 
 
     // VALIDACIONES
 
-    /**
-     * Comprueba si ya existe una falta para ese alumno en esa fecha. RF18
-     */
     @Transactional(readOnly = true)
     public boolean existeFaltaEnFecha(Alumno alumno, LocalDate fecha) {
         return faltaAsistenciaRepository.existsByAlumnoAndFechaFalta(alumno, fecha);
     }
 
 
-    //HELPERS PRIVADOS
+    // HELPERS PRIVADOS
 
     private FaltaAsistencia getOrThrow(Long id) {
         return faltaAsistenciaRepository.findById(id)
@@ -240,3 +218,4 @@ public class FaltaAsistenciaService {
                         "Falta de asistencia no encontrada con id: " + id));
     }
 }
+

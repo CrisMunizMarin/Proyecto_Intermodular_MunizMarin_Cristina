@@ -5,6 +5,7 @@ import com.mentorcore.model.Asignacion;
 import com.mentorcore.model.Empresa;
 import com.mentorcore.model.PeriodoFormacion;
 import com.mentorcore.model.TutorEmpresa;
+import com.mentorcore.model.Usuario;
 import com.mentorcore.model.enums.EstadoFeEnum;
 import com.mentorcore.repository.AsignacionRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,68 +28,49 @@ import java.util.Optional;
 public class AsignacionService {
 
     private final AsignacionRepository asignacionRepository;
-    private final AlumnoService alumnoService;
 
 
-    // ── BÚSQUEDAS ────────────────────────────────────────────────────────────
+    // BÚSQUEDAS
 
     @Transactional(readOnly = true)
     public Optional<Asignacion> findById(Long id) {
         return asignacionRepository.findById(id);
     }
 
-    /**
-     * Devuelve la asignación EN_CURSO de un alumno. RF13
-     * Solo puede haber 1 activa por alumno en cada momento.
-     */
     @Transactional(readOnly = true)
     public Optional<Asignacion> findAsignacionActiva(Alumno alumno) {
         return asignacionRepository.findByAlumnoAndEstado(alumno, EstadoFeEnum.EN_CURSO);
     }
 
-    /**
-     * Devuelve todo el historial de asignaciones de un alumno. RF21
-     */
     @Transactional(readOnly = true)
     public List<Asignacion> findHistorialByAlumno(Alumno alumno) {
         return asignacionRepository.findByAlumnoOrderByFechaCreacionDesc(alumno);
     }
 
-    /**
-     * Devuelve todas las asignaciones activas de un tutor empresa. RF9
-     */
     @Transactional(readOnly = true)
     public List<Asignacion> findActivasByTutorEmpresa(TutorEmpresa tutorEmpresa) {
         return asignacionRepository
                 .findByTutorEmpresaAndEstado(tutorEmpresa, EstadoFeEnum.EN_CURSO);
     }
 
-    /**
-     * Devuelve todas las asignaciones de un periodo FE. RF20
-     */
     @Transactional(readOnly = true)
     public List<Asignacion> findByPeriodo(Long idPeriodo) {
         return asignacionRepository.findActivasByPeriodo(idPeriodo);
     }
 
 
-    // ── CREACIÓN ─────────────────────────────────────────────────────────────
+    // CREACIÓN
 
-    /**
-     * Crea una nueva asignación alumno-empresa-tutorEmpresa. RF13
-     * Verifica que el alumno no tenga ya una asignación EN_CURSO.
-     */
     @Transactional
     public Asignacion crear(Alumno alumno, Empresa empresa,
                             TutorEmpresa tutorEmpresa, PeriodoFormacion periodo,
                             LocalDate fechaInicio) {
 
-        // Verificar que no existe ya una asignación activa
         if (asignacionRepository.existsByAlumnoAndEstado(alumno, EstadoFeEnum.EN_CURSO)) {
             throw new IllegalStateException(
                     "El alumno '" + alumno.getNombreUsuario() +
-                    "' ya tiene una asignación EN_CURSO. " +
-                    "Usa reasignar() para cambiar de empresa.");
+                            "' ya tiene una asignación EN_CURSO. " +
+                            "Usa reasignar() para cambiar de empresa.");
         }
 
         Asignacion asignacion = new Asignacion();
@@ -106,40 +88,31 @@ public class AsignacionService {
     }
 
 
-    // ── REASIGNACIÓN (RF21) ───────────────────────────────────────────────────
+    // REASIGNACIÓN
 
-    /**
-     * Reasigna un alumno a una nueva empresa conservando el historial. RF21
-     *
-     * Pasos:
-     * 1. Marca la asignación actual como FINALIZADO.
-     * 2. Crea una nueva asignación EN_CURSO con la nueva empresa.
-     *
-     * Las horas acumuladas NO se reinician (siguen en Alumno.horasCompletadas).
-     */
     @Transactional
     public Asignacion reasignar(Alumno alumno, Empresa nuevaEmpresa,
                                 TutorEmpresa nuevoTutorEmpresa,
                                 PeriodoFormacion periodo,
                                 LocalDate nuevaFechaInicio,
-                                String motivoCambio) {
+                                String motivoCambio,
+                                Usuario reasignadoPor) {
 
-        // 1. Cerrar la asignación activa actual
         Asignacion actual = findAsignacionActiva(alumno)
                 .orElseThrow(() -> new IllegalStateException(
                         "No existe asignación EN_CURSO para el alumno '"
-                        + alumno.getNombreUsuario() + "'"));
+                                + alumno.getNombreUsuario() + "'"));
 
         actual.setEstado(EstadoFeEnum.FINALIZADO);
         actual.setFechaFin(nuevaFechaInicio.minusDays(1));
         actual.setMotivoCambio(motivoCambio);
+        actual.setReasignadoPor(reasignadoPor);
         asignacionRepository.save(actual);
 
         log.info("Asignación id={} finalizada — alumno='{}' deja empresa='{}'",
                 actual.getId(), alumno.getNombreUsuario(),
                 actual.getEmpresa().getNombre());
 
-        // 2. Crear nueva asignación EN_CURSO
         Asignacion nueva = new Asignacion();
         nueva.setAlumno(alumno);
         nueva.setEmpresa(nuevaEmpresa);
@@ -147,17 +120,17 @@ public class AsignacionService {
         nueva.setPeriodo(periodo);
         nueva.setFechaInicio(nuevaFechaInicio);
         nueva.setEstado(EstadoFeEnum.EN_CURSO);
+        nueva.setReasignadoPor(reasignadoPor);
 
         Asignacion guardada = asignacionRepository.save(nueva);
-        log.info("Nueva asignación id={} creada — alumno='{}' → empresa='{}'",
-                guardada.getId(), alumno.getNombreUsuario(), nuevaEmpresa.getNombre());
+        log.info("Nueva asignación id={} creada — alumno='{}' → empresa='{}' por '{}'",
+                guardada.getId(), alumno.getNombreUsuario(),
+                nuevaEmpresa.getNombre(),
+                reasignadoPor != null ? reasignadoPor.getNombreUsuario() : "sistema");
 
         return guardada;
     }
 
-    /**
-     * Finaliza una asignación manualmente. RF21
-     */
     @Transactional
     public void finalizar(Asignacion asignacion, LocalDate fechaFin, String motivo) {
         asignacion.setEstado(EstadoFeEnum.FINALIZADO);
@@ -168,20 +141,13 @@ public class AsignacionService {
     }
 
 
-    // ── VALIDACIONES ──────────────────────────────────────────────────────────
+    // VALIDACIONES
 
-    /**
-     * Comprueba si un alumno tiene asignación activa. RF13
-     */
     @Transactional(readOnly = true)
     public boolean tieneAsignacionActiva(Alumno alumno) {
         return asignacionRepository.existsByAlumnoAndEstado(alumno, EstadoFeEnum.EN_CURSO);
     }
 
-    /**
-     * Verifica que un tutor empresa tiene asignado a ese alumno. RF9, RF18
-     * Necesario para control de acceso: el tutor solo ve sus alumnos.
-     */
     @Transactional(readOnly = true)
     public boolean tutorTieneAlumnoAsignado(TutorEmpresa tutorEmpresa, Alumno alumno) {
         return asignacionRepository
@@ -190,3 +156,4 @@ public class AsignacionService {
                 .orElse(false);
     }
 }
+
