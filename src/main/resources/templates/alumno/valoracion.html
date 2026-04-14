@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Valoración',
+        ~{layout/sidebar-alumno :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Evaluación final
+        </p>
+        <h1 class="mc-h1 mb-2">Mis valoraciones</h1>
+        <p class="text-muted mb-0">
+            Consulta las valoraciones emitidas sobre tu desempeño durante la formación en empresa.
+        </p>
+    </header>
+
+    <section th:if="${valoraciones == null or #lists.isEmpty(valoraciones)}" class="card">
+        <div class="card-body">
+            <p class="mb-0 text-muted">
+                Todavía no hay valoraciones registradas para ti.
+            </p>
+        </div>
+    </section>
+
+    <section th:if="${valoraciones != null and !#lists.isEmpty(valoraciones)}" aria-labelledby="listado-valoraciones">
+        <h2 id="listado-valoraciones" class="visually-hidden">Listado de valoraciones</h2>
+
+        <div class="row g-4">
+            <div class="col-12" th:each="valoracion : ${valoraciones}">
+                <article class="card h-100">
+                    <div class="card-header-mc">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-2">
+                            <h2 class="h5 mb-0"
+                                th:text="${valoracion.tipoEvaluador != null ? valoracion.tipoEvaluador : 'Valoración'}">
+                                Valoración
+                            </h2>
+                            <span class="badge badge-validado"
+                                  th:if="${valoracion.resultadoFinal != null}"
+                                  th:text="${valoracion.resultadoFinal}">
+                                APTO
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="border rounded p-3 h-100 text-center">
+                                    <p class="mc-caption text-muted mb-2">Actitud</p>
+                                    <p class="h3 mb-0" th:text="${valoracion.puntuacionActitud}">0</p>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="border rounded p-3 h-100 text-center">
+                                    <p class="mc-caption text-muted mb-2">Competencias</p>
+                                    <p class="h3 mb-0" th:text="${valoracion.puntuacionCompetencias}">0</p>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="border rounded p-3 h-100 text-center">
+                                    <p class="mc-caption text-muted mb-2">Integración</p>
+                                    <p class="h3 mb-0" th:text="${valoracion.puntuacionIntegracion}">0</p>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="border rounded p-3 h-100 text-center">
+                                    <p class="mc-caption text-muted mb-2">Iniciativa</p>
+                                    <p class="h3 mb-0" th:text="${valoracion.puntuacionIniciativa}">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <section class="mb-3">
+                            <h3 class="h6">Observaciones</h3>
+                            <p class="mb-0 text-muted"
+                               th:text="${valoracion.observaciones != null and !#strings.isEmpty(valoracion.observaciones) ? valoracion.observaciones : 'Sin observaciones registradas.'}">
+                                Sin observaciones registradas.
+                            </p>
+                        </section>
+
+                        <section class="text-muted small">
+                            <p class="mb-1"
+                               th:if="${valoracion.fechaEmision != null}">
+                                Emitida el
+                                <span th:text="${#temporals.format(valoracion.fechaEmision, 'dd/MM/yyyy HH:mm')}">
+                                    01/01/2026 10:00
+                                </span>
+                            </p>
+
+                            <p class="mb-0"
+                               th:if="${valoracion.bloqueada}">
+                                Esta valoración está bloqueada y ya no admite cambios.
+                            </p>
+                        </section>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+</section>
+</html>

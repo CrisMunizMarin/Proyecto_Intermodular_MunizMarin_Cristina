@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Documentos',
+        ~{layout/sidebar-alumno :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+                Gestión documental
+            </p>
+            <h1 class="mc-h1 mb-2">Mis documentos</h1>
+            <p class="text-muted mb-0">
+                Sube la documentación necesaria para tu formación en empresa y revisa su estado de validación.
+            </p>
+        </div>
+    </header>
+
+    <section th:if="${successMsg}" class="alert alert-success" aria-live="polite">
+        <p class="mb-0" th:text="${successMsg}">Operación realizada correctamente.</p>
+    </section>
+
+    <section th:if="${errorMsg}" class="alert alert-danger" aria-live="assertive">
+        <p class="mb-0" th:text="${errorMsg}">Se ha producido un error.</p>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-4">
+            <section class="card" aria-labelledby="subida-documento">
+                <div class="card-header-mc">
+                    <h2 id="subida-documento" class="h5 mb-0">Subir documento</h2>
+                </div>
+
+                <div class="card-body">
+                    <form th:action="@{/alumno/documentos/subir}" method="post" enctype="multipart/form-data" novalidate>
+                        <input type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
+                        <fieldset class="border-0 p-0 m-0">
+                            <legend class="visually-hidden">Formulario de subida de documento</legend>
+
+                            <div class="mb-3">
+                                <label for="idTipoDocumento" class="form-label">Tipo de documento</label>
+                                <select id="idTipoDocumento" name="idTipoDocumento" class="form-select" required>
+                                    <option value="">Selecciona una opción</option>
+                                    <option th:each="tipo : ${tiposDocumento}"
+                                            th:value="${tipo.id}"
+                                            th:text="${tipo.nombre}">
+                                        Tipo
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="archivo" class="form-label">Archivo</label>
+                                <input type="file"
+                                       id="archivo"
+                                       name="archivo"
+                                       class="form-control"
+                                       required>
+                            </div>
+                        </fieldset>
+
+                        <button type="submit" class="btn btn-mc-primary w-100">
+                            <i class="fas fa-upload me-2" aria-hidden="true"></i>
+                            Subir documento
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-8">
+            <section class="card" aria-labelledby="listado-documentos">
+                <div class="card-header-mc">
+                    <h2 id="listado-documentos" class="h5 mb-0">Documentación registrada</h2>
+                </div>
+
+                <div class="card-body">
+                    <div th:if="${documentos == null or #lists.isEmpty(documentos)}">
+                        <p class="mb-0 text-muted">
+                            Todavía no has subido documentos.
+                        </p>
+                    </div>
+
+                    <div th:if="${documentos != null and !#lists.isEmpty(documentos)}" class="table-responsive">
+                        <table class="table table-hover align-middle table-mc">
+                            <caption class="visually-hidden">Listado de documentos del alumno</caption>
+                            <thead>
+                            <tr>
+                                <th scope="col">Tipo</th>
+                                <th scope="col">Archivo</th>
+                                <th scope="col">Fecha</th>
+                                <th scope="col">Estado</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="documento : ${documentos}">
+                                <td th:text="${documento.tipoDocumento != null ? documento.tipoDocumento.nombre : 'Sin tipo'}">
+                                    Tipo
+                                </td>
+                                <td th:text="${documento.nombreArchivo}">archivo.pdf</td>
+                                <td th:text="${#temporals.format(documento.fechaSubida, 'dd/MM/yyyy HH:mm')}">
+                                    01/01/2026 09:00
+                                </td>
+                                <td>
+                                    <span th:if="${documento.estadoValidacion.name() == 'PENDIENTE'}"
+                                          class="badge badge-pendiente">
+                                        Pendiente
+                                    </span>
+                                    <span th:if="${documento.estadoValidacion.name() == 'VALIDADO'}"
+                                          class="badge badge-validado">
+                                        Validado
+                                    </span>
+                                    <span th:if="${documento.estadoValidacion.name() == 'RECHAZADO'}"
+                                          class="badge badge-rechazado">
+                                        Rechazado
+                                    </span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</section>
+</html>

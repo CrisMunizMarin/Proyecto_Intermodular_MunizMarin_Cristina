@@ -16,7 +16,7 @@ VALUES
 (
     'admin',
     'admin@mentorcore.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/RK.s5uMqC',
+    '$2a$12$rAM9dfgvHRrrPlZLsr3oBuBtCMs6vQXebumyxPccF0HvacTdKeLfG',
     'Administrador',
     'Sistema MentorCore',
     '600000001',
@@ -27,7 +27,7 @@ VALUES
 (
     'tutorcentro1',
     'maria.garcia@laLaboral.edu',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/RK.s5uMqC',
+    '$2a$12$rAM9dfgvHRrrPlZLsr3oBuBtCMs6vQXebumyxPccF0HvacTdKeLfG',
     'María',
     'García López',
     '600000002',
@@ -38,7 +38,7 @@ VALUES
 (
     'tutorempresa1',
     'carlos.perez@empresa.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/RK.s5uMqC',
+    '$2a$12$rAM9dfgvHRrrPlZLsr3oBuBtCMs6vQXebumyxPccF0HvacTdKeLfG',
     'Carlos',
     'Pérez Martínez',
     '600000003',
@@ -49,13 +49,18 @@ VALUES
 (
     'alumno1',
     'lucia.fernandez@alumno.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/RK.s5uMqC',
+    '$2a$12$rAM9dfgvHRrrPlZLsr3oBuBtCMs6vQXebumyxPccF0HvacTdKeLfG',
     'Lucía',
     'Fernández Ruiz',
     '600000004',
     'ALUMNO',
     'ACTIVO'
 );
+
+-- Si el usuaio ya existe en la BD, esta sentencia los actualiza
+UPDATE usuario
+SET password_hash = '$2a$12$rAM9dfgvHRrrPlZLsr3oBuBtCMs6vQXebumyxPccF0HvacTdKeLfG'
+WHERE nombre_usuario IN ('admin', 'tutorcentro1', 'tutorempresa1', 'alumno1');
 
 -- -----------------------------------------------------
 -- EMPRESA DE PRUEBA

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Progreso',
+        ~{layout/sidebar-alumno :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Seguimiento académico
+        </p>
+        <h1 class="mc-h1 mb-2">Mi progreso</h1>
+        <p class="text-muted mb-0">
+            Revisa tu avance en horas y el estado general de tus tareas de formación en empresa.
+        </p>
+    </header>
+
+    <section class="row g-4 mb-4" aria-label="Resumen de progreso">
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Horas completadas</p>
+                    <h2 class="mc-h2 mb-1" th:text="${alumnoActual.horasCompletadas}">0</h2>
+                    <p class="mb-0 text-muted">
+                        de <span th:text="${alumnoActual.horasTotalesFe}">400</span> horas
+                    </p>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Porcentaje completado</p>
+                    <h2 class="mc-h2 mb-2">
+                        <span th:text="${#numbers.formatDecimal(porcentajeCompletado, 1, 2)}">0.00</span>%
+                    </h2>
+                    <div class="progress" role="progressbar"
+                         aria-label="Porcentaje completado"
+                         th:attr="aria-valuenow=${porcentajeCompletado}"
+                         aria-valuemin="0"
+                         aria-valuemax="100"
+                         style="height: 0.75rem;">
+                        <div class="progress-bar"
+                             th:style="'width:' + ${porcentajeCompletado} + '%; background-color: var(--mc-verde);'">
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Tareas validadas</p>
+                    <h2 class="mc-h2 mb-0" th:text="${tareasValidadas}">0</h2>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Objetivo de horas</p>
+                    <h2 class="mc-h2 mb-0" th:text="${haCompletadoHoras ? 'Completado' : 'En curso'}">En curso</h2>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="row g-4">
+        <div class="col-12 col-xl-8">
+            <article class="card h-100">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Estado de tareas</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <div class="border rounded p-3 h-100 text-center">
+                                <p class="mc-caption text-muted mb-2">Validadas</p>
+                                <p class="h3 mb-0" th:text="${tareasValidadas}">0</p>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <div class="border rounded p-3 h-100 text-center">
+                                <p class="mc-caption text-muted mb-2">Pendientes</p>
+                                <p class="h3 mb-0" th:text="${tareasPendientes}">0</p>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <div class="border rounded p-3 h-100 text-center">
+                                <p class="mc-caption text-muted mb-2">Rechazadas</p>
+                                <p class="h3 mb-0" th:text="${tareasRechazadas}">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <aside class="card h-100">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Situación actual</h2>
+                </div>
+                <div class="card-body">
+                    <p th:if="${haCompletadoHoras}" class="mb-0">
+                        Has alcanzado el total de horas previsto para la formación en empresa.
+                    </p>
+                    <p th:if="${!haCompletadoHoras}" class="mb-0">
+                        Sigue registrando tu actividad diaria para completar las horas y mantener tu seguimiento al día.
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </section>
+</section>
+</html>

@@ -1,0 +1,79 @@
+<nav th:fragment="sidebar" aria-label="Navegación del alumno">
+    <div class="p-3 border-bottom" style="border-color: rgba(67, 42, 165, 0.12) !important;">
+        <p class="mb-1 small text-uppercase fw-bold" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Panel Alumno
+        </p>
+        <p class="mb-0 text-muted small">
+            Seguimiento de tu formación en empresa
+        </p>
+    </div>
+
+    <ul class="nav flex-column py-3" role="list">
+        <li class="nav-seccion">General</li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/alumno/inicio}"
+               th:classappend="${seccionActiva == 'inicio' ? ' activo' : ''}">
+                <i class="fas fa-house me-2" aria-hidden="true"></i>
+                Inicio
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/alumno/progreso}"
+               th:classappend="${seccionActiva == 'progreso' ? ' activo' : ''}">
+                <i class="fas fa-chart-line me-2" aria-hidden="true"></i>
+                Progreso
+            </a>
+        </li>
+
+        <li class="nav-seccion">Actividad</li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/alumno/tareas}"
+               th:classappend="${seccionActiva == 'tareas' ? ' activo' : ''}">
+                <i class="fas fa-list-check me-2" aria-hidden="true"></i>
+                Tareas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/alumno/documentos}"
+               th:classappend="${seccionActiva == 'documentos' ? ' activo' : ''}">
+                <i class="fas fa-folder-open me-2" aria-hidden="true"></i>
+                Documentos
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/alumno/faltas}"
+               th:classappend="${seccionActiva == 'faltas' ? ' activo' : ''}">
+                <i class="fas fa-calendar-xmark me-2" aria-hidden="true"></i>
+                Faltas
+            </a>
+        </li>
+
+        <li class="nav-seccion">Cierre</li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/alumno/valoracion}"
+               th:classappend="${seccionActiva == 'valoracion' ? ' activo' : ''}">
+                <i class="fas fa-star me-2" aria-hidden="true"></i>
+                Valoración
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link position-relative"
+               th:href="@{/alumno/notificaciones}"
+               th:classappend="${seccionActiva == 'notificaciones' ? ' activo' : ''}">
+                <i class="fas fa-bell me-2" aria-hidden="true"></i>
+                Notificaciones
+                <span th:if="${notificacionesNoLeidas != null and notificacionesNoLeidas > 0}"
+                      class="badge rounded-pill ms-2"
+                      style="background-color: var(--mc-rosa); color: white;"
+                      th:text="${notificacionesNoLeidas}">0</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+

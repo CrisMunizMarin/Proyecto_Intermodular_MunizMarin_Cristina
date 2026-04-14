@@ -1,6 +1,7 @@
 package com.mentorcore.repository;
 
 import com.mentorcore.model.TipoDocumento;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,4 +17,7 @@ public interface TipoDocumentoRepository extends JpaRepository<TipoDocumento, Lo
     List<TipoDocumento> findByActivoTrue();
 
     List<TipoDocumento> findByEsObligatorioAndActivoTrue(boolean esObligatorio);
+    
+    Optional<TipoDocumento> findByNombreAndActivoTrue(String nombre);
+
 }

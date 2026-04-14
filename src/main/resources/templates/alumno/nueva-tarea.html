@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Nueva tarea',
+        ~{layout/sidebar-alumno :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Registro diario
+        </p>
+        <h1 class="mc-h1 mb-2">Nueva tarea</h1>
+        <p class="text-muted mb-0">
+            Describe con detalle la actividad realizada durante tu jornada y registra las horas dedicadas.
+        </p>
+    </header>
+
+    <section th:if="${successMsg}" class="alert alert-success" aria-live="polite">
+        <p class="mb-0" th:text="${successMsg}">Operación realizada correctamente.</p>
+    </section>
+
+    <section th:if="${errorMsg}" class="alert alert-danger" aria-live="assertive">
+        <p class="mb-0" th:text="${errorMsg}">Se ha producido un error.</p>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <section class="card" aria-labelledby="formulario-nueva-tarea">
+                <div class="card-header-mc">
+                    <h2 id="formulario-nueva-tarea" class="h5 mb-0">Formulario de tarea</h2>
+                </div>
+
+                <div class="card-body">
+                    <form th:action="@{/alumno/tareas/nueva}" method="post" novalidate>
+                        <input type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
+                        <fieldset class="border-0 p-0 m-0">
+                            <legend class="visually-hidden">Datos de la nueva tarea</legend>
+
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label for="fechaRegistro" class="form-label">Fecha de registro</label>
+                                    <input type="date"
+                                           id="fechaRegistro"
+                                           name="fechaRegistro"
+                                           class="form-control"
+                                           required>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label for="horasDedicadas" class="form-label">Horas dedicadas</label>
+                                    <input type="number"
+                                           id="horasDedicadas"
+                                           name="horasDedicadas"
+                                           class="form-control"
+                                           min="0.5"
+                                           step="0.5"
+                                           placeholder="Ej. 7.5"
+                                           required>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="areaActividad" class="form-label">Área de actividad</label>
+                                    <input type="text"
+                                           id="areaActividad"
+                                           name="areaActividad"
+                                           class="form-control"
+                                           maxlength="100"
+                                           placeholder="Ej. Desarrollo web, soporte técnico, pruebas...">
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="descripcion" class="form-label">Descripción de la tarea</label>
+                                    <textarea id="descripcion"
+                                              name="descripcion"
+                                              class="form-control"
+                                              rows="8"
+                                              placeholder="Describe qué has hecho, qué herramientas has usado y qué resultado has obtenido."
+                                              required></textarea>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div class="d-flex flex-column flex-md-row gap-3 mt-4">
+                            <button type="submit" class="btn btn-mc-primary">
+                                <i class="fas fa-save me-2" aria-hidden="true"></i>
+                                Guardar tarea
+                            </button>
+
+                            <a th:href="@{/alumno/tareas}" class="btn btn-mc-tertiary">
+                                <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>
+                                Volver al listado
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <aside class="card h-100" aria-labelledby="ayuda-tarea">
+                <div class="card-header-mc">
+                    <h2 id="ayuda-tarea" class="h5 mb-0">Recomendaciones</h2>
+                </div>
+
+                <div class="card-body">
+                    <ul class="mb-0 ps-3">
+                        <li>Indica una fecha real de trabajo.</li>
+                        <li>Especifica con claridad qué actividad has realizado.</li>
+                        <li>Evita descripciones demasiado genéricas como “he trabajado”.</li>
+                        <li>Incluye tecnologías, tareas concretas o resultados si procede.</li>
+                        <li>Tu tutor revisará la entrada antes de validarla.</li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+</html>

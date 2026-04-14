@@ -202,8 +202,10 @@ CREATE TABLE IF NOT EXISTS tipo_documento (
     rol_responsable         ENUM('ALUMNO','TUTOR_CENTRO','TUTOR_EMPRESA','TODOS'),
     extensiones_permitidas  VARCHAR(100),
     activo                  BOOLEAN         NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    CONSTRAINT uk_tipo_documento_nombre UNIQUE (nombre)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- -----------------------------------------------------
 -- TABLA: documento

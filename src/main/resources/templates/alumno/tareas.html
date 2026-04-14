@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Mis tareas',
+        ~{layout/sidebar-alumno :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+                Actividad diaria
+            </p>
+            <h1 class="mc-h1 mb-2">Mis tareas</h1>
+            <p class="text-muted mb-0">
+                Consulta el histórico de tareas registradas y revisa su estado de validación.
+            </p>
+        </div>
+
+        <div>
+            <a th:href="@{/alumno/tareas/nueva}" class="btn btn-mc-primary">
+                <i class="fas fa-plus me-2" aria-hidden="true"></i>
+                Nueva tarea
+            </a>
+        </div>
+    </header>
+
+    <section th:if="${successMsg}" class="alert alert-success" aria-live="polite">
+        <p class="mb-0" th:text="${successMsg}">Operación realizada correctamente.</p>
+    </section>
+
+    <section th:if="${errorMsg}" class="alert alert-danger" aria-live="assertive">
+        <p class="mb-0" th:text="${errorMsg}">Se ha producido un error.</p>
+    </section>
+
+    <section th:if="${tareas == null or #lists.isEmpty(tareas)}" class="card">
+        <div class="card-body">
+            <h2 class="h4 mb-3">Todavía no has registrado tareas</h2>
+            <p class="mb-3 text-muted">
+                Empieza creando tu primera entrada diaria para que tu tutor pueda revisarla.
+            </p>
+            <a th:href="@{/alumno/tareas/nueva}" class="btn btn-mc-primary">
+                Registrar primera tarea
+            </a>
+        </div>
+    </section>
+
+    <section th:if="${tareas != null and !#lists.isEmpty(tareas)}" aria-labelledby="listado-tareas">
+        <h2 id="listado-tareas" class="visually-hidden">Listado de tareas</h2>
+
+        <div class="row g-4">
+            <div class="col-12" th:each="tarea : ${tareas}">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3">
+                            <div class="flex-grow-1">
+                                <header class="mb-3">
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                        <h3 class="h5 mb-0">
+                                            <span th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</span>
+                                        </h3>
+
+                                        <span th:if="${tarea.estadoValidacion.name() == 'PENDIENTE'}"
+                                              class="badge badge-pendiente">
+                                            Pendiente
+                                        </span>
+
+                                        <span th:if="${tarea.estadoValidacion.name() == 'VALIDADO'}"
+                                              class="badge badge-validado">
+                                            Validada
+                                        </span>
+
+                                        <span th:if="${tarea.estadoValidacion.name() == 'RECHAZADO'}"
+                                              class="badge badge-rechazado">
+                                            Rechazada
+                                        </span>
+
+                                        <span th:if="${tarea.estadoValidacion.name() == 'REQUIERE_REVISION'}"
+                                              class="badge"
+                                              style="background-color: var(--mc-rosa-suave); color: var(--mc-texto);">
+                                            En revisión
+                                        </span>
+                                    </div>
+
+                                    <p class="text-muted mb-0">
+                                        Área:
+                                        <span th:text="${tarea.areaActividad != null and !#strings.isEmpty(tarea.areaActividad) ? tarea.areaActividad : 'No especificada'}">
+                                            No especificada
+                                        </span>
+                                        ·
+                                        Horas:
+                                        <span th:text="${tarea.horasDedicadas}">0</span>
+                                    </p>
+                                </header>
+
+                                <section class="mb-3">
+                                    <h4 class="h6">Descripción</h4>
+                                    <p class="mb-0" th:text="${tarea.descripcion}">
+                                        Descripción de la tarea.
+                                    </p>
+                                </section>
+
+                                <section th:if="${tarea.comentarioTutor != null and !#strings.isEmpty(tarea.comentarioTutor)}">
+                                    <h4 class="h6">Comentario del tutor</h4>
+                                    <p class="mb-0 text-muted" th:text="${tarea.comentarioTutor}">
+                                        Comentario del tutor.
+                                    </p>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+</section>
+</html>

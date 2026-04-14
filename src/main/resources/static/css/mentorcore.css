@@ -1,120 +1,323 @@
 /* =====================================================
    MENTORCORE - Estilos Globales
-   Paleta: Verde #329b9c | Rosa #fc7298 | Violeta #432aa5
+   Guía visual basada en la memoria del proyecto (10.1)
    ===================================================== */
 
-/* Variables de color */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@600;700&family=Roboto:wght@500&display=swap');
+
 :root {
-    --mc-verde:      #329b9c;
-    --mc-rosa:       #fc7298;
-    --mc-rosa-suave: #ecb8cf;
-    --mc-lavanda:    #b4abcf;
-    --mc-indigo:     #432aa5;
-	--mc-fondo:      #F3F5F7;
+    --mc-gris-hielo: #F3F5F7;
+    --mc-verde: #329B9C;
+    --mc-rosa: #FC7298;
+    --mc-rosa-suave: #ECB8CF;
+    --mc-lavanda: #B4ABCF;
+    --mc-indigo: #432AA5;
+
+    --mc-texto: #2f2f3a;
+    --mc-texto-suave: #5f6470;
+    --mc-blanco: #FFFFFF;
+    --mc-borde: #D7DCE2;
+    --mc-sombra: 0 4px 14px rgba(67, 42, 165, 0.10);
+    --mc-sombra-hover: 0 8px 24px rgba(67, 42, 165, 0.16);
+    --mc-radius: 0.75rem;
 }
 
-/* Reset básico */
+html {
+    font-size: 16px;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--mc-fondo);
-    color: #333;
+    margin: 0;
+    font-family: 'Lato', sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--mc-texto);
+    background-color: var(--mc-gris-hielo);
 }
 
-/* Sidebar */
+h1, .mc-h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--mc-indigo);
+    margin-bottom: 1rem;
+}
+
+h2, .mc-h2 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--mc-indigo);
+    margin-bottom: 0.75rem;
+}
+
+p,
+label,
+input,
+button,
+a,
+span,
+small {
+    font-family: 'Lato', sans-serif;
+}
+
+small,
+.mc-caption {
+    font-size: 0.875rem;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.img {
+    width: 7rem;
+}
+
 .sidebar {
     min-height: calc(100vh - 56px);
-    background-color: #2c2c54;
+    background-color: var(--mc-lavanda);
     padding-top: 1rem;
 }
 
 .sidebar a {
-    color: #ccc;
+    color: var(--mc-texto);
     text-decoration: none;
     display: block;
-    padding: 0.6rem 1.2rem;
-    border-radius: 6px;
-    margin: 2px 8px;
-    transition: all 0.2s;
+    padding: 0.65rem 1.2rem;
+    border-radius: 0.5rem;
+    margin: 0.125rem 0.5rem;
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .sidebar a:hover,
 .sidebar a.activo {
     background-color: var(--mc-indigo);
-    color: white;
+    color: var(--mc-blanco);
+    box-shadow: var(--mc-sombra);
 }
 
 .sidebar .nav-seccion {
-    color: var(--mc-lavanda);
+    color: var(--mc-indigo);
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     padding: 1rem 1.2rem 0.3rem;
 }
 
-/* Cards */
 .card {
-    border: none;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid rgba(180, 171, 207, 0.28);
+    border-radius: var(--mc-radius);
+    background-color: var(--mc-blanco);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .card-header-mc {
     background-color: var(--mc-indigo);
-    color: white;
-    border-radius: 8px 8px 0 0;
+    color: var(--mc-blanco);
+    border-radius: var(--mc-radius) var(--mc-radius) 0 0;
     padding: 1rem 1.5rem;
 }
 
-.img{
-	width: 7em;
-}
-
-/* Botones personalizados */
 .btn-mc-primary {
-    background-color: var(--mc-indigo;
-    color: white;
+    background-color: var(--mc-rosa);
+    color: var(--mc-blanco);
     border: none;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.btn-mc-primary:hover {
-    background-color: #3a24a0;
-    color: white;
+.btn-mc-primary:hover,
+.btn-mc-primary:focus {
+    background-color: #f55f89;
+    color: var(--mc-blanco);
+    box-shadow: var(--mc-sombra-hover);
+    transform: translateY(-1px);
 }
 
 .btn-mc-secondary {
     background-color: var(--mc-verde);
-    color: white;
+    color: var(--mc-blanco);
     border: none;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.btn-mc-secondary:hover {
+.btn-mc-secondary:hover,
+.btn-mc-secondary:focus {
     background-color: #277d7e;
-    color: white;
+    color: var(--mc-blanco);
+    box-shadow: var(--mc-sombra-hover);
+    transform: translateY(-1px);
 }
 
-/* Badges de estado */
-.badge-pendiente    { background-color: #ffc107; color: #333; }
-.badge-validado     { background-color: #28a745; }
-.badge-rechazado    { background-color: #dc3545; }
-.badge-justificada  { background-color: var(--mc-verde); }
+.btn-mc-tertiary {
+    background-color: var(--mc-lavanda);
+    color: var(--mc-texto);
+    border: none;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
 
-/* Tabla */
+.btn-mc-tertiary:hover,
+.btn-mc-tertiary:focus {
+    background-color: #a197c7;
+    color: var(--mc-texto);
+    box-shadow: var(--mc-sombra);
+}
+
+.badge-pendiente {
+    background-color: var(--mc-rosa-suave);
+    color: var(--mc-texto);
+}
+
+.badge-validado {
+    background-color: var(--mc-verde);
+    color: var(--mc-blanco);
+}
+
+.badge-rechazado {
+    background-color: #dc3545;
+    color: var(--mc-blanco);
+}
+
+.badge-justificada {
+    background-color: var(--mc-verde);
+    color: var(--mc-blanco);
+}
+
 .table-mc thead {
     background-color: var(--mc-indigo);
-    color: white;
+    color: var(--mc-blanco);
 }
 
-/* Alertas */
+.table-mc tbody tr:nth-child(even) {
+    background-color: var(--mc-gris-hielo);
+}
+
 .alert {
     border: none;
     border-left: 4px solid;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
-.alert-danger  { border-left-color: var(--mc-rosa); }
-.alert-success { border-left-color: var(--mc-verde); }
-.alert-warning { border-left-color: #ffc107; }
 
-/* Formularios */
-.form-control:focus {
-    border-color: var(--mc-indigofunt);
+.alert-danger {
+    border-left-color: var(--mc-rosa);
+}
+
+.alert-success {
+    border-left-color: var(--mc-verde);
+}
+
+.alert-warning {
+    border-left-color: #ffc107;
+}
+
+.form-label {
+    font-weight: 700;
+    color: var(--mc-indigo);
+}
+
+.form-control,
+.form-select {
+    background-color: var(--mc-blanco);
+    border: 1px solid var(--mc-lavanda);
+    border-radius: 0.5rem;
+    min-height: 3rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--mc-indigo);
     box-shadow: 0 0 0 0.2rem rgba(67, 42, 165, 0.15);
+}
+
+.mc-auth {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background:
+        radial-gradient(circle at top left, rgba(180, 171, 207, 0.35), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(252, 114, 152, 0.18), transparent 24%),
+        var(--mc-gris-hielo);
+}
+
+.mc-auth__container {
+    width: 100%;
+}
+
+.mc-auth__card {
+    max-width: 34rem;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.mc-auth__body {
+    padding: 2.5rem;
+}
+
+.mc-auth__brand {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.mc-auth__title {
+    margin-bottom: 0.5rem;
+}
+
+.mc-auth__subtitle {
+    color: var(--mc-texto-suave);
+    margin-bottom: 0;
+}
+
+.mc-auth__actions {
+    display: grid;
+    gap: 1rem;
+}
+
+.mc-auth__footer {
+    background-color: #eef1f5;
+    text-align: center;
+    padding: 1rem 1.5rem;
+    color: var(--mc-texto-suave);
+    border-top: 1px solid rgba(180, 171, 207, 0.25);
+}
+
+.mc-link {
+    color: var(--mc-verde);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.mc-link:hover,
+.mc-link:focus {
+    color: var(--mc-indigo);
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    h1, .mc-h1 {
+        font-size: 2rem;
+    }
+
+    h2, .mc-h2 {
+        font-size: 1.5rem;
+    }
+
+    body {
+        font-size: 1rem;
+    }
+
+    .mc-auth__body {
+        padding: 1.5rem;
+    }
+
+    .img {
+        width: 5.5rem;
+    }
 }

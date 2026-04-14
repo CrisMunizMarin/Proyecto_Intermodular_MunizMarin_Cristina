@@ -12,7 +12,10 @@ import lombok.ToString;
  * Gestionado por el Administrador. RF12
  */
 @Entity
-@Table(name = "tipo_documento")
+@Table(
+    name = "tipo_documento",
+    uniqueConstraints = @UniqueConstraint(name = "uk_tipo_documento_nombre", columnNames = "nombre")
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,7 +27,7 @@ public class TipoDocumento {
     private Long id;
 
     @NotBlank(message = "El nombre del tipo de documento es obligatorio")
-    @Column(name = "nombre", nullable = false, length = 100)
+    @Column(name = "nombre", nullable = false, length = 100, unique = true)
     private String nombre;
 
     @Column(name = "descripcion", columnDefinition = "TEXT")
