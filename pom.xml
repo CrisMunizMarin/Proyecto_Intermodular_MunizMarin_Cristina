@@ -198,7 +198,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Compilador Java 17                            -->
+            <!-- Compilador Java 21                            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

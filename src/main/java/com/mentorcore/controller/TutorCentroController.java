@@ -72,6 +72,7 @@ public class TutorCentroController {
 
         List<Alumno> alumnos = alumnoService.findByTutorCentro(tutor);
 
+        model.addAttribute("seccionActiva", "inicio");
         model.addAttribute("totalAlumnos", alumnos.size());
         model.addAttribute("tareasPendientes",
                 tareaService.findPendientesByTutorCentro(tutor.getId()));
@@ -89,6 +90,7 @@ public class TutorCentroController {
         TutorCentro tutor = getTutorCentroAutenticado(principal);
         cargarDatosBase(model, tutor);
 
+        model.addAttribute("seccionActiva", "alumnos");
         model.addAttribute("alumnos", alumnoService.findByTutorCentro(tutor));
 
         return "tutor-centro/alumnos";
@@ -103,6 +105,7 @@ public class TutorCentroController {
 
         Alumno alumno = getAlumnoDelTutor(id, tutor);
 
+        model.addAttribute("seccionActiva", "alumnos");
         model.addAttribute("alumno", alumno);
         model.addAttribute("tareas", tareaService.findByAlumno(alumno));
         model.addAttribute("documentos", documentoService.findByAlumno(alumno));
@@ -118,6 +121,7 @@ public class TutorCentroController {
         TutorCentro tutor = getTutorCentroAutenticado(principal);
         cargarDatosBase(model, tutor);
 
+        model.addAttribute("seccionActiva", "alumnos");
         model.addAttribute("alumnos", alumnoService.findByTutorCentro(tutor));
 
         return "tutor-centro/busqueda-alumno";
@@ -131,6 +135,7 @@ public class TutorCentroController {
         TutorCentro tutor = getTutorCentroAutenticado(principal);
         cargarDatosBase(model, tutor);
 
+        model.addAttribute("seccionActiva", "tareas");
         model.addAttribute("tareasPendientes",
                 tareaService.findPendientesByTutorCentro(tutor.getId()));
 
@@ -152,6 +157,7 @@ public class TutorCentroController {
             documentosPendientes.addAll(documentoService.findPendientesByAlumno(alumno));
         }
 
+        model.addAttribute("seccionActiva", "documentos");
         model.addAttribute("documentosPendientes", documentosPendientes);
 
         return "tutor-centro/documentos";
@@ -166,6 +172,7 @@ public class TutorCentroController {
         cargarDatosBase(model, tutor);
 
         List<Notificacion> notificaciones = notificacionService.findByReceptor(tutor);
+        model.addAttribute("seccionActiva", "notificaciones");
         model.addAttribute("notificaciones", notificaciones);
         model.addAttribute("totalNoLeidas",
                 notificacionService.contarNoLeidas(tutor));
@@ -200,6 +207,7 @@ public class TutorCentroController {
         TutorCentro tutor = getTutorCentroAutenticado(principal);
         cargarDatosBase(model, tutor);
 
+        model.addAttribute("seccionActiva", "empresas");
         model.addAttribute("empresas", empresaService.findActivas());
 
         return "tutor-centro/empresas";
@@ -214,6 +222,7 @@ public class TutorCentroController {
         cargarDatosBase(model, tutor);
 
         List<Alumno> alumnos = alumnoService.findByTutorCentro(tutor);
+        model.addAttribute("seccionActiva", "asignaciones");
         model.addAttribute("alumnos", alumnos);
 
         return "tutor-centro/asignaciones";
@@ -227,6 +236,7 @@ public class TutorCentroController {
         TutorCentro tutor = getTutorCentroAutenticado(principal);
         cargarDatosBase(model, tutor);
 
+        model.addAttribute("seccionActiva", "informes");
         model.addAttribute("alumnos", alumnoService.findByTutorCentro(tutor));
 
         return "tutor-centro/informes";
@@ -267,6 +277,7 @@ public class TutorCentroController {
                     .ifPresent(valoracionesTutorCentro::add);
         }
 
+        model.addAttribute("seccionActiva", "valoracion");
         model.addAttribute("alumnos", alumnos);
         model.addAttribute("valoraciones", valoracionesTutorCentro);
 
@@ -572,4 +583,3 @@ public class TutorCentroController {
                 notificacionService.contarNoLeidas(tutor));
     }
 }
-

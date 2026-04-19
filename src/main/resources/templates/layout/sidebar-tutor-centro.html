@@ -1,0 +1,96 @@
+<nav th:fragment="sidebar" aria-label="Navegación del tutor de centro">
+    <div class="p-3 border-bottom" style="border-color: rgba(67, 42, 165, 0.12) !important;">
+        <p class="mb-1 small text-uppercase fw-bold" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Panel Tutor Centro
+        </p>
+        <p class="mb-0 text-muted small">
+            Seguimiento académico de la formación en empresa
+        </p>
+    </div>
+
+    <ul class="nav flex-column py-3" role="list">
+        <li class="nav-seccion">General</li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-centro/inicio}"
+               th:classappend="${seccionActiva == 'inicio' ? ' activo' : ''}">
+                <i class="fas fa-house me-2" aria-hidden="true"></i>
+                Inicio
+            </a>
+        </li>
+
+        <li class="nav-seccion">Seguimiento</li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-centro/alumnos}"
+               th:classappend="${seccionActiva == 'alumnos' ? ' activo' : ''}">
+                <i class="fas fa-user-graduate me-2" aria-hidden="true"></i>
+                Alumnos
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-centro/tareas}"
+               th:classappend="${seccionActiva == 'tareas' ? ' activo' : ''}">
+                <i class="fas fa-list-check me-2" aria-hidden="true"></i>
+                Tareas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-centro/documentos}"
+               th:classappend="${seccionActiva == 'documentos' ? ' activo' : ''}">
+                <i class="fas fa-folder-open me-2" aria-hidden="true"></i>
+                Documentos
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-centro/valoracion}"
+               th:classappend="${seccionActiva == 'valoracion' ? ' activo' : ''}">
+                <i class="fas fa-star me-2" aria-hidden="true"></i>
+                Valoración
+            </a>
+        </li>
+
+        <li class="nav-seccion">Gestión</li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-centro/empresas}"
+               th:classappend="${seccionActiva == 'empresas' ? ' activo' : ''}">
+                <i class="fas fa-building me-2" aria-hidden="true"></i>
+                Empresas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-centro/asignaciones}"
+               th:classappend="${seccionActiva == 'asignaciones' ? ' activo' : ''}">
+                <i class="fas fa-diagram-project me-2" aria-hidden="true"></i>
+                Asignaciones
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-centro/informes}"
+               th:classappend="${seccionActiva == 'informes' ? ' activo' : ''}">
+                <i class="fas fa-file-pdf me-2" aria-hidden="true"></i>
+                Informes
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link position-relative"
+               th:href="@{/tutor-centro/notificaciones}"
+               th:classappend="${seccionActiva == 'notificaciones' ? ' activo' : ''}">
+                <i class="fas fa-bell me-2" aria-hidden="true"></i>
+                Notificaciones
+                <span th:if="${notificacionesNoLeidas != null and notificacionesNoLeidas > 0}"
+                      class="badge rounded-pill ms-2"
+                      style="background-color: var(--mc-rosa); color: white;"
+                      th:text="${notificacionesNoLeidas}">
+                    0
+                </span>
+            </a>
+        </li>
+    </ul>
+</nav>

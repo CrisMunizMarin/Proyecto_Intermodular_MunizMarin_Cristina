@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Empresas Tutor Centro',
+        ~{layout/sidebar-tutor-centro :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Entorno colaborador
+        </p>
+        <h1 class="mc-h1 mb-2">Empresas activas</h1>
+        <p class="text-muted mb-0">
+            Consulta las empresas colaboradoras activas disponibles en el sistema.
+        </p>
+    </header>
+
+    <section th:if="${empresas == null or #lists.isEmpty(empresas)}" class="card">
+        <div class="card-body">
+            <p class="mb-0 text-muted">No hay empresas activas registradas.</p>
+        </div>
+    </section>
+
+    <section th:if="${empresas != null and !#lists.isEmpty(empresas)}" aria-labelledby="listado-empresas">
+        <h2 id="listado-empresas" class="visually-hidden">Listado de empresas</h2>
+
+        <div class="row g-4">
+            <div class="col-12 col-lg-6" th:each="empresa : ${empresas}">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h5 mb-2" th:text="${empresa.nombre}">Empresa</h3>
+                        <p class="text-muted mb-3">
+                            CIF: <span th:text="${empresa.cif}">B00000000</span>
+                            · Sector: <span th:text="${empresa.sector != null ? empresa.sector : '—'}">—</span>
+                        </p>
+
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Municipio</dt>
+                            <dd class="col-sm-8" th:text="${empresa.municipio != null ? empresa.municipio : '—'}">—</dd>
+
+                            <dt class="col-sm-4">Provincia</dt>
+                            <dd class="col-sm-8" th:text="${empresa.provincia != null ? empresa.provincia : '—'}">—</dd>
+
+                            <dt class="col-sm-4">Contacto</dt>
+                            <dd class="col-sm-8" th:text="${empresa.emailContacto != null ? empresa.emailContacto : '—'}">—</dd>
+                        </dl>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+</section>
+</html>

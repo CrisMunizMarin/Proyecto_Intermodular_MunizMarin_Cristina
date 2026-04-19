@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Valoración Tutor Centro',
+        ~{layout/sidebar-tutor-centro :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Evaluación final
+        </p>
+        <h1 class="mc-h1 mb-2">Valoraciones del tutor de centro</h1>
+        <p class="text-muted mb-0">
+            Emite o revisa la valoración final académica de cada alumno asignado.
+        </p>
+    </header>
+
+    <section th:if="${successMsg}" class="alert alert-success" aria-live="polite">
+        <p class="mb-0" th:text="${successMsg}">Operación realizada correctamente.</p>
+    </section>
+
+    <section th:if="${errorMsg}" class="alert alert-danger" aria-live="assertive">
+        <p class="mb-0" th:text="${errorMsg}">Se ha producido un error.</p>
+    </section>
+
+    <section aria-labelledby="listado-valoraciones">
+        <h2 id="listado-valoraciones" class="visually-hidden">Listado de valoraciones</h2>
+
+        <div class="row g-4">
+            <div class="col-12" th:each="alumno : ${alumnos}">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                            <div class="flex-grow-1">
+                                <header class="mb-3">
+                                    <h3 class="h5 mb-1" th:text="${alumno.nombreCompleto}">Alumno</h3>
+                                    <p class="text-muted mb-0">
+                                        Grupo: <span th:text="${alumno.grupo != null ? alumno.grupo : '—'}">—</span>
+                                    </p>
+                                </header>
+
+                                <div class="mb-3">
+                                    <p class="mb-2 text-muted">
+                                        Si ya existe una valoración para este alumno, al volver a enviar el formulario se actualizará.
+                                    </p>
+                                    <div th:each="valoracion : ${valoraciones}"
+                                         th:if="${valoracion.alumno != null and valoracion.alumno.id == alumno.id}">
+                                        <p class="mb-1">
+                                            Resultado actual:
+                                            <strong th:text="${valoracion.resultado}">PENDIENTE</strong>
+                                        </p>
+                                        <p class="mb-0 text-muted" th:if="${valoracion.bloqueada}">
+                                            Esta valoración ya está bloqueada.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <aside class="col-12 col-xl-5">
+                                <div class="border rounded p-3 h-100">
+                                    <h4 class="h6 mb-3">Emitir valoración</h4>
+
+                                    <form th:action="@{/tutor-centro/valoracion/{id}/emitir(id=${alumno.id})}" method="post">
+                                        <input type="hidden"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}">
+
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <label th:for="'actitud-' + ${alumno.id}" class="form-label">Actitud</label>
+                                                <input type="number" min="0" max="10" th:id="'actitud-' + ${alumno.id}" name="actitud" class="form-control">
+                                            </div>
+                                            <div class="col-6">
+                                                <label th:for="'competencias-' + ${alumno.id}" class="form-label">Competencias</label>
+                                                <input type="number" min="0" max="10" th:id="'competencias-' + ${alumno.id}" name="competencias" class="form-control">
+                                            </div>
+                                            <div class="col-6">
+                                                <label th:for="'integracion-' + ${alumno.id}" class="form-label">Integración</label>
+                                                <input type="number" min="0" max="10" th:id="'integracion-' + ${alumno.id}" name="integracion" class="form-control">
+                                            </div>
+                                            <div class="col-6">
+                                                <label th:for="'iniciativa-' + ${alumno.id}" class="form-label">Iniciativa</label>
+                                                <input type="number" min="0" max="10" th:id="'iniciativa-' + ${alumno.id}" name="iniciativa" class="form-control">
+                                            </div>
+                                            <div class="col-12">
+                                                <label th:for="'resultado-' + ${alumno.id}" class="form-label">Resultado</label>
+                                                <select th:id="'resultado-' + ${alumno.id}" name="resultado" class="form-select">
+                                                    <option value="">Selecciona un resultado</option>
+                                                    <option value="APTO">APTO</option>
+                                                    <option value="NO_APTO">NO APTO</option>
+                                                    <option value="PENDIENTE">PENDIENTE</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-12">
+                                                <label th:for="'observaciones-' + ${alumno.id}" class="form-label">Observaciones</label>
+                                                <textarea th:id="'observaciones-' + ${alumno.id}" name="observaciones" class="form-control" rows="3"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-mc-primary w-100 mt-3">
+                                            <i class="fas fa-floppy-disk me-2" aria-hidden="true"></i>
+                                            Guardar valoración
+                                        </button>
+                                    </form>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+</section>
+</html>

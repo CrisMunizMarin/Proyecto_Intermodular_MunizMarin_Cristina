@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Inicio Tutor Centro',
+        ~{layout/sidebar-tutor-centro :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Panel tutor de centro
+        </p>
+        <h1 class="mc-h1">Supervisión académica</h1>
+        <p class="text-muted mb-0">
+            Consulta el estado general de tus alumnos asignados, revisa tareas pendientes y mantén el seguimiento al día.
+        </p>
+    </header>
+
+    <section class="row g-4 mb-4" aria-label="Resumen principal">
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Alumnos asignados</p>
+                    <h2 class="mc-h2 mb-0" th:text="${totalAlumnos}">0</h2>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Tareas pendientes</p>
+                    <h2 class="mc-h2 mb-0" th:text="${#lists.size(tareasPendientes)}">0</h2>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Notificaciones sin leer</p>
+                    <h2 class="mc-h2 mb-0" th:text="${notificacionesNoLeidas}">0</h2>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="row g-4">
+        <div class="col-12 col-xl-8">
+            <article class="card h-100">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Actividad reciente pendiente</h2>
+                </div>
+                <div class="card-body">
+                    <div th:if="${tareasPendientes == null or #lists.isEmpty(tareasPendientes)}">
+                        <p class="mb-0 text-muted">
+                            No hay tareas pendientes de revisión en este momento.
+                        </p>
+                    </div>
+
+                    <div th:if="${tareasPendientes != null and !#lists.isEmpty(tareasPendientes)}" class="table-responsive">
+                        <table class="table table-hover align-middle table-mc">
+                            <caption class="visually-hidden">Tareas pendientes de revisión</caption>
+                            <thead>
+                            <tr>
+                                <th scope="col">Alumno</th>
+                                <th scope="col">Fecha</th>
+                                <th scope="col">Horas</th>
+                                <th scope="col">Área</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="tarea : ${tareasPendientes}">
+                                <td th:text="${tarea.alumno != null ? tarea.alumno.nombreCompleto : 'Alumno'}">Alumno</td>
+                                <td th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</td>
+                                <td th:text="${tarea.horasDedicadas}">0</td>
+                                <td th:text="${tarea.areaActividad != null and !#strings.isEmpty(tarea.areaActividad) ? tarea.areaActividad : 'Sin especificar'}">
+                                    Sin especificar
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <aside class="card h-100">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Acciones rápidas</h2>
+                </div>
+                <div class="card-body d-grid gap-3">
+                    <a th:href="@{/tutor-centro/alumnos}" class="btn btn-mc-primary">
+                        <i class="fas fa-user-graduate me-2" aria-hidden="true"></i>
+                        Ver alumnos
+                    </a>
+                    <a th:href="@{/tutor-centro/tareas}" class="btn btn-mc-secondary">
+                        <i class="fas fa-list-check me-2" aria-hidden="true"></i>
+                        Revisar tareas
+                    </a>
+                    <a th:href="@{/tutor-centro/documentos}" class="btn btn-mc-tertiary">
+                        <i class="fas fa-folder-open me-2" aria-hidden="true"></i>
+                        Revisar documentos
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </section>
+</section>
+</html>

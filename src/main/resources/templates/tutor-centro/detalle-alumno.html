@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Detalle de Alumno',
+        ~{layout/sidebar-tutor-centro :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+                Expediente de seguimiento
+            </p>
+            <h1 class="mc-h1 mb-2" th:text="${alumno.nombreCompleto}">Alumno</h1>
+            <p class="text-muted mb-0">
+                Revisión consolidada de tareas, documentación, asignación activa y valoraciones.
+            </p>
+        </div>
+
+        <a th:href="@{/tutor-centro/alumnos}" class="btn btn-mc-tertiary">
+            <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>
+            Volver al listado
+        </a>
+    </header>
+
+    <section class="row g-4 mb-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Horas completadas</p>
+                    <h2 class="mc-h2 mb-0" th:text="${alumno.horasCompletadas}">0</h2>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Tareas registradas</p>
+                    <h2 class="mc-h2 mb-0" th:text="${#lists.size(tareas)}">0</h2>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Documentos</p>
+                    <h2 class="mc-h2 mb-0" th:text="${#lists.size(documentos)}">0</h2>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Valoraciones</p>
+                    <h2 class="mc-h2 mb-0" th:text="${#lists.size(valoraciones)}">0</h2>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-12 xl-4 col-xl-4">
+            <article class="card h-100">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Ficha del alumno</h2>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Usuario</dt>
+                        <dd class="col-sm-7" th:text="${alumno.nombreUsuario}">usuario</dd>
+
+                        <dt class="col-sm-5">Correo</dt>
+                        <dd class="col-sm-7" th:text="${alumno.email}">correo</dd>
+
+                        <dt class="col-sm-5">Grupo</dt>
+                        <dd class="col-sm-7" th:text="${alumno.grupo != null ? alumno.grupo : '—'}">—</dd>
+
+                        <dt class="col-sm-5">DNI</dt>
+                        <dd class="col-sm-7" th:text="${alumno.dni != null ? alumno.dni : '—'}">—</dd>
+
+                        <dt class="col-sm-5">Fecha nacimiento</dt>
+                        <dd class="col-sm-7"
+                            th:text="${alumno.fechaNacimiento != null ? #temporals.format(alumno.fechaNacimiento, 'dd/MM/yyyy') : '—'}">
+                            —
+                        </dd>
+
+                        <dt class="col-sm-5">Seguridad Social</dt>
+                        <dd class="col-sm-7" th:text="${alumno.numSeguridadSocial != null ? alumno.numSeguridadSocial : '—'}">—</dd>
+
+                        <dt class="col-sm-5">Asignación activa</dt>
+                        <dd class="col-sm-7" th:text="${asignacionActiva != null ? 'Sí' : 'No'}">No</dd>
+                    </dl>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-xl-8">
+            <article class="card mb-4">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Últimas tareas</h2>
+                </div>
+                <div class="card-body">
+                    <div th:if="${tareas == null or #lists.isEmpty(tareas)}">
+                        <p class="mb-0 text-muted">No hay tareas registradas.</p>
+                    </div>
+                    <div th:if="${tareas != null and !#lists.isEmpty(tareas)}" class="table-responsive">
+                        <table class="table table-hover align-middle table-mc">
+                            <caption class="visually-hidden">Listado de tareas del alumno</caption>
+                            <thead>
+                            <tr>
+                                <th scope="col">Fecha</th>
+                                <th scope="col">Horas</th>
+                                <th scope="col">Estado</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="tarea : ${tareas}">
+                                <td th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</td>
+                                <td th:text="${tarea.horasDedicadas}">0</td>
+                                <td th:text="${tarea.estadoValidacion}">PENDIENTE</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Documentación y valoración</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">
+                        Documentos registrados:
+                        <strong th:text="${#lists.size(documentos)}">0</strong>
+                    </p>
+                    <p class="mb-0">
+                        Valoraciones emitidas:
+                        <strong th:text="${#lists.size(valoraciones)}">0</strong>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+</html>
