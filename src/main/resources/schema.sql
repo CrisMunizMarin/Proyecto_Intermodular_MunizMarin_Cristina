@@ -71,27 +71,6 @@ CREATE TABLE IF NOT EXISTS curso_academico (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
--- TABLA: alumno
--- Perfil extendido del usuario con rol ALUMNO
--- RF2, RF3, RF13
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS alumno (
-    id_usuario          BIGINT          NOT NULL,
-    id_curso            BIGINT          NOT NULL,
-    id_tutor_centro     BIGINT          NOT NULL,
-    grupo               VARCHAR(20),
-    dni                 VARCHAR(15)     UNIQUE,
-    fecha_nacimiento    DATE,
-    num_seguridad_social VARCHAR(20),
-    horas_totales_fe    INT             NOT NULL DEFAULT 400,
-    horas_completadas   DECIMAL(6,2)    NOT NULL DEFAULT 0.00,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_alumno_usuario        FOREIGN KEY (id_usuario)      REFERENCES usuario(id),
-    CONSTRAINT fk_alumno_curso          FOREIGN KEY (id_curso)        REFERENCES curso_academico(id),
-    CONSTRAINT fk_alumno_tutor_centro   FOREIGN KEY (id_tutor_centro) REFERENCES usuario(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- -----------------------------------------------------
 -- TABLA: tutor_centro
 -- Perfil extendido del usuario con rol TUTOR_CENTRO
 -- RF4, RF5, RF6, RF8
@@ -101,8 +80,29 @@ CREATE TABLE IF NOT EXISTS tutor_centro (
     departamento            VARCHAR(100),
     especialidad            VARCHAR(100),
     num_expediente_docente  VARCHAR(30),
-    PRIMARY KEY (id),
+    PRIMARY KEY (id_usuario),
     CONSTRAINT fk_tutor_centro_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- TABLA: alumno
+-- Perfil extendido del usuario con rol ALUMNO
+-- RF2, RF3, RF13
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS alumno (
+    id_usuario           BIGINT          NOT NULL,
+    id_curso             BIGINT          NOT NULL,
+    id_tutor_centro      BIGINT          NOT NULL,
+    grupo                VARCHAR(20),
+    dni                  VARCHAR(15)     UNIQUE,
+    fecha_nacimiento     DATE,
+    num_seguridad_social VARCHAR(20),
+    horas_totales_fe     INT             NOT NULL DEFAULT 400,
+    horas_completadas    DECIMAL(6,2)    NOT NULL DEFAULT 0.00,
+    PRIMARY KEY (id_usuario),
+    CONSTRAINT fk_alumno_usuario        FOREIGN KEY (id_usuario)      REFERENCES usuario(id),
+    CONSTRAINT fk_alumno_curso          FOREIGN KEY (id_curso)        REFERENCES curso_academico(id),
+    CONSTRAINT fk_alumno_tutor_centro   FOREIGN KEY (id_tutor_centro) REFERENCES tutor_centro(id_usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -115,9 +115,9 @@ CREATE TABLE IF NOT EXISTS tutor_empresa (
     id_empresa              BIGINT          NOT NULL,
     cargo                   VARCHAR(100),
     departamento_empresa    VARCHAR(100),
-    PRIMARY KEY (id),
-    CONSTRAINT fk_tutor_empresa_usuario  FOREIGN KEY (id_usuario)  REFERENCES usuario(id),
-    CONSTRAINT fk_tutor_empresa_empresa  FOREIGN KEY (id_empresa)  REFERENCES empresa(id)
+    PRIMARY KEY (id_usuario),
+    CONSTRAINT fk_tutor_empresa_usuario  FOREIGN KEY (id_usuario) REFERENCES usuario(id),
+    CONSTRAINT fk_tutor_empresa_empresa  FOREIGN KEY (id_empresa) REFERENCES empresa(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -160,9 +160,9 @@ CREATE TABLE IF NOT EXISTS asignacion (
     id_reasignado_por   BIGINT,
     fecha_creacion      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    CONSTRAINT fk_asignacion_alumno         FOREIGN KEY (id_alumno)         REFERENCES alumno(id),
+    CONSTRAINT fk_asignacion_alumno         FOREIGN KEY (id_alumno)         REFERENCES alumno(id_usuario),
     CONSTRAINT fk_asignacion_empresa        FOREIGN KEY (id_empresa)        REFERENCES empresa(id),
-    CONSTRAINT fk_asignacion_tutor_empresa  FOREIGN KEY (id_tutor_empresa)  REFERENCES tutor_empresa(id),
+    CONSTRAINT fk_asignacion_tutor_empresa  FOREIGN KEY (id_tutor_empresa)  REFERENCES tutor_empresa(id_usuario),
     CONSTRAINT fk_asignacion_periodo        FOREIGN KEY (id_periodo)        REFERENCES periodo_formacion(id),
     CONSTRAINT fk_asignacion_reasignado     FOREIGN KEY (id_reasignado_por) REFERENCES usuario(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -185,9 +185,10 @@ CREATE TABLE IF NOT EXISTS tarea (
     fecha_validacion    DATETIME,
     fecha_creacion      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    CONSTRAINT fk_tarea_alumno    FOREIGN KEY (id_alumno)   REFERENCES alumno(id),
-    CONSTRAINT fk_tarea_validador FOREIGN KEY (id_validador) REFERENCES usuario(id)
+    CONSTRAINT fk_tarea_alumno     FOREIGN KEY (id_alumno)    REFERENCES alumno(id_usuario),
+    CONSTRAINT fk_tarea_validador  FOREIGN KEY (id_validador) REFERENCES usuario(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- -----------------------------------------------------
 -- TABLA: tipo_documento
@@ -228,7 +229,7 @@ CREATE TABLE IF NOT EXISTS documento (
     fecha_subida            DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_revision          DATETIME,
     PRIMARY KEY (id),
-    CONSTRAINT fk_documento_alumno          FOREIGN KEY (id_alumno)         REFERENCES alumno(id),
+    CONSTRAINT fk_documento_alumno          FOREIGN KEY (id_alumno)         REFERENCES alumno(id_usuario),
     CONSTRAINT fk_documento_tipo            FOREIGN KEY (id_tipo_documento) REFERENCES tipo_documento(id),
     CONSTRAINT fk_documento_subido_por      FOREIGN KEY (id_subido_por)     REFERENCES usuario(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -253,11 +254,11 @@ CREATE TABLE IF NOT EXISTS falta_asistencia (
     fecha_creacion      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_falta_alumno_fecha (id_alumno, fecha_falta),
     PRIMARY KEY (id),
-    CONSTRAINT fk_falta_alumno          FOREIGN KEY (id_alumno)         REFERENCES alumno(id),
+    CONSTRAINT fk_falta_alumno          FOREIGN KEY (id_alumno)         REFERENCES alumno(id_usuario),
     CONSTRAINT fk_falta_asignacion      FOREIGN KEY (id_asignacion)     REFERENCES asignacion(id),
-    CONSTRAINT fk_falta_registrado_por  FOREIGN KEY (id_registrado_por) REFERENCES usuario(id),
+    CONSTRAINT fk_falta_registrado_por  FOREIGN KEY (id_registrado_por) REFERENCES tutor_empresa(id_usuario),
     CONSTRAINT fk_falta_justificante    FOREIGN KEY (id_justificante)   REFERENCES documento(id),
-    CONSTRAINT fk_falta_validado_por    FOREIGN KEY (id_validado_por)   REFERENCES usuario(id)
+    CONSTRAINT fk_falta_validado_por    FOREIGN KEY (id_validado_por)   REFERENCES tutor_centro(id_usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -281,9 +282,10 @@ CREATE TABLE IF NOT EXISTS valoracion (
     bloqueada               BOOLEAN         NOT NULL DEFAULT FALSE,
     UNIQUE KEY uq_valoracion_alumno_evaluador (id_alumno, tipo_evaluador),
     PRIMARY KEY (id),
-    CONSTRAINT fk_valoracion_alumno    FOREIGN KEY (id_alumno)   REFERENCES alumno(id),
-    CONSTRAINT fk_valoracion_evaluador FOREIGN KEY (id_evaluador) REFERENCES usuario(id)
+    CONSTRAINT fk_valoracion_alumno     FOREIGN KEY (id_alumno)    REFERENCES alumno(id_usuario),
+    CONSTRAINT fk_valoracion_evaluador  FOREIGN KEY (id_evaluador) REFERENCES usuario(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- -----------------------------------------------------
 -- TABLA: notificacion
@@ -292,7 +294,7 @@ CREATE TABLE IF NOT EXISTS valoracion (
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS notificacion (
     id                      BIGINT          NOT NULL AUTO_INCREMENT,
-    id_emisor               BIGINT          NOT NULL,
+    id_emisor               BIGINT,
     id_receptor             BIGINT          NOT NULL,
     tipo                    ENUM('AVISO','ALERTA','RECORDATORIO','MENSAJE','VALIDACION') NOT NULL,
     titulo                  VARCHAR(200)    NOT NULL,
@@ -327,9 +329,9 @@ CREATE TABLE IF NOT EXISTS convenio (
     estado                  ENUM('BORRADOR','FIRMADO','VIGENTE','FINALIZADO','ANULADO') NOT NULL DEFAULT 'BORRADOR',
     archivo_pdf_url         VARCHAR(500),
     PRIMARY KEY (id),
-    CONSTRAINT fk_convenio_alumno       FOREIGN KEY (id_alumno)       REFERENCES alumno(id),
+    CONSTRAINT fk_convenio_alumno       FOREIGN KEY (id_alumno)       REFERENCES alumno(id_usuario),
     CONSTRAINT fk_convenio_empresa      FOREIGN KEY (id_empresa)      REFERENCES empresa(id),
-    CONSTRAINT fk_convenio_tutor_centro FOREIGN KEY (id_tutor_centro) REFERENCES usuario(id)
+    CONSTRAINT fk_convenio_tutor_centro FOREIGN KEY (id_tutor_centro) REFERENCES tutor_centro(id_usuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -----------------------------------------------------
@@ -376,7 +378,7 @@ CREATE TABLE IF NOT EXISTS log_auditoria (
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS administrador (
     id_usuario  BIGINT  NOT NULL,
-    PRIMARY KEY (id),
+    PRIMARY KEY (id_usuario),
     CONSTRAINT fk_administrador_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

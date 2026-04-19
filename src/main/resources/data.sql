@@ -10,9 +10,8 @@
 -- USUARIOS DE PRUEBA (uno por cada rol)
 -- -----------------------------------------------------
 INSERT IGNORE INTO usuario 
-    (nombre_usuario, email, password_hash, nombre, apellidos, telefono, rol, estado)
+    (nombre_usuario, email, password_hash, nombre, apellidos, telefono, rol, estado, fecha_creacion)
 VALUES
--- Administrador del sistema
 (
     'admin',
     'admin@mentorcore.com',
@@ -21,9 +20,9 @@ VALUES
     'Sistema MentorCore',
     '600000001',
     'ADMIN',
-    'ACTIVO'
+    'ACTIVO',
+    CURRENT_TIMESTAMP
 ),
--- Tutor Centro
 (
     'tutorcentro1',
     'maria.garcia@laLaboral.edu',
@@ -32,9 +31,9 @@ VALUES
     'García López',
     '600000002',
     'TUTOR_CENTRO',
-    'ACTIVO'
+    'ACTIVO',
+    CURRENT_TIMESTAMP
 ),
--- Tutor Empresa
 (
     'tutorempresa1',
     'carlos.perez@empresa.com',
@@ -43,9 +42,9 @@ VALUES
     'Pérez Martínez',
     '600000003',
     'TUTOR_EMPRESA',
-    'ACTIVO'
+    'ACTIVO',
+    CURRENT_TIMESTAMP
 ),
--- Alumno
 (
     'alumno1',
     'lucia.fernandez@alumno.com',
@@ -54,7 +53,8 @@ VALUES
     'Fernández Ruiz',
     '600000004',
     'ALUMNO',
-    'ACTIVO'
+    'ACTIVO',
+    CURRENT_TIMESTAMP
 );
 
 -- Si el usuaio ya existe en la BD, esta sentencia los actualiza

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso denegado | MentorCore</title>
+    <title>Error | MentorCore</title>
     <link rel="stylesheet" th:href="@{/css/mentorcore.css}">
 </head>
 <body>
@@ -15,12 +15,12 @@
                     <div class="mc-auth__body">
                         <header class="mc-auth__brand">
                             <img class="img" th:src="@{/img/MentorCore_circular.png}" alt="MentorCore">
-                            <h1 class="mc-auth__title mc-h1">Acceso denegado</h1>
-                            <p class="mc-auth__subtitle">No tienes permisos para acceder a esta página.</p>
+                            <h1 class="mc-auth__title mc-h1">No se pudo completar la solicitud</h1>
+                            <p class="mc-auth__subtitle">Ha ocurrido un problema inesperado.</p>
                         </header>
 
                         <section class="alert alert-danger" aria-live="assertive">
-                            <p class="mb-0">Inténtalo de nuevo con una cuenta autorizada o vuelve al inicio.</p>
+                            <p class="mb-0">Inténtalo de nuevo. Si vuelve a ocurrir, consultaremos el error en el servidor.</p>
                         </section>
 
                         <div class="mc-auth__actions">

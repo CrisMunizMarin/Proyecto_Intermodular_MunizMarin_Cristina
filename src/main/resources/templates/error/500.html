@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error interno | MentorCore</title>
+    <link rel="stylesheet" th:href="@{/css/mentorcore.css}">
+</head>
+<body>
+<main class="mc-auth">
+    <div class="container mc-auth__container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <section class="card mc-auth__card">
+                    <div class="mc-auth__body">
+                        <header class="mc-auth__brand">
+                            <img class="img" th:src="@{/img/MentorCore_circular.png}" alt="MentorCore">
+                            <h1 class="mc-auth__title mc-h1">Se ha producido un error</h1>
+                            <p class="mc-auth__subtitle">No se pudo completar la operación en este momento.</p>
+                        </header>
+
+                        <section class="alert alert-danger" aria-live="assertive">
+                            <p class="mb-0">Inténtalo de nuevo en unos instantes. Si el problema continúa, revisaremos el sistema.</p>
+                        </section>
+
+                        <div class="mc-auth__actions">
+                            <a class="btn btn-mc-primary btn-lg fw-bold" th:href="@{/}">Volver al inicio</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

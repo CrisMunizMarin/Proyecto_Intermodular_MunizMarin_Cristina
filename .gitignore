@@ -6,7 +6,8 @@
 # SEGURIDAD: archivos con contraseñas y credenciales
 # -----------------------------------------------
 src/main/resources/application.properties
-src/main/resources/application-dev.properties
+src/main/resources/application-*.properties
+!src/main/resources/application.properties.example
 
 # -----------------------------------------------
 # MAVEN: archivos generados al compilar
@@ -28,8 +29,7 @@ target/
 # UPLOADS: archivos subidos por los usuarios
 # nunca deben estar en el repositorio
 # -----------------------------------------------
-src/main/resources/static/uploads/documentos/
-src/main/resources/static/uploads/justificantes/
+src/main/resources/static/uploads/
 
 # -----------------------------------------------
 # SISTEMAS OPERATIVOS
