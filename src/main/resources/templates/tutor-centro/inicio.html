@@ -74,7 +74,7 @@
                             </thead>
                             <tbody>
                             <tr th:each="tarea : ${tareasPendientes}">
-                                <td th:text="${tarea.alumno != null ? tarea.alumno.nombreCompleto : 'Alumno'}">Alumno</td>
+                                <td th:text="${tarea.nombreAlumno}">Alumno</td>
                                 <td th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</td>
                                 <td th:text="${tarea.horasDedicadas}">0</td>
                                 <td th:text="${tarea.areaActividad != null and !#strings.isEmpty(tarea.areaActividad) ? tarea.areaActividad : 'Sin especificar'}">

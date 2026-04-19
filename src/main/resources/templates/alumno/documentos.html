@@ -110,15 +110,15 @@
                                     01/01/2026 09:00
                                 </td>
                                 <td>
-                                    <span th:if="${documento.estadoValidacion.name() == 'PENDIENTE'}"
+                                    <span th:if="${documento.estado.name() == 'PENDIENTE'}"
                                           class="badge badge-pendiente">
                                         Pendiente
                                     </span>
-                                    <span th:if="${documento.estadoValidacion.name() == 'VALIDADO'}"
+                                    <span th:if="${documento.estado.name() == 'VALIDADO'}"
                                           class="badge badge-validado">
                                         Validado
                                     </span>
-                                    <span th:if="${documento.estadoValidacion.name() == 'RECHAZADO'}"
+                                    <span th:if="${documento.estado.name() == 'RECHAZADO'}"
                                           class="badge badge-rechazado">
                                         Rechazado
                                     </span>

@@ -35,6 +35,11 @@ public class TareaService {
         return tareaRepository.findById(id);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<Tarea> findDetalleById(Long id) {
+        return tareaRepository.findDetalleById(id);
+    }
+
     /**
      * Devuelve todas las tareas de un alumno ordenadas por fecha desc. RF2
      */
@@ -277,4 +282,3 @@ public class TareaService {
                         "Tarea no encontrada con id: " + id));
     }
 }
-

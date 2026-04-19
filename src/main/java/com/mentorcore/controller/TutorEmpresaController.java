@@ -18,6 +18,7 @@ import com.mentorcore.service.TareaService;
 import com.mentorcore.service.TutorEmpresaService;
 import com.mentorcore.service.UsuarioService;
 import com.mentorcore.service.ValoracionService;
+import com.mentorcore.util.ControllerMessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -233,7 +234,13 @@ public class TutorEmpresaController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Falta registrada correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al registrar falta desde tutor de empresa",
+                    e,
+                    "No se pudo registrar la falta. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-empresa/faltas";
@@ -272,7 +279,13 @@ public class TutorEmpresaController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Valoración emitida correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al emitir valoracion del tutor de empresa",
+                    e,
+                    "No se pudo emitir la valoración. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-empresa/valoracion";
@@ -287,7 +300,13 @@ public class TutorEmpresaController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Valoración bloqueada correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al bloquear valoracion del tutor de empresa",
+                    e,
+                    "No se pudo bloquear la valoración. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-empresa/valoracion";
@@ -327,4 +346,3 @@ public class TutorEmpresaController {
     }
 
 }
-

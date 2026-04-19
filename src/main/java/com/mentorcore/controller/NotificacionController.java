@@ -5,6 +5,7 @@ import com.mentorcore.model.Usuario;
 import com.mentorcore.model.enums.RolEnum;
 import com.mentorcore.service.NotificacionService;
 import com.mentorcore.service.UsuarioService;
+import com.mentorcore.util.ControllerMessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -48,7 +49,13 @@ public class NotificacionController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Notificación marcada como leída.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al marcar notificacion como leida",
+                    e,
+                    "No se pudo actualizar la notificación. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:" + getRutaNotificaciones(principal);
@@ -63,7 +70,13 @@ public class NotificacionController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Todas las notificaciones han sido marcadas como leídas.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al marcar todas las notificaciones como leidas",
+                    e,
+                    "No se pudieron actualizar las notificaciones. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:" + getRutaNotificaciones(principal);
@@ -94,4 +107,3 @@ public class NotificacionController {
         return "/admin/inicio";
     }
 }
-

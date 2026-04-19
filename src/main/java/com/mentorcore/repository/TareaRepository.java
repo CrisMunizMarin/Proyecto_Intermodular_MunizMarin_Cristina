@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repositorio de acceso a datos para la entidad Tarea.
@@ -26,10 +27,18 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
             Alumno alumno, EstadoValidacionEnum estado);
 
     // Todas las tareas pendientes de los alumnos de un tutor (RF5)
-    @Query("SELECT t FROM Tarea t WHERE t.alumno.tutorCentro.id = :idTutor " +
+    @Query("SELECT t FROM Tarea t " +
+           "JOIN FETCH t.alumno a " +
+           "WHERE a.tutorCentro.id = :idTutor " +
            "AND t.estadoValidacion = 'PENDIENTE' " +
            "ORDER BY t.fechaCreacion ASC")
     List<Tarea> findPendientesByTutorCentro(@Param("idTutor") Long idTutor);
+
+    @Query("SELECT t FROM Tarea t " +
+           "JOIN FETCH t.alumno a " +
+           "LEFT JOIN FETCH a.tutorCentro " +
+           "WHERE t.id = :id")
+    Optional<Tarea> findDetalleById(@Param("id") Long id);
 
     // Tareas de un alumno en un rango de fechas (RF8 - informes)
     @Query("SELECT t FROM Tarea t WHERE t.alumno = :alumno " +

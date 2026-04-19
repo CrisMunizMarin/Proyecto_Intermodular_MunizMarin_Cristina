@@ -35,7 +35,7 @@ public class FaltaAsistenciaService {
 
     @Transactional(readOnly = true)
     public Optional<FaltaAsistencia> findById(Long id) {
-        return faltaAsistenciaRepository.findById(id);
+        return faltaAsistenciaRepository.findDetalleById(id);
     }
 
     /**
@@ -213,9 +213,8 @@ public class FaltaAsistenciaService {
     // HELPERS PRIVADOS
 
     private FaltaAsistencia getOrThrow(Long id) {
-        return faltaAsistenciaRepository.findById(id)
+        return faltaAsistenciaRepository.findDetalleById(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Falta de asistencia no encontrada con id: " + id));
     }
 }
-

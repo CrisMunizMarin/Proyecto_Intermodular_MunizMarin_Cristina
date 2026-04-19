@@ -9,6 +9,7 @@ import com.mentorcore.service.AsignacionService;
 import com.mentorcore.service.FaltaAsistenciaService;
 import com.mentorcore.service.NotificacionService;
 import com.mentorcore.service.UsuarioService;
+import com.mentorcore.util.ControllerMessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -72,7 +73,13 @@ public class FaltaAsistenciaController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Falta registrada correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al registrar falta de asistencia",
+                    e,
+                    "No se pudo registrar la falta. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-empresa/faltas";
@@ -99,7 +106,13 @@ public class FaltaAsistenciaController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Justificante aprobado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al aprobar justificante de falta",
+                    e,
+                    "No se pudo aprobar el justificante. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/documentos";
@@ -127,7 +140,13 @@ public class FaltaAsistenciaController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Justificante denegado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al denegar justificante de falta",
+                    e,
+                    "No se pudo denegar el justificante. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/documentos";
@@ -158,4 +177,3 @@ public class FaltaAsistenciaController {
                         "El alumno no está asignado a este tutor de empresa"));
     }
 }
-

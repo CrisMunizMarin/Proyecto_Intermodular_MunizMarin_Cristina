@@ -8,6 +8,7 @@ import com.mentorcore.model.enums.TipoPeriodoEnum;
 import com.mentorcore.service.CursoAcademicoService;
 import com.mentorcore.service.PeriodoFormacionService;
 import com.mentorcore.service.UsuarioService;
+import com.mentorcore.util.ControllerMessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -79,7 +80,13 @@ public class PeriodoController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Periodo creado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al crear periodo de formacion",
+                    e,
+                    "No se pudo crear el periodo. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/periodos";
@@ -95,7 +102,13 @@ public class PeriodoController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Periodo activado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al activar periodo de formacion",
+                    e,
+                    "No se pudo activar el periodo. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/periodos";
@@ -111,7 +124,13 @@ public class PeriodoController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Periodo cerrado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al cerrar periodo de formacion",
+                    e,
+                    "No se pudo cerrar el periodo. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/periodos";
@@ -133,4 +152,3 @@ public class PeriodoController {
         return usuario;
     }
 }
-

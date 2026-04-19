@@ -18,6 +18,12 @@ import java.util.Optional;
 @Repository
 public interface AlumnoRepository extends JpaRepository<Alumno, Long> {
 
+    @Query("SELECT a FROM Alumno a " +
+           "LEFT JOIN FETCH a.tutorCentro " +
+           "LEFT JOIN FETCH a.cursoAcademico " +
+           "WHERE a.id = :id")
+    Optional<Alumno> findDetalleById(@Param("id") Long id);
+
     // Buscar por tutor centro asignado (RF4)
     List<Alumno> findByTutorCentro(TutorCentro tutorCentro);
 
@@ -34,7 +40,11 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Long> {
     List<Alumno> findByCursoAcademico(CursoAcademico cursoAcademico);
 
     // Buscar por nombre de usuario heredado de Usuario (RF1)
-    Optional<Alumno> findByNombreUsuario(String nombreUsuario);
+    @Query("SELECT a FROM Alumno a " +
+           "LEFT JOIN FETCH a.tutorCentro " +
+           "LEFT JOIN FETCH a.cursoAcademico " +
+           "WHERE a.nombreUsuario = :nombreUsuario")
+    Optional<Alumno> findByNombreUsuario(@Param("nombreUsuario") String nombreUsuario);
 
     // Comprobar existencia por DNI (RNF5)
     boolean existsByDni(String dni);

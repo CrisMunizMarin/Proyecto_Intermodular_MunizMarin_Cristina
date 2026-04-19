@@ -3,7 +3,6 @@ package com.mentorcore.model;
 import com.mentorcore.model.enums.TipoNotificacionEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,17 +27,16 @@ public class Notificacion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_emisor", nullable = false)
+    @JoinColumn(name = "id_emisor")
     private Usuario emisor;
 
-    @NotNull
+    @jakarta.validation.constraints.NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_receptor", nullable = false)
     private Usuario receptor;
 
-    @NotNull
+    @jakarta.validation.constraints.NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false)
     private TipoNotificacionEnum tipo;

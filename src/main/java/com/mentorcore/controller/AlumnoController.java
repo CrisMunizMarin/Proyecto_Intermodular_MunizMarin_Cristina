@@ -16,6 +16,7 @@ import com.mentorcore.service.TareaService;
 import com.mentorcore.service.ValoracionService;
 import com.mentorcore.service.EmailService;
 import com.mentorcore.service.TipoDocumentoService;
+import com.mentorcore.util.ControllerMessageUtil;
 import com.mentorcore.util.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -193,7 +194,13 @@ public class AlumnoController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Documento subido correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al subir documento del alumno",
+                    e,
+                    "No se pudo subir el documento. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/alumno/documentos";
@@ -287,7 +294,13 @@ public class AlumnoController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Justificante adjuntado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al adjuntar justificante de falta",
+                    e,
+                    "No se pudo adjuntar el justificante. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/alumno/faltas";
@@ -366,27 +379,39 @@ public class AlumnoController {
             tarea.setAreaActividad(areaActividad);
 
             tareaService.registrar(tarea);
+            String mensajeExito = "Tarea registrada correctamente.";
 
             if (alumno.getTutorCentro() != null) {
-                notificacionService.notificarNuevaTarea(
-                        alumno.getTutorCentro(),
-                        alumno.getNombreCompleto()
-                );
-
-                if (alumno.getTutorCentro().getEmail() != null &&
-                        !alumno.getTutorCentro().getEmail().isBlank()) {
-                    emailService.notificarNuevaTarea(
-                            alumno.getTutorCentro().getEmail(),
-                            alumno.getNombreCompleto(),
-                            fechaRegistro
+                try {
+                    notificacionService.notificarNuevaTarea(
+                            alumno.getTutorCentro(),
+                            alumno.getNombreCompleto()
                     );
+
+                    if (alumno.getTutorCentro().getEmail() != null &&
+                            !alumno.getTutorCentro().getEmail().isBlank()) {
+                        emailService.notificarNuevaTarea(
+                                alumno.getTutorCentro().getEmail(),
+                                alumno.getNombreCompleto(),
+                                fechaRegistro
+                        );
+                    }
+                } catch (Exception e) {
+                    log.warn("La tarea se registró, pero falló la notificación al tutor centro para el alumno '{}': {}",
+                            alumno.getNombreUsuario(), e.getMessage(), e);
+                    mensajeExito = "Tarea registrada correctamente. La notificación al tutor se enviará más tarde.";
                 }
             }
 
-            redirectAttributes.addFlashAttribute("successMsg",
-                    "Tarea registrada correctamente.");
+            redirectAttributes.addFlashAttribute("successMsg", mensajeExito);
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al registrar tarea del alumno",
+                    e,
+                    "No se pudo registrar la tarea. Inténtalo de nuevo."
+            );
             return "redirect:/alumno/tareas/nueva";
         }
 
@@ -412,4 +437,3 @@ public class AlumnoController {
                 notificacionService.contarNoLeidas(alumno));
     }
 }
-

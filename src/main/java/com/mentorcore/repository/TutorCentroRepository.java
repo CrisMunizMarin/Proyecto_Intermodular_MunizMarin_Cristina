@@ -29,6 +29,9 @@ public interface TutorCentroRepository extends JpaRepository<TutorCentro, Long> 
     // Buscar tutor por email (para login y gestión)
     Optional<TutorCentro> findByEmail(String email);
 
+    // Buscar tutor por nombre de usuario heredado de Usuario
+    Optional<TutorCentro> findByNombreUsuario(String nombreUsuario);
+
     // Búsqueda por nombre o apellidos (RF15)
     @Query("SELECT t FROM TutorCentro t WHERE " +
            "LOWER(t.nombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +

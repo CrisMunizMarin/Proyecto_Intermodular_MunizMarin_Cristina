@@ -40,8 +40,8 @@
                                 Valoración
                             </h2>
                             <span class="badge badge-validado"
-                                  th:if="${valoracion.resultadoFinal != null}"
-                                  th:text="${valoracion.resultadoFinal}">
+                                  th:if="${valoracion.resultado != null}"
+                                  th:text="${valoracion.resultado}">
                                 APTO
                             </span>
                         </div>
@@ -52,28 +52,28 @@
                             <div class="col-12 col-md-6 col-xl-3">
                                 <div class="border rounded p-3 h-100 text-center">
                                     <p class="mc-caption text-muted mb-2">Actitud</p>
-                                    <p class="h3 mb-0" th:text="${valoracion.puntuacionActitud}">0</p>
+                                    <p class="h3 mb-0" th:text="${valoracion.puntacionActitud}">0</p>
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-6 col-xl-3">
                                 <div class="border rounded p-3 h-100 text-center">
                                     <p class="mc-caption text-muted mb-2">Competencias</p>
-                                    <p class="h3 mb-0" th:text="${valoracion.puntuacionCompetencias}">0</p>
+                                    <p class="h3 mb-0" th:text="${valoracion.puntacionCompetencias}">0</p>
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-6 col-xl-3">
                                 <div class="border rounded p-3 h-100 text-center">
                                     <p class="mc-caption text-muted mb-2">Integración</p>
-                                    <p class="h3 mb-0" th:text="${valoracion.puntuacionIntegracion}">0</p>
+                                    <p class="h3 mb-0" th:text="${valoracion.puntacionIntegracion}">0</p>
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-6 col-xl-3">
                                 <div class="border rounded p-3 h-100 text-center">
                                     <p class="mc-caption text-muted mb-2">Iniciativa</p>
-                                    <p class="h3 mb-0" th:text="${valoracion.puntuacionIniciativa}">0</p>
+                                    <p class="h3 mb-0" th:text="${valoracion.puntacionIniciativa}">0</p>
                                 </div>
                             </div>
                         </div>

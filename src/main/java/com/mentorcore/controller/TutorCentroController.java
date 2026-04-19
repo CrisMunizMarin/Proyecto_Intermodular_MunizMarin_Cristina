@@ -9,6 +9,7 @@ import com.mentorcore.model.Valoracion;
 import com.mentorcore.model.FaltaAsistencia;
 import com.mentorcore.model.enums.TipoEvaluadorEnum;
 import com.mentorcore.model.enums.ResultadoEnum;
+import com.mentorcore.model.enums.EstadoFaltaEnum;
 import com.mentorcore.service.AlumnoService;
 import com.mentorcore.service.AsignacionService;
 import com.mentorcore.service.DocumentoService;
@@ -16,9 +17,10 @@ import com.mentorcore.service.EmpresaService;
 import com.mentorcore.service.InformeService;
 import com.mentorcore.service.NotificacionService;
 import com.mentorcore.service.TareaService;
-import com.mentorcore.service.UsuarioService;
+import com.mentorcore.service.TutorCentroService;
 import com.mentorcore.service.ValoracionService;
 import com.mentorcore.service.FaltaAsistenciaService;
+import com.mentorcore.util.ControllerMessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ContentDisposition;
@@ -37,6 +39,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * Controlador del panel del tutor de centro.
@@ -50,11 +54,11 @@ import java.util.List;
 @Slf4j
 public class TutorCentroController {
 
-    private final UsuarioService usuarioService;
     private final AlumnoService alumnoService;
     private final TareaService tareaService;
     private final DocumentoService documentoService;
     private final NotificacionService notificacionService;
+    private final TutorCentroService tutorCentroService;
     private final ValoracionService valoracionService;
     private final InformeService informeService;
     private final EmpresaService empresaService;
@@ -71,11 +75,12 @@ public class TutorCentroController {
         cargarDatosBase(model, tutor);
 
         List<Alumno> alumnos = alumnoService.findByTutorCentro(tutor);
+        List<TareaPendienteView> tareasPendientes = construirTareasPendientesView(
+                tareaService.findPendientesByTutorCentro(tutor.getId()));
 
         model.addAttribute("seccionActiva", "inicio");
         model.addAttribute("totalAlumnos", alumnos.size());
-        model.addAttribute("tareasPendientes",
-                tareaService.findPendientesByTutorCentro(tutor.getId()));
+        model.addAttribute("tareasPendientes", tareasPendientes);
         model.addAttribute("notificacionesNoLeidas",
                 notificacionService.contarNoLeidas(tutor));
 
@@ -137,7 +142,7 @@ public class TutorCentroController {
 
         model.addAttribute("seccionActiva", "tareas");
         model.addAttribute("tareasPendientes",
-                tareaService.findPendientesByTutorCentro(tutor.getId()));
+                construirTareasPendientesView(tareaService.findPendientesByTutorCentro(tutor.getId())));
 
         return "tutor-centro/tareas";
     }
@@ -152,13 +157,22 @@ public class TutorCentroController {
 
         List<Alumno> alumnos = alumnoService.findByTutorCentro(tutor);
         List<Documento> documentosPendientes = new ArrayList<>();
+        List<FaltaAsistencia> justificantesPendientes = new ArrayList<>();
 
         for (Alumno alumno : alumnos) {
             documentosPendientes.addAll(documentoService.findPendientesByAlumno(alumno));
         }
 
+        for (FaltaAsistencia falta : faltaAsistenciaService.findByTutorCentro(tutor.getId())) {
+            if (falta.getEstado() == EstadoFaltaEnum.PENDIENTE_REVISION
+                    && falta.getJustificante() != null) {
+                justificantesPendientes.add(falta);
+            }
+        }
+
         model.addAttribute("seccionActiva", "documentos");
         model.addAttribute("documentosPendientes", documentosPendientes);
+        model.addAttribute("justificantesPendientes", justificantesPendientes);
 
         return "tutor-centro/documentos";
     }
@@ -293,7 +307,7 @@ public class TutorCentroController {
                                RedirectAttributes redirectAttributes) {
         try {
             TutorCentro tutor = getTutorCentroAutenticado(principal);
-            Tarea tarea = tareaService.findById(id)
+            Tarea tarea = tareaService.findDetalleById(id)
                     .orElseThrow(() -> new RuntimeException(
                             "Tarea no encontrada con id: " + id));
 
@@ -309,7 +323,13 @@ public class TutorCentroController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Tarea validada correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al validar tarea",
+                    e,
+                    "No se pudo validar la tarea. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/tareas";
@@ -324,7 +344,7 @@ public class TutorCentroController {
                                 RedirectAttributes redirectAttributes) {
         try {
             TutorCentro tutor = getTutorCentroAutenticado(principal);
-            Tarea tarea = tareaService.findById(id)
+            Tarea tarea = tareaService.findDetalleById(id)
                     .orElseThrow(() -> new RuntimeException(
                             "Tarea no encontrada con id: " + id));
 
@@ -340,7 +360,13 @@ public class TutorCentroController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Tarea rechazada correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al rechazar tarea",
+                    e,
+                    "No se pudo rechazar la tarea. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/tareas";
@@ -354,7 +380,7 @@ public class TutorCentroController {
                                               RedirectAttributes redirectAttributes) {
         try {
             TutorCentro tutor = getTutorCentroAutenticado(principal);
-            Tarea tarea = tareaService.findById(id)
+            Tarea tarea = tareaService.findDetalleById(id)
                     .orElseThrow(() -> new RuntimeException(
                             "Tarea no encontrada con id: " + id));
 
@@ -370,7 +396,13 @@ public class TutorCentroController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "La tarea se ha devuelto para revisión.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al devolver tarea para revision",
+                    e,
+                    "No se pudo revisar la tarea. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/tareas";
@@ -398,7 +430,13 @@ public class TutorCentroController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Documento validado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al validar documento",
+                    e,
+                    "No se pudo validar el documento. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/documentos";
@@ -426,7 +464,13 @@ public class TutorCentroController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Documento rechazado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al rechazar documento",
+                    e,
+                    "No se pudo rechazar el documento. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/documentos";
@@ -466,7 +510,13 @@ public class TutorCentroController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Valoración emitida correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al emitir valoracion del tutor de centro",
+                    e,
+                    "No se pudo emitir la valoración. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/valoracion";
@@ -482,7 +532,13 @@ public class TutorCentroController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Valoración bloqueada correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al bloquear valoracion del tutor de centro",
+                    e,
+                    "No se pudo bloquear la valoración. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/valoracion";
@@ -511,7 +567,13 @@ public class TutorCentroController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Justificante aprobado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al aprobar justificante",
+                    e,
+                    "No se pudo aprobar el justificante. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/documentos";
@@ -541,7 +603,13 @@ public class TutorCentroController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Justificante denegado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al denegar justificante",
+                    e,
+                    "No se pudo denegar el justificante. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/tutor-centro/documentos";
@@ -556,9 +624,7 @@ public class TutorCentroController {
             throw new RuntimeException("No hay usuario autenticado");
         }
 
-        return usuarioService.findByNombreUsuario(principal.getName())
-                .filter(usuario -> usuario instanceof TutorCentro)
-                .map(usuario -> (TutorCentro) usuario)
+        return tutorCentroService.findByNombreUsuario(principal.getName())
                 .orElseThrow(() -> new RuntimeException(
                         "Tutor de centro no encontrado para el usuario autenticado: "
                                 + principal.getName()));
@@ -581,5 +647,35 @@ public class TutorCentroController {
         model.addAttribute("tutorCentroActual", tutor);
         model.addAttribute("notificacionesNoLeidas",
                 notificacionService.contarNoLeidas(tutor));
+    }
+
+    private List<TareaPendienteView> construirTareasPendientesView(List<Tarea> tareas) {
+        List<TareaPendienteView> resultado = new ArrayList<>();
+
+        for (Tarea tarea : tareas) {
+            Alumno alumno = tarea.getAlumno();
+            String nombreAlumno = alumno != null ? alumno.getNombreCompleto() : "Alumno";
+
+            resultado.add(new TareaPendienteView(
+                    tarea.getId(),
+                    nombreAlumno,
+                    tarea.getFechaRegistro(),
+                    tarea.getHorasDedicadas(),
+                    tarea.getAreaActividad(),
+                    tarea.getDescripcion()
+            ));
+        }
+
+        return resultado;
+    }
+
+    private record TareaPendienteView(
+            Long id,
+            String nombreAlumno,
+            LocalDate fechaRegistro,
+            BigDecimal horasDedicadas,
+            String areaActividad,
+            String descripcion
+    ) {
     }
 }

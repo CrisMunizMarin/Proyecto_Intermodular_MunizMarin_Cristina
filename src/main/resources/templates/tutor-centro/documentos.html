@@ -27,6 +27,26 @@
         <p class="mb-0" th:text="${errorMsg}">Se ha producido un error.</p>
     </section>
 
+    <section class="row g-4 mb-4" aria-label="Resumen de revisión">
+        <div class="col-12 col-md-6">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Documentos pendientes</p>
+                    <h2 class="mc-h2 mb-0" th:text="${documentosPendientes != null ? #lists.size(documentosPendientes) : 0}">0</h2>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Justificantes pendientes</p>
+                    <h2 class="mc-h2 mb-0" th:text="${justificantesPendientes != null ? #lists.size(justificantesPendientes) : 0}">0</h2>
+                </div>
+            </article>
+        </div>
+    </section>
+
     <section th:if="${documentosPendientes == null or #lists.isEmpty(documentosPendientes)}" class="card">
         <div class="card-body">
             <p class="mb-0 text-muted">No hay documentos pendientes de revisión.</p>
@@ -116,6 +136,92 @@
                                         <button type="submit" class="btn btn-danger w-100">
                                             <i class="fas fa-xmark me-2" aria-hidden="true"></i>
                                             Rechazar
+                                        </button>
+                                    </form>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section th:if="${justificantesPendientes != null and !#lists.isEmpty(justificantesPendientes)}"
+             aria-labelledby="listado-justificantes-pendientes"
+             class="mt-4">
+        <h2 id="listado-justificantes-pendientes" class="h4 mb-3">Justificantes de faltas pendientes</h2>
+
+        <div class="row g-4">
+            <div class="col-12" th:each="falta : ${justificantesPendientes}">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                            <div class="flex-grow-1">
+                                <header class="mb-3">
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                        <h3 class="h5 mb-0">
+                                            Justificante de falta
+                                        </h3>
+                                        <span class="badge"
+                                              style="background-color: var(--mc-rosa-suave); color: var(--mc-texto);">
+                                            Pendiente de revisión
+                                        </span>
+                                    </div>
+
+                                    <p class="text-muted mb-0">
+                                        Alumno:
+                                        <span th:text="${falta.alumno != null ? falta.alumno.nombreCompleto : 'Alumno'}">Alumno</span>
+                                        · Fecha de falta:
+                                        <span th:text="${#temporals.format(falta.fechaFalta, 'dd/MM/yyyy')}">01/01/2026</span>
+                                        · Archivo:
+                                        <span th:text="${falta.justificante != null ? falta.justificante.nombreArchivo : 'justificante.pdf'}">justificante.pdf</span>
+                                    </p>
+                                </header>
+
+                                <section>
+                                    <h4 class="h6">Observación registrada</h4>
+                                    <p class="mb-0 text-muted"
+                                       th:text="${falta.observacion != null and !#strings.isEmpty(falta.observacion) ? falta.observacion : 'Sin observaciones adicionales.'}">
+                                        Sin observaciones adicionales.
+                                    </p>
+                                </section>
+                            </div>
+
+                            <aside class="col-12 col-xl-4">
+                                <div class="border rounded p-3 h-100">
+                                    <h4 class="h6 mb-3">Acciones sobre la falta</h4>
+
+                                    <form th:action="@{/tutor-centro/faltas/{idFalta}/aprobar(idFalta=${falta.id})}"
+                                          method="post"
+                                          class="mb-3">
+                                        <input type="hidden"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}">
+                                        <button type="submit" class="btn btn-mc-secondary w-100">
+                                            <i class="fas fa-check me-2" aria-hidden="true"></i>
+                                            Aprobar justificante
+                                        </button>
+                                    </form>
+
+                                    <form th:action="@{/tutor-centro/faltas/{idFalta}/denegar(idFalta=${falta.id})}"
+                                          method="post">
+                                        <input type="hidden"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}">
+                                        <div class="mb-2">
+                                            <label th:for="'motivo-falta-denegar-' + ${falta.id}" class="form-label">
+                                                Motivo de denegación
+                                            </label>
+                                            <textarea th:id="'motivo-falta-denegar-' + ${falta.id}"
+                                                      name="motivo"
+                                                      class="form-control"
+                                                      rows="2"
+                                                      placeholder="Explica por qué no se acepta el justificante"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-danger w-100">
+                                            <i class="fas fa-xmark me-2" aria-hidden="true"></i>
+                                            Denegar justificante
                                         </button>
                                     </form>
                                 </div>

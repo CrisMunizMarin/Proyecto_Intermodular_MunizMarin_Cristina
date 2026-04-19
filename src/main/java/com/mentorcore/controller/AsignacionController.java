@@ -15,6 +15,7 @@ import com.mentorcore.service.NotificacionService;
 import com.mentorcore.service.PeriodoFormacionService;
 import com.mentorcore.service.TutorEmpresaService;
 import com.mentorcore.service.UsuarioService;
+import com.mentorcore.util.ControllerMessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -94,7 +95,13 @@ public class AsignacionController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Alumno reasignado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al reasignar alumno",
+                    e,
+                    "No se pudo completar la reasignación. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/admin/asignaciones";
@@ -124,7 +131,13 @@ public class AsignacionController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Asignación finalizada correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al finalizar asignacion",
+                    e,
+                    "No se pudo finalizar la asignación. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/admin/asignaciones";
@@ -150,4 +163,3 @@ public class AsignacionController {
         throw new RuntimeException("No tienes permisos para gestionar este alumno");
     }
 }
-

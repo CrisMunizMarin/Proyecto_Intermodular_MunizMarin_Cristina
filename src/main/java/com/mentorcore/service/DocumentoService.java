@@ -32,7 +32,7 @@ public class DocumentoService {
 
     @Transactional(readOnly = true)
     public Optional<Documento> findById(Long id) {
-        return documentoRepository.findById(id);
+        return documentoRepository.findDetalleById(id);
     }
 
     @Transactional(readOnly = true)
@@ -157,9 +157,8 @@ public class DocumentoService {
     // HELPERS PRIVADOS
 
     private Documento getOrThrow(Long id) {
-        return documentoRepository.findById(id)
+        return documentoRepository.findDetalleById(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Documento no encontrado con id: " + id));
     }
 }
-

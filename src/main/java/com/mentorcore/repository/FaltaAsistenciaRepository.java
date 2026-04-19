@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repositorio de acceso a datos para la entidad FaltaAsistencia.
@@ -20,13 +21,22 @@ import java.util.List;
 public interface FaltaAsistenciaRepository extends JpaRepository<FaltaAsistencia, Long> {
 
     // Todas las faltas de un alumno (RF22)
-    List<FaltaAsistencia> findByAlumnoOrderByFechaFaltaDesc(Alumno alumno);
+    @Query("SELECT f FROM FaltaAsistencia f " +
+           "LEFT JOIN FETCH f.justificante " +
+           "WHERE f.alumno = :alumno " +
+           "ORDER BY f.fechaFalta DESC")
+    List<FaltaAsistencia> findByAlumnoOrderByFechaFaltaDesc(@Param("alumno") Alumno alumno);
 
     // Faltas por tipo (RF19)
     List<FaltaAsistencia> findByAlumnoAndTipo(Alumno alumno, TipoFaltaEnum tipo);
 
     // Faltas por estado (RF22)
-    List<FaltaAsistencia> findByAlumnoAndEstado(Alumno alumno, EstadoFaltaEnum estado);
+    @Query("SELECT f FROM FaltaAsistencia f " +
+           "LEFT JOIN FETCH f.justificante " +
+           "WHERE f.alumno = :alumno AND f.estado = :estado " +
+           "ORDER BY f.fechaFalta DESC")
+    List<FaltaAsistencia> findByAlumnoAndEstado(@Param("alumno") Alumno alumno,
+                                                @Param("estado") EstadoFaltaEnum estado);
 
     // Verificar falta duplicada en una fecha (RF19 - máximo 1 por día)
     boolean existsByAlumnoAndFechaFalta(Alumno alumno, LocalDate fecha);
@@ -35,8 +45,18 @@ public interface FaltaAsistenciaRepository extends JpaRepository<FaltaAsistencia
     long countByAlumnoAndTipo(Alumno alumno, TipoFaltaEnum tipo);
 
     // Faltas de todos los alumnos de un tutor centro (RF4)
-    @Query("SELECT f FROM FaltaAsistencia f WHERE " +
-           "f.alumno.tutorCentro.id = :idTutor " +
+    @Query("SELECT f FROM FaltaAsistencia f " +
+           "JOIN FETCH f.alumno a " +
+           "LEFT JOIN FETCH a.tutorCentro " +
+           "LEFT JOIN FETCH f.justificante " +
+           "WHERE a.tutorCentro.id = :idTutor " +
            "ORDER BY f.fechaFalta DESC")
     List<FaltaAsistencia> findByTutorCentro(@Param("idTutor") Long idTutor);
+
+    @Query("SELECT f FROM FaltaAsistencia f " +
+           "JOIN FETCH f.alumno a " +
+           "LEFT JOIN FETCH a.tutorCentro " +
+           "LEFT JOIN FETCH f.justificante " +
+           "WHERE f.id = :id")
+    Optional<FaltaAsistencia> findDetalleById(@Param("id") Long id);
 }

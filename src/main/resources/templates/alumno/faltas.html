@@ -84,25 +84,20 @@
                                             TIPO
                                         </span>
 
-                                        <span th:if="${falta.estadoJustificacion.name() == 'PENDIENTE_JUSTIFICANTE'}"
-                                              class="badge badge-pendiente">
-                                            Pendiente de justificar
+                                        <span th:if="${falta.estado.name() == 'INJUSTIFICADA'}"
+                                              class="badge badge-rechazado">
+                                            Injustificada
                                         </span>
 
-                                        <span th:if="${falta.estadoJustificacion.name() == 'PENDIENTE_REVISION'}"
+                                        <span th:if="${falta.estado.name() == 'PENDIENTE_REVISION'}"
                                               class="badge"
                                               style="background-color: var(--mc-rosa-suave); color: var(--mc-texto);">
                                             Pendiente de revisión
                                         </span>
 
-                                        <span th:if="${falta.estadoJustificacion.name() == 'JUSTIFICADA'}"
+                                        <span th:if="${falta.estado.name() == 'JUSTIFICADA'}"
                                               class="badge badge-justificada">
                                             Justificada
-                                        </span>
-
-                                        <span th:if="${falta.estadoJustificacion.name() == 'NO_JUSTIFICADA'}"
-                                              class="badge badge-rechazado">
-                                            No justificada
                                         </span>
                                     </div>
 
@@ -112,24 +107,17 @@
                                     </p>
                                 </header>
 
-                                <section th:if="${falta.documentoJustificante != null}" class="mb-3">
+                                <section th:if="${falta.justificante != null}" class="mb-3">
                                     <h4 class="h6">Justificante adjuntado</h4>
                                     <p class="mb-0 text-muted"
-                                       th:text="${falta.documentoJustificante.nombreArchivo}">
+                                       th:text="${falta.justificante.nombreArchivo}">
                                         justificante.pdf
-                                    </p>
-                                </section>
-
-                                <section th:if="${falta.motivoDenegacion != null and !#strings.isEmpty(falta.motivoDenegacion)}">
-                                    <h4 class="h6">Motivo de denegación</h4>
-                                    <p class="mb-0 text-muted" th:text="${falta.motivoDenegacion}">
-                                        Motivo de denegación.
                                     </p>
                                 </section>
                             </div>
 
                             <aside class="col-12 col-xl-4"
-                                   th:if="${falta.estadoJustificacion.name() == 'PENDIENTE_JUSTIFICANTE' or falta.estadoJustificacion.name() == 'NO_JUSTIFICADA'}">
+                                   th:if="${falta.estado.name() == 'INJUSTIFICADA'}">
                                 <div class="border rounded p-3 h-100">
                                     <h4 class="h6 mb-3">Adjuntar justificante</h4>
 

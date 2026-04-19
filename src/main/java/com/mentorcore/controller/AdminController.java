@@ -10,6 +10,7 @@ import com.mentorcore.service.CursoAcademicoService;
 import com.mentorcore.service.EmpresaService;
 import com.mentorcore.service.ParametroSistemaService;
 import com.mentorcore.service.UsuarioService;
+import com.mentorcore.util.ControllerMessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -154,7 +155,13 @@ public class AdminController {
                     "Empresa creada correctamente.");
             return "redirect:/admin/empresas";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al crear empresa",
+                    e,
+                    "No se pudo crear la empresa. Inténtalo de nuevo."
+            );
             return "redirect:/admin/empresas/crear";
         }
     }
@@ -185,7 +192,13 @@ public class AdminController {
                     "Empresa actualizada correctamente.");
             return "redirect:/admin/empresas";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al editar empresa",
+                    e,
+                    "No se pudo actualizar la empresa. Inténtalo de nuevo."
+            );
             return "redirect:/admin/empresas/editar/" + id;
         }
     }
@@ -261,7 +274,13 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("successMsg",
                     "Parámetro actualizado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al actualizar parametro del sistema",
+                    e,
+                    "No se pudo actualizar la configuración. Inténtalo de nuevo."
+            );
         }
 
         return "redirect:/admin/configuracion";
@@ -294,5 +313,4 @@ public class AdminController {
                 .ifPresent(admin -> model.addAttribute("adminActual", admin));
     }
 }
-
 

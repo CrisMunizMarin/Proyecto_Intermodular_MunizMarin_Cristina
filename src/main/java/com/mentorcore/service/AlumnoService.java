@@ -34,7 +34,7 @@ public class AlumnoService {
      */
     @Transactional(readOnly = true)
     public Optional<Alumno> findById(Long id) {
-        return alumnoRepository.findById(id);
+        return alumnoRepository.findDetalleById(id);
     }
 
     /**

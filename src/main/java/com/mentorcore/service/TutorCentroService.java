@@ -55,6 +55,14 @@ public class TutorCentroService {
     }
 
     /**
+     * Busca un tutor de centro por nombre de usuario.
+     */
+    @Transactional(readOnly = true)
+    public Optional<TutorCentro> findByNombreUsuario(String nombreUsuario) {
+        return tutorCentroRepository.findByNombreUsuario(nombreUsuario);
+    }
+
+    /**
      * Busca tutores por departamento. RF13
      */
     @Transactional(readOnly = true)
@@ -134,4 +142,3 @@ public class TutorCentroService {
                         "Tutor de centro no encontrado con id: " + id));
     }
 }
-
