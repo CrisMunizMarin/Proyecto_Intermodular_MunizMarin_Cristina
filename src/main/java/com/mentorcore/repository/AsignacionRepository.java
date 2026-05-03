@@ -20,13 +20,32 @@ import java.util.Optional;
 public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
 
     // Asignación activa de un alumno — debe existir solo una (RF21)
-    Optional<Asignacion> findByAlumnoAndEstado(Alumno alumno, EstadoFeEnum estado);
+    @Query("SELECT a FROM Asignacion a " +
+           "JOIN FETCH a.alumno al " +
+           "LEFT JOIN FETCH al.tutorCentro " +
+           "LEFT JOIN FETCH al.cursoAcademico " +
+           "JOIN FETCH a.empresa " +
+           "JOIN FETCH a.tutorEmpresa " +
+           "LEFT JOIN FETCH a.periodo " +
+           "WHERE a.alumno = :alumno AND a.estado = :estado")
+    Optional<Asignacion> findByAlumnoAndEstado(@Param("alumno") Alumno alumno,
+                                               @Param("estado") EstadoFeEnum estado);
 
     // Historial completo de asignaciones de un alumno (RF21)
     List<Asignacion> findByAlumnoOrderByFechaCreacionDesc(Alumno alumno);
 
     // Alumnos activos asignados a un tutor empresa (RF9)
-    List<Asignacion> findByTutorEmpresaAndEstado(TutorEmpresa tutor, EstadoFeEnum estado);
+    @Query("SELECT a FROM Asignacion a " +
+           "JOIN FETCH a.alumno al " +
+           "LEFT JOIN FETCH al.tutorCentro " +
+           "LEFT JOIN FETCH al.cursoAcademico " +
+           "JOIN FETCH a.empresa " +
+           "JOIN FETCH a.tutorEmpresa te " +
+           "LEFT JOIN FETCH a.periodo " +
+           "WHERE te = :tutor AND a.estado = :estado " +
+           "ORDER BY al.apellidos ASC, al.nombre ASC")
+    List<Asignacion> findByTutorEmpresaAndEstado(@Param("tutor") TutorEmpresa tutor,
+                                                 @Param("estado") EstadoFeEnum estado);
 
     // Verificar si un alumno tiene asignación activa (RF13)
     boolean existsByAlumnoAndEstado(Alumno alumno, EstadoFeEnum estado);

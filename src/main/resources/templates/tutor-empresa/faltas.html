@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Faltas Tutor Empresa',
+        ~{layout/sidebar-tutor-empresa :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Asistencia y seguimiento
+        </p>
+        <h1 class="mc-h1 mb-2">Registro de faltas</h1>
+        <p class="text-muted mb-0">
+            Registra ausencias del alumnado asignado y consulta el estado de los justificantes enviados a revisión.
+        </p>
+    </header>
+
+    <section class="row g-4 mb-4" aria-label="Resumen de faltas">
+        <div class="col-12 col-md-6">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Alumnos activos</p>
+                    <h2 class="mc-h2 mb-0" th:text="${asignaciones != null ? #lists.size(asignaciones) : 0}">0</h2>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-6">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Justificantes en revisión</p>
+                    <h2 class="mc-h2 mb-0" th:text="${faltasPendientesRevision}">0</h2>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section th:if="${successMsg}" class="alert alert-success" aria-live="polite">
+        <p class="mb-0" th:text="${successMsg}">Operación realizada correctamente.</p>
+    </section>
+
+    <section th:if="${errorMsg}" class="alert alert-danger" aria-live="assertive">
+        <p class="mb-0" th:text="${errorMsg}">Se ha producido un error.</p>
+    </section>
+
+    <section th:if="${asignaciones == null or #lists.isEmpty(asignaciones)}" class="card mb-4">
+        <div class="card-body">
+            <p class="mb-0 text-muted">No tienes alumnos activos para registrar faltas.</p>
+        </div>
+    </section>
+
+    <section th:if="${asignaciones != null and !#lists.isEmpty(asignaciones)}" aria-labelledby="formularios-faltas" class="mb-4">
+        <h2 id="formularios-faltas" class="visually-hidden">Formularios de registro de faltas</h2>
+
+        <div class="row g-4">
+            <div class="col-12 col-xl-6" th:each="asignacion : ${asignaciones}">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <header class="mb-3">
+                            <h3 class="h5 mb-1"
+                                th:text="${asignacion.alumno != null ? asignacion.alumno.nombreCompleto : 'Alumno'}">
+                                Alumno
+                            </h3>
+                            <p class="text-muted mb-0">
+                                Empresa:
+                                <span th:text="${asignacion.empresa != null ? asignacion.empresa.nombre : '—'}">—</span>
+                                · Grupo:
+                                <span th:text="${asignacion.alumno != null and asignacion.alumno.grupo != null ? asignacion.alumno.grupo : '—'}">—</span>
+                            </p>
+                        </header>
+
+                        <form th:action="@{/tutor-empresa/faltas/{idAlumno}/registrar(idAlumno=${asignacion.alumno.id})}"
+                              method="post">
+                            <input type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}">
+
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label th:for="'fechaFalta-' + ${asignacion.alumno.id}" class="form-label">Fecha</label>
+                                    <input type="date"
+                                           th:id="'fechaFalta-' + ${asignacion.alumno.id}"
+                                           name="fechaFalta"
+                                           class="form-control"
+                                           required>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label th:for="'tipo-' + ${asignacion.alumno.id}" class="form-label">Tipo</label>
+                                    <select th:id="'tipo-' + ${asignacion.alumno.id}" name="tipo" class="form-select" required>
+                                        <option value="">Selecciona un tipo</option>
+                                        <option value="INJUSTIFICADA">INJUSTIFICADA</option>
+                                        <option value="JUSTIFICADA">JUSTIFICADA</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                    <label th:for="'observacion-' + ${asignacion.alumno.id}" class="form-label">Observación</label>
+                                    <textarea th:id="'observacion-' + ${asignacion.alumno.id}"
+                                              name="observacion"
+                                              class="form-control"
+                                              rows="3"
+                                              placeholder="Añade contexto sobre la ausencia si es necesario"></textarea>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-mc-primary w-100 mt-3">
+                                <i class="fas fa-save me-2" aria-hidden="true"></i>
+                                Registrar falta
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section th:if="${faltasRegistradas != null and !#lists.isEmpty(faltasRegistradas)}" aria-labelledby="historial-faltas">
+        <h2 id="historial-faltas" class="h4 mb-3">Historial reciente de faltas</h2>
+
+        <div class="row g-4">
+            <div class="col-12" th:each="falta : ${faltasRegistradas}">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h3 class="h5 mb-0"
+                                        th:text="${falta.alumno != null ? falta.alumno.nombreCompleto : 'Alumno'}">
+                                        Alumno
+                                    </h3>
+                                    <span class="badge"
+                                          style="background-color: var(--mc-lavanda); color: var(--mc-texto);"
+                                          th:text="${falta.tipo}">
+                                        TIPO
+                                    </span>
+                                    <span class="badge"
+                                          th:classappend="${falta.estado.name() == 'JUSTIFICADA' ? ' badge-validado' : (falta.estado.name() == 'PENDIENTE_REVISION' ? '' : ' badge-rechazado')}"
+                                          th:style="${falta.estado.name() == 'PENDIENTE_REVISION'} ? 'background-color: var(--mc-rosa-suave); color: var(--mc-texto);' : ''"
+                                          th:text="${falta.estado}">
+                                        ESTADO
+                                    </span>
+                                </div>
+
+                                <p class="text-muted mb-2">
+                                    Fecha:
+                                    <span th:text="${#temporals.format(falta.fechaFalta, 'dd/MM/yyyy')}">01/01/2026</span>
+                                    <span th:if="${falta.justificante != null}">
+                                        · Justificante:
+                                        <span th:text="${falta.justificante.nombreArchivo}">justificante.pdf</span>
+                                    </span>
+                                </p>
+
+                                <p class="mb-0"
+                                   th:text="${falta.observacion != null and !#strings.isEmpty(falta.observacion) ? falta.observacion : 'Sin observaciones registradas.'}">
+                                    Sin observaciones registradas.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+</section>
+</html>

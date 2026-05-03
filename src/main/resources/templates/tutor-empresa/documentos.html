@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Documentos Tutor Empresa',
+        ~{layout/sidebar-tutor-empresa :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Expediente documental
+        </p>
+        <h1 class="mc-h1 mb-2">Documentos de alumnos</h1>
+        <p class="text-muted mb-0">
+            Consulta el contexto de los alumnos asignados para preparar la futura revisión o seguimiento documental desde empresa.
+        </p>
+    </header>
+
+    <section th:if="${asignaciones == null or #lists.isEmpty(asignaciones)}" class="card">
+        <div class="card-body">
+            <p class="mb-0 text-muted">No tienes alumnos activos para seguimiento documental.</p>
+        </div>
+    </section>
+
+    <section th:if="${asignaciones != null and !#lists.isEmpty(asignaciones)}" aria-labelledby="listado-documentos-base">
+        <h2 id="listado-documentos-base" class="visually-hidden">Alumnos para seguimiento documental</h2>
+
+        <div class="row g-4">
+            <div class="col-12 col-lg-6" th:each="asignacion : ${asignaciones}">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h5 mb-2"
+                            th:text="${asignacion.alumno != null ? asignacion.alumno.nombreCompleto : 'Alumno'}">
+                            Alumno
+                        </h3>
+
+                        <p class="text-muted mb-3">
+                            Usuario:
+                            <span th:text="${asignacion.alumno != null ? asignacion.alumno.nombreUsuario : 'usuario'}">usuario</span>
+                            · Grupo:
+                            <span th:text="${asignacion.alumno != null and asignacion.alumno.grupo != null ? asignacion.alumno.grupo : '—'}">—</span>
+                        </p>
+
+                        <dl class="row mb-3">
+                            <dt class="col-sm-4">Empresa</dt>
+                            <dd class="col-sm-8" th:text="${asignacion.empresa != null ? asignacion.empresa.nombre : '—'}">—</dd>
+
+                            <dt class="col-sm-4">Tutor centro</dt>
+                            <dd class="col-sm-8"
+                                th:text="${asignacion.alumno != null and asignacion.alumno.tutorCentro != null ? asignacion.alumno.tutorCentro.nombreCompleto : '—'}">
+                                —
+                            </dd>
+
+                            <dt class="col-sm-4">Curso</dt>
+                            <dd class="col-sm-8"
+                                th:text="${asignacion.alumno != null and asignacion.alumno.cursoAcademico != null ? asignacion.alumno.cursoAcademico.nombreCompleto : '—'}">
+                                —
+                            </dd>
+                        </dl>
+
+                        <p class="mb-0 text-muted">
+                            Vista base preparada para definir después qué nivel de acceso documental tendrá exactamente el tutor de empresa.
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+</section>
+</html>

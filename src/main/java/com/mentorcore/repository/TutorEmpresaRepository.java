@@ -26,6 +26,11 @@ public interface TutorEmpresaRepository extends JpaRepository<TutorEmpresa, Long
     // Buscar tutor empresa por email
     Optional<TutorEmpresa> findByEmail(String email);
 
+    @Query("SELECT t FROM TutorEmpresa t " +
+           "LEFT JOIN FETCH t.empresa " +
+           "WHERE t.nombreUsuario = :nombreUsuario")
+    Optional<TutorEmpresa> findByNombreUsuario(@Param("nombreUsuario") String nombreUsuario);
+
     // Búsqueda por nombre o apellidos (RF15)
     @Query("SELECT t FROM TutorEmpresa t WHERE " +
            "LOWER(t.nombre) LIKE LOWER(CONCAT('%', :texto, '%')) OR " +

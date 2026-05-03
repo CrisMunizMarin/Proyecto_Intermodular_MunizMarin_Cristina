@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Detalle de Alumno Tutor Empresa',
+        ~{layout/sidebar-tutor-empresa :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div>
+            <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+                Seguimiento individual
+            </p>
+            <h1 class="mc-h1 mb-2" th:text="${alumno.nombreCompleto}">Alumno</h1>
+            <p class="text-muted mb-0">
+                Resumen operativo del alumno en empresa: asignación activa, tareas, faltas, documentación y valoración.
+            </p>
+        </div>
+
+        <a th:href="@{/tutor-empresa/busqueda-alumno}" class="btn btn-mc-tertiary">
+            <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>
+            Volver al listado
+        </a>
+    </header>
+
+    <section class="row g-4 mb-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Tareas registradas</p>
+                    <h2 class="mc-h2 mb-0" th:text="${#lists.size(tareas)}">0</h2>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Faltas registradas</p>
+                    <h2 class="mc-h2 mb-0" th:text="${#lists.size(faltas)}">0</h2>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Documentos</p>
+                    <h2 class="mc-h2 mb-0" th:text="${#lists.size(documentos)}">0</h2>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Valoraciones</p>
+                    <h2 class="mc-h2 mb-0" th:text="${#lists.size(valoraciones)}">0</h2>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-4">
+            <article class="card h-100">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Ficha del alumno</h2>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Usuario</dt>
+                        <dd class="col-sm-7" th:text="${alumno.nombreUsuario}">usuario</dd>
+
+                        <dt class="col-sm-5">Correo</dt>
+                        <dd class="col-sm-7" th:text="${alumno.email}">correo</dd>
+
+                        <dt class="col-sm-5">Grupo</dt>
+                        <dd class="col-sm-7" th:text="${alumno.grupo != null ? alumno.grupo : '—'}">—</dd>
+
+                        <dt class="col-sm-5">Curso</dt>
+                        <dd class="col-sm-7"
+                            th:text="${alumno.cursoAcademico != null ? alumno.cursoAcademico.nombreCompleto : '—'}">
+                            —
+                        </dd>
+
+                        <dt class="col-sm-5">Tutor centro</dt>
+                        <dd class="col-sm-7"
+                            th:text="${alumno.tutorCentro != null ? alumno.tutorCentro.nombreCompleto : '—'}">
+                            —
+                        </dd>
+
+                        <dt class="col-sm-5">Horas FE</dt>
+                        <dd class="col-sm-7">
+                            <span th:text="${alumno.horasCompletadas}">0</span>
+                            /
+                            <span th:text="${alumno.horasTotalesFe}">400</span>
+                        </dd>
+
+                        <dt class="col-sm-5">Empresa</dt>
+                        <dd class="col-sm-7"
+                            th:text="${asignacionActiva != null and asignacionActiva.empresa != null ? asignacionActiva.empresa.nombre : '—'}">
+                            —
+                        </dd>
+
+                        <dt class="col-sm-5">Inicio FE</dt>
+                        <dd class="col-sm-7"
+                            th:text="${asignacionActiva != null and asignacionActiva.fechaInicio != null ? #temporals.format(asignacionActiva.fechaInicio, 'dd/MM/yyyy') : '—'}">
+                            —
+                        </dd>
+                    </dl>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-xl-8">
+            <article class="card mb-4">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Últimas tareas</h2>
+                </div>
+                <div class="card-body">
+                    <div th:if="${tareas == null or #lists.isEmpty(tareas)}">
+                        <p class="mb-0 text-muted">No hay tareas registradas.</p>
+                    </div>
+                    <div th:if="${tareas != null and !#lists.isEmpty(tareas)}" class="table-responsive">
+                        <table class="table table-hover align-middle table-mc">
+                            <caption class="visually-hidden">Listado de tareas del alumno</caption>
+                            <thead>
+                            <tr>
+                                <th scope="col">Fecha</th>
+                                <th scope="col">Horas</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Comentario tutor centro</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="tarea : ${tareas}">
+                                <td th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</td>
+                                <td th:text="${tarea.horasDedicadas}">0</td>
+                                <td th:text="${tarea.estadoValidacion}">PENDIENTE</td>
+                                <td th:text="${tarea.comentarioTutor != null and !#strings.isEmpty(tarea.comentarioTutor) ? tarea.comentarioTutor : '—'}">—</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card mb-4">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Faltas y justificantes</h2>
+                </div>
+                <div class="card-body">
+                    <div th:if="${faltas == null or #lists.isEmpty(faltas)}">
+                        <p class="mb-0 text-muted">No hay faltas registradas.</p>
+                    </div>
+                    <div th:if="${faltas != null and !#lists.isEmpty(faltas)}" class="table-responsive">
+                        <table class="table table-hover align-middle table-mc">
+                            <caption class="visually-hidden">Listado de faltas del alumno</caption>
+                            <thead>
+                            <tr>
+                                <th scope="col">Fecha</th>
+                                <th scope="col">Tipo</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Justificante</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="falta : ${faltas}">
+                                <td th:text="${#temporals.format(falta.fechaFalta, 'dd/MM/yyyy')}">01/01/2026</td>
+                                <td th:text="${falta.tipo}">INJUSTIFICADA</td>
+                                <td th:text="${falta.estado}">PENDIENTE_REVISION</td>
+                                <td th:text="${falta.justificante != null ? falta.justificante.nombreArchivo : '—'}">—</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Documentación y valoración</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        Documentos registrados:
+                        <strong th:text="${#lists.size(documentos)}">0</strong>
+                    </p>
+                    <p class="mb-0">
+                        Valoraciones emitidas:
+                        <strong th:text="${#lists.size(valoraciones)}">0</strong>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+</html>

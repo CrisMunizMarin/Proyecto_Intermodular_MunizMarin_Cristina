@@ -47,6 +47,11 @@ public class TutorEmpresaService {
         return tutorEmpresaRepository.findByEmail(email);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<TutorEmpresa> findByNombreUsuario(String nombreUsuario) {
+        return tutorEmpresaRepository.findByNombreUsuario(nombreUsuario);
+    }
+
     /**
      * Devuelve todos los tutores pertenecientes a una empresa. RF18
      */
@@ -135,4 +140,3 @@ public class TutorEmpresaService {
                         "Tutor de empresa no encontrado con id: " + id));
     }
 }
-

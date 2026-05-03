@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Alumnos Tutor Empresa',
+        ~{layout/sidebar-tutor-empresa :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Alumnado asignado
+        </p>
+        <h1 class="mc-h1 mb-2">Búsqueda de alumnos</h1>
+        <p class="text-muted mb-0">
+            Filtra rápidamente tu listado de alumnos para consultar su asignación actual y sus datos básicos.
+        </p>
+    </header>
+
+    <section class="card mb-4" aria-labelledby="filtro-alumnos">
+        <div class="card-body">
+            <label for="filtroAlumnoTutorEmpresa" class="form-label" id="filtro-alumnos">Buscar alumno</label>
+            <input type="search"
+                   id="filtroAlumnoTutorEmpresa"
+                   class="form-control"
+                   placeholder="Escribe nombre, apellidos, usuario o empresa"
+                   oninput="filtrarAlumnosTutorEmpresa()">
+        </div>
+    </section>
+
+    <section th:if="${asignaciones == null or #lists.isEmpty(asignaciones)}" class="card">
+        <div class="card-body">
+            <p class="mb-0 text-muted">No tienes alumnos asignados actualmente.</p>
+        </div>
+    </section>
+
+    <section th:if="${asignaciones != null and !#lists.isEmpty(asignaciones)}" aria-labelledby="resultados-alumnos">
+        <h2 id="resultados-alumnos" class="visually-hidden">Resultados de alumnos</h2>
+
+        <div class="row g-4" id="listaAlumnosTutorEmpresa">
+            <div class="col-12 col-lg-6 alumno-item"
+                 th:each="asignacion : ${asignaciones}"
+                 th:attr="data-search=${#strings.toLowerCase(
+                    (asignacion.alumno != null ? asignacion.alumno.nombreCompleto : '') + ' ' +
+                    (asignacion.alumno != null ? asignacion.alumno.nombreUsuario : '') + ' ' +
+                    (asignacion.empresa != null ? asignacion.empresa.nombre : '')
+                 )}">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h5 mb-2"
+                            th:text="${asignacion.alumno != null ? asignacion.alumno.nombreCompleto : 'Alumno'}">
+                            Alumno
+                        </h3>
+
+                        <p class="text-muted mb-3">
+                            Usuario:
+                            <span th:text="${asignacion.alumno != null ? asignacion.alumno.nombreUsuario : 'usuario'}">usuario</span>
+                            · Grupo:
+                            <span th:text="${asignacion.alumno != null and asignacion.alumno.grupo != null ? asignacion.alumno.grupo : '—'}">—</span>
+                        </p>
+
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Empresa</dt>
+                            <dd class="col-sm-8" th:text="${asignacion.empresa != null ? asignacion.empresa.nombre : '—'}">—</dd>
+
+                            <dt class="col-sm-4">Curso</dt>
+                            <dd class="col-sm-8"
+                                th:text="${asignacion.alumno != null and asignacion.alumno.cursoAcademico != null ? asignacion.alumno.cursoAcademico.nombreCompleto : '—'}">
+                                —
+                            </dd>
+
+                            <dt class="col-sm-4">Tutor centro</dt>
+                            <dd class="col-sm-8"
+                                th:text="${asignacion.alumno != null and asignacion.alumno.tutorCentro != null ? asignacion.alumno.tutorCentro.nombreCompleto : '—'}">
+                                —
+                            </dd>
+                        </dl>
+
+                        <a th:href="@{/tutor-empresa/alumnos/{id}(id=${asignacion.alumno.id})}"
+                           class="btn btn-mc-primary mt-3">
+                            <i class="fas fa-arrow-right me-2" aria-hidden="true"></i>
+                            Ver detalle
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <script th:inline="javascript">
+        function filtrarAlumnosTutorEmpresa() {
+            const filtro = document.getElementById('filtroAlumnoTutorEmpresa').value.toLowerCase().trim();
+            const items = document.querySelectorAll('#listaAlumnosTutorEmpresa .alumno-item');
+
+            items.forEach(item => {
+                const texto = item.dataset.search || '';
+                item.style.display = texto.includes(filtro) ? '' : 'none';
+            });
+        }
+    </script>
+</section>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Inicio Tutor Empresa',
+        ~{layout/sidebar-tutor-empresa :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Panel tutor de empresa
+        </p>
+        <h1 class="mc-h1">Seguimiento diario</h1>
+        <p class="text-muted mb-0">
+            Consulta tus alumnos asignados, registra incidencias y mantén al día la evaluación de la formación en empresa.
+        </p>
+    </header>
+
+    <section class="row g-4 mb-4" aria-label="Resumen principal">
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Alumnos asignados</p>
+                    <h2 class="mc-h2 mb-0" th:text="${totalAlumnos}">0</h2>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Empresa</p>
+                    <h2 class="mc-h2 mb-0"
+                        th:text="${tutorEmpresaActual != null and tutorEmpresaActual.empresa != null ? tutorEmpresaActual.empresa.nombre : '—'}">
+                        —
+                    </h2>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Notificaciones sin leer</p>
+                    <h2 class="mc-h2 mb-0" th:text="${notificacionesNoLeidas}">0</h2>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="row g-4">
+        <div class="col-12 col-xl-8">
+            <article class="card h-100">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Alumnos en seguimiento</h2>
+                </div>
+                <div class="card-body">
+                    <div th:if="${asignacionesActivas == null or #lists.isEmpty(asignacionesActivas)}">
+                        <p class="mb-0 text-muted">
+                            No tienes alumnos asignados en este momento.
+                        </p>
+                    </div>
+
+                    <div th:if="${asignacionesActivas != null and !#lists.isEmpty(asignacionesActivas)}" class="table-responsive">
+                        <table class="table table-hover align-middle table-mc">
+                            <caption class="visually-hidden">Alumnos asignados al tutor de empresa</caption>
+                            <thead>
+                            <tr>
+                                <th scope="col">Alumno</th>
+                                <th scope="col">Grupo</th>
+                                <th scope="col">Inicio</th>
+                                <th scope="col">Estado</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="asignacion : ${asignacionesActivas}">
+                                <td th:text="${asignacion.alumno != null ? asignacion.alumno.nombreCompleto : 'Alumno'}">Alumno</td>
+                                <td th:text="${asignacion.alumno != null and asignacion.alumno.grupo != null ? asignacion.alumno.grupo : '—'}">—</td>
+                                <td th:text="${asignacion.fechaInicio != null ? #temporals.format(asignacion.fechaInicio, 'dd/MM/yyyy') : '—'}">01/01/2026</td>
+                                <td th:text="${asignacion.estado}">EN_CURSO</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <aside class="card h-100">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Acciones rápidas</h2>
+                </div>
+                <div class="card-body d-grid gap-3">
+                    <a th:href="@{/tutor-empresa/busqueda-alumno}" class="btn btn-mc-primary">
+                        <i class="fas fa-user-graduate me-2" aria-hidden="true"></i>
+                        Ver alumnos
+                    </a>
+                    <a th:href="@{/tutor-empresa/faltas}" class="btn btn-mc-secondary">
+                        <i class="fas fa-calendar-xmark me-2" aria-hidden="true"></i>
+                        Registrar faltas
+                    </a>
+                    <a th:href="@{/tutor-empresa/valoracion}" class="btn btn-mc-tertiary">
+                        <i class="fas fa-star me-2" aria-hidden="true"></i>
+                        Emitir valoración
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </section>
+</section>
+</html>

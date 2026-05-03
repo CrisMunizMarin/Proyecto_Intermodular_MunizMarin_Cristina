@@ -10,13 +10,13 @@ import com.mentorcore.model.Tarea;
 import com.mentorcore.model.enums.ResultadoEnum;
 import com.mentorcore.model.enums.TipoFaltaEnum;
 import com.mentorcore.model.enums.TipoEvaluadorEnum;
+import com.mentorcore.model.enums.EstadoFaltaEnum;
 import com.mentorcore.service.AsignacionService;
 import com.mentorcore.service.DocumentoService;
 import com.mentorcore.service.FaltaAsistenciaService;
 import com.mentorcore.service.NotificacionService;
 import com.mentorcore.service.TareaService;
 import com.mentorcore.service.TutorEmpresaService;
-import com.mentorcore.service.UsuarioService;
 import com.mentorcore.service.ValoracionService;
 import com.mentorcore.util.ControllerMessageUtil;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +46,6 @@ import java.util.List;
 @Slf4j
 public class TutorEmpresaController {
 
-    private final UsuarioService usuarioService;
     private final TutorEmpresaService tutorEmpresaService;
     private final AsignacionService asignacionService;
     private final TareaService tareaService;
@@ -65,6 +64,7 @@ public class TutorEmpresaController {
 
         List<Asignacion> asignacionesActivas = asignacionService.findActivasByTutorEmpresa(tutor);
 
+        model.addAttribute("seccionActiva", "inicio");
         model.addAttribute("asignacionesActivas", asignacionesActivas);
         model.addAttribute("totalAlumnos", asignacionesActivas.size());
         model.addAttribute("notificacionesNoLeidas",
@@ -82,16 +82,32 @@ public class TutorEmpresaController {
         cargarDatosBase(model, tutor);
 
         List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresa(tutor);
-        List<Alumno> alumnos = new ArrayList<>();
-
-        for (Asignacion asignacion : asignaciones) {
-            alumnos.add(asignacion.getAlumno());
-        }
-
-        model.addAttribute("alumnos", alumnos);
+        model.addAttribute("seccionActiva", "busqueda-alumno");
         model.addAttribute("asignaciones", asignaciones);
 
         return "tutor-empresa/busqueda-alumno";
+    }
+
+    @GetMapping("/alumnos/{id}")
+    public String detalleAlumno(@PathVariable Long id,
+                                Model model,
+                                Principal principal) {
+        TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
+        cargarDatosBase(model, tutor);
+
+        Alumno alumno = getAlumnoAsignado(id, tutor);
+        Asignacion asignacionActiva = asignacionService.findAsignacionActiva(alumno)
+                .orElse(null);
+
+        model.addAttribute("seccionActiva", "busqueda-alumno");
+        model.addAttribute("alumno", alumno);
+        model.addAttribute("asignacionActiva", asignacionActiva);
+        model.addAttribute("tareas", tareaService.findByAlumno(alumno));
+        model.addAttribute("faltas", faltaAsistenciaService.findByAlumno(alumno));
+        model.addAttribute("documentos", documentoService.findByAlumno(alumno));
+        model.addAttribute("valoraciones", valoracionService.findByAlumno(alumno));
+
+        return "tutor-empresa/detalle-alumno";
     }
 
 
@@ -103,6 +119,7 @@ public class TutorEmpresaController {
         cargarDatosBase(model, tutor);
 
         List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresa(tutor);
+        model.addAttribute("seccionActiva", "tareas");
         model.addAttribute("asignaciones", asignaciones);
 
         return "tutor-empresa/tareas";
@@ -117,6 +134,7 @@ public class TutorEmpresaController {
         cargarDatosBase(model, tutor);
 
         List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresa(tutor);
+        model.addAttribute("seccionActiva", "documentos");
         model.addAttribute("asignaciones", asignaciones);
 
         return "tutor-empresa/documentos";
@@ -131,7 +149,19 @@ public class TutorEmpresaController {
         cargarDatosBase(model, tutor);
 
         List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresa(tutor);
+        List<FaltaAsistencia> faltasRegistradas = new ArrayList<>();
+
+        for (Asignacion asignacion : asignaciones) {
+            Alumno alumno = asignacion.getAlumno();
+            faltasRegistradas.addAll(faltaAsistenciaService.findByAlumno(alumno));
+        }
+
+        model.addAttribute("seccionActiva", "faltas");
         model.addAttribute("asignaciones", asignaciones);
+        model.addAttribute("faltasRegistradas", faltasRegistradas);
+        model.addAttribute("faltasPendientesRevision", faltasRegistradas.stream()
+                .filter(falta -> falta.getEstado() == EstadoFaltaEnum.PENDIENTE_REVISION)
+                .count());
 
         return "tutor-empresa/faltas";
     }
@@ -145,6 +175,7 @@ public class TutorEmpresaController {
         cargarDatosBase(model, tutor);
 
         List<Notificacion> notificaciones = notificacionService.findByReceptor(tutor);
+        model.addAttribute("seccionActiva", "notificaciones");
         model.addAttribute("notificaciones", notificaciones);
         model.addAttribute("totalNoLeidas",
                 notificacionService.contarNoLeidas(tutor));
@@ -191,6 +222,7 @@ public class TutorEmpresaController {
                     .ifPresent(valoraciones::add);
         }
 
+        model.addAttribute("seccionActiva", "valoracion");
         model.addAttribute("alumnos", alumnos);
         model.addAttribute("valoraciones", valoraciones);
 
@@ -320,9 +352,7 @@ public class TutorEmpresaController {
             throw new RuntimeException("No hay usuario autenticado");
         }
 
-        return usuarioService.findByNombreUsuario(principal.getName())
-                .filter(usuario -> usuario instanceof TutorEmpresa)
-                .map(usuario -> (TutorEmpresa) usuario)
+        return tutorEmpresaService.findByNombreUsuario(principal.getName())
                 .orElseThrow(() -> new RuntimeException(
                         "Tutor de empresa no encontrado para el usuario autenticado: "
                                 + principal.getName()));

@@ -1,0 +1,80 @@
+<nav th:fragment="sidebar" aria-label="Navegación del tutor de empresa">
+    <div class="p-3 border-bottom" style="border-color: rgba(67, 42, 165, 0.12) !important;">
+        <p class="mb-1 small text-uppercase fw-bold" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Panel Tutor Empresa
+        </p>
+        <p class="mb-0 text-muted small">
+            Seguimiento diario del alumnado en la empresa
+        </p>
+    </div>
+
+    <ul class="nav flex-column py-3" role="list">
+        <li class="nav-seccion">General</li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-empresa/inicio}"
+               th:classappend="${seccionActiva == 'inicio' ? ' activo' : ''}">
+                <i class="fas fa-house me-2" aria-hidden="true"></i>
+                Inicio
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-empresa/busqueda-alumno}"
+               th:classappend="${seccionActiva == 'busqueda-alumno' ? ' activo' : ''}">
+                <i class="fas fa-user-graduate me-2" aria-hidden="true"></i>
+                Alumnos
+            </a>
+        </li>
+
+        <li class="nav-seccion">Seguimiento</li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-empresa/tareas}"
+               th:classappend="${seccionActiva == 'tareas' ? ' activo' : ''}">
+                <i class="fas fa-list-check me-2" aria-hidden="true"></i>
+                Tareas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-empresa/documentos}"
+               th:classappend="${seccionActiva == 'documentos' ? ' activo' : ''}">
+                <i class="fas fa-folder-open me-2" aria-hidden="true"></i>
+                Documentos
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-empresa/faltas}"
+               th:classappend="${seccionActiva == 'faltas' ? ' activo' : ''}">
+                <i class="fas fa-calendar-xmark me-2" aria-hidden="true"></i>
+                Faltas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
+               th:href="@{/tutor-empresa/valoracion}"
+               th:classappend="${seccionActiva == 'valoracion' ? ' activo' : ''}">
+                <i class="fas fa-star me-2" aria-hidden="true"></i>
+                Valoración
+            </a>
+        </li>
+
+        <li class="nav-seccion">Comunicación</li>
+        <li class="nav-item">
+            <a class="nav-link position-relative"
+               th:href="@{/tutor-empresa/notificaciones}"
+               th:classappend="${seccionActiva == 'notificaciones' ? ' activo' : ''}">
+                <i class="fas fa-bell me-2" aria-hidden="true"></i>
+                Notificaciones
+                <span th:if="${notificacionesNoLeidas != null and notificacionesNoLeidas > 0}"
+                      class="badge rounded-pill ms-2"
+                      style="background-color: var(--mc-rosa); color: white;"
+                      th:text="${notificacionesNoLeidas}">
+                    0
+                </span>
+            </a>
+        </li>
+    </ul>
+</nav>
