@@ -114,6 +114,8 @@
                                 <th scope="col">Fecha</th>
                                 <th scope="col">Horas</th>
                                 <th scope="col">Estado</th>
+                                <th scope="col">Seguimiento empresa</th>
+                                <th scope="col">Comentario tutor centro</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -121,6 +123,19 @@
                                 <td th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</td>
                                 <td th:text="${tarea.horasDedicadas}">0</td>
                                 <td th:text="${tarea.estadoValidacion}">PENDIENTE</td>
+                                <td>
+                                    <div class="small">
+                                        <p class="mb-1">
+                                            Valoración:
+                                            <strong th:text="${tarea.valoracionTutorEmpresa != null ? tarea.valoracionTutorEmpresa + '/5' : '—'}">—</strong>
+                                        </p>
+                                        <p class="mb-0 text-muted"
+                                           th:text="${tarea.comentarioTutorEmpresa != null and !#strings.isEmpty(tarea.comentarioTutorEmpresa) ? tarea.comentarioTutorEmpresa : 'Sin comentario'}">
+                                            Sin comentario
+                                        </p>
+                                    </div>
+                                </td>
+                                <td th:text="${tarea.comentarioTutor != null and !#strings.isEmpty(tarea.comentarioTutor) ? tarea.comentarioTutor : '—'}">—</td>
                             </tr>
                             </tbody>
                         </table>

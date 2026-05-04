@@ -20,4 +20,6 @@ public interface TipoDocumentoRepository extends JpaRepository<TipoDocumento, Lo
     
     Optional<TipoDocumento> findByNombreAndActivoTrue(String nombre);
 
+    List<TipoDocumento> findByActivoTrueAndRolResponsableIn(List<String> rolesResponsables);
+
 }

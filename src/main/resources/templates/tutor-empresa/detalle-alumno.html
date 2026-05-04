@@ -26,6 +26,14 @@
         </a>
     </header>
 
+    <section th:if="${successMsg}" class="alert alert-success" aria-live="polite">
+        <p class="mb-0" th:text="${successMsg}">Operación realizada correctamente.</p>
+    </section>
+
+    <section th:if="${errorMsg}" class="alert alert-danger" aria-live="assertive">
+        <p class="mb-0" th:text="${errorMsg}">Se ha producido un error.</p>
+    </section>
+
     <section class="row g-4 mb-4">
         <div class="col-12 col-md-6 col-xl-3">
             <article class="card h-100">
@@ -131,6 +139,7 @@
                                 <th scope="col">Horas</th>
                                 <th scope="col">Estado</th>
                                 <th scope="col">Comentario tutor centro</th>
+                                <th scope="col">Seguimiento empresa</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -139,9 +148,72 @@
                                 <td th:text="${tarea.horasDedicadas}">0</td>
                                 <td th:text="${tarea.estadoValidacion}">PENDIENTE</td>
                                 <td th:text="${tarea.comentarioTutor != null and !#strings.isEmpty(tarea.comentarioTutor) ? tarea.comentarioTutor : '—'}">—</td>
+                                <td>
+                                    <div class="small">
+                                        <p class="mb-1">
+                                            Valoración:
+                                            <strong th:text="${tarea.valoracionTutorEmpresa != null ? tarea.valoracionTutorEmpresa + '/5' : '—'}">—</strong>
+                                        </p>
+                                        <p class="mb-0 text-muted"
+                                           th:text="${tarea.comentarioTutorEmpresa != null and !#strings.isEmpty(tarea.comentarioTutorEmpresa) ? tarea.comentarioTutorEmpresa : 'Sin comentario'}">
+                                            Sin comentario
+                                        </p>
+                                    </div>
+                                </td>
                             </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <div th:if="${tareas != null and !#lists.isEmpty(tareas)}" class="mt-4">
+                        <h3 class="h6 mb-3">Añadir seguimiento rápido</h3>
+
+                        <div class="row g-3" th:each="tarea : ${tareas}">
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <p class="fw-semibold mb-2">
+                                        <span th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</span>
+                                        ·
+                                        <span th:text="${tarea.descripcion}">Descripción</span>
+                                    </p>
+
+                                    <form th:action="@{/tutor-empresa/tareas/{id}/seguimiento(id=${tarea.id})}" method="post">
+                                        <input type="hidden"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}">
+                                        <input type="hidden" name="idAlumno" th:value="${alumno.id}">
+                                        <input type="hidden" name="volverA" value="detalle">
+
+                                        <div class="row g-3">
+                                            <div class="col-12 col-lg-3">
+                                                <label th:for="'detalle-valoracion-' + ${tarea.id}" class="form-label">Valoración</label>
+                                                <select th:id="'detalle-valoracion-' + ${tarea.id}" name="valoracionEmpresa" class="form-select">
+                                                    <option value="">Sin valorar</option>
+                                                    <option value="1" th:selected="${tarea.valoracionTutorEmpresa == 1}">1</option>
+                                                    <option value="2" th:selected="${tarea.valoracionTutorEmpresa == 2}">2</option>
+                                                    <option value="3" th:selected="${tarea.valoracionTutorEmpresa == 3}">3</option>
+                                                    <option value="4" th:selected="${tarea.valoracionTutorEmpresa == 4}">4</option>
+                                                    <option value="5" th:selected="${tarea.valoracionTutorEmpresa == 5}">5</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-12 col-lg-7">
+                                                <label th:for="'detalle-comentario-' + ${tarea.id}" class="form-label">Comentario</label>
+                                                <input th:id="'detalle-comentario-' + ${tarea.id}"
+                                                       type="text"
+                                                       name="comentarioEmpresa"
+                                                       class="form-control"
+                                                       th:value="${tarea.comentarioTutorEmpresa}">
+                                            </div>
+
+                                            <div class="col-12 col-lg-2 d-flex align-items-end">
+                                                <button type="submit" class="btn btn-mc-primary w-100">Guardar</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </article>

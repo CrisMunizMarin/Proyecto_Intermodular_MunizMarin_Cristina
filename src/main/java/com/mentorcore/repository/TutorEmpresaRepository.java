@@ -17,6 +17,11 @@ import java.util.Optional;
 @Repository
 public interface TutorEmpresaRepository extends JpaRepository<TutorEmpresa, Long> {
 
+    @Query("SELECT t FROM TutorEmpresa t " +
+           "LEFT JOIN FETCH t.empresa " +
+           "WHERE t.id = :id")
+    Optional<TutorEmpresa> findDetalleById(@Param("id") Long id);
+
     // findById(Long id) ya viene en JpaRepository
 
     // Tutores de una empresa concreta (RF18)

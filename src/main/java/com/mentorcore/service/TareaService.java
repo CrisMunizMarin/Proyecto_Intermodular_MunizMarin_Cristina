@@ -3,6 +3,7 @@ package com.mentorcore.service;
 import com.mentorcore.model.Alumno;
 import com.mentorcore.model.Tarea;
 import com.mentorcore.model.Usuario;
+import com.mentorcore.model.enums.EstadoFeEnum;
 import com.mentorcore.model.enums.EstadoValidacionEnum;
 import com.mentorcore.repository.TareaRepository;
 import lombok.RequiredArgsConstructor;
@@ -71,6 +72,11 @@ public class TareaService {
     @Transactional(readOnly = true)
     public List<Tarea> findPendientesByTutorCentro(Long idTutor) {
         return tareaRepository.findPendientesByTutorCentro(idTutor);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Tarea> findByTutorEmpresa(Long idTutorEmpresa) {
+        return tareaRepository.findByTutorEmpresa(idTutorEmpresa, EstadoFeEnum.EN_CURSO);
     }
 
     /**
@@ -216,6 +222,37 @@ public class TareaService {
         log.info("Tarea id={} marcada como REQUIERE_REVISION por '{}' para alumno '{}'",
                 tarea.getId(),
                 tutor.getNombreUsuario(),
+                tarea.getAlumno().getNombreUsuario());
+    }
+
+    /**
+     * Registra una valoración operativa del tutor de empresa sobre la tarea.
+     * No sustituye la validación formal del tutor de centro.
+     */
+    @Transactional
+    public void registrarSeguimientoEmpresa(Long idTarea,
+                                            Integer valoracion,
+                                            String comentario) {
+        Tarea tarea = getOrThrow(idTarea);
+
+        String comentarioNormalizado = comentario != null ? comentario.trim() : null;
+        boolean tieneComentario = comentarioNormalizado != null && !comentarioNormalizado.isEmpty();
+
+        if (valoracion == null && !tieneComentario) {
+            throw new IllegalStateException(
+                    "Debes indicar una valoración o un comentario para guardar el seguimiento");
+        }
+
+        if (valoracion != null && (valoracion < 1 || valoracion > 5)) {
+            throw new IllegalStateException(
+                    "La valoración del tutor de empresa debe estar entre 1 y 5");
+        }
+
+        tarea.registrarSeguimientoEmpresa(valoracion, tieneComentario ? comentarioNormalizado : null);
+        tareaRepository.save(tarea);
+
+        log.info("Seguimiento de empresa registrado sobre tarea id={} del alumno '{}'",
+                tarea.getId(),
                 tarea.getAlumno().getNombreUsuario());
     }
 

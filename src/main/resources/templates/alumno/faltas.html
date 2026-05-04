@@ -56,6 +56,123 @@
         <p class="mb-0" th:text="${errorMsg}">Se ha producido un error.</p>
     </section>
 
+    <section th:if="${asignacionActiva != null}" class="row g-4 mb-4" aria-label="Registro de faltas">
+        <div class="col-12 col-xl-6">
+            <section class="card h-100" aria-labelledby="registrar-falta-justificante">
+                <div class="card-body">
+                    <h2 id="registrar-falta-justificante" class="h4 mb-3">Registrar falta con justificante</h2>
+                    <p class="text-muted mb-3">
+                        Usa este bloque si ya tienes el justificante y quieres dejar la falta completa desde el principio.
+                    </p>
+
+                    <form th:action="@{/alumno/faltas/registrar-con-justificante}"
+                          method="post"
+                          enctype="multipart/form-data">
+                        <input type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-5">
+                                <label for="fechaFaltaCompleta" class="form-label">Fecha de la falta</label>
+                                <input id="fechaFaltaCompleta"
+                                       type="date"
+                                       name="fechaFalta"
+                                       class="form-control"
+                                       required>
+                            </div>
+
+                            <div class="col-12 col-md-7">
+                                <label for="horasFaltaCompleta" class="form-label">Horas que faltaste</label>
+                                <input id="horasFaltaCompleta"
+                                       type="number"
+                                       step="0.5"
+                                       min="0.5"
+                                       name="horasAusencia"
+                                       class="form-control"
+                                       required>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="observacionFaltaCompleta" class="form-label">Observación o detalle</label>
+                                <textarea id="observacionFaltaCompleta"
+                                          name="observacion"
+                                          class="form-control"
+                                          rows="2"
+                                          placeholder="Ej.: cita médica, trámite oficial, incidencia personal"></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="motivoFaltaCompleta" class="form-label">Motivo de la falta</label>
+                                <textarea id="motivoFaltaCompleta"
+                                          name="motivoJustificacion"
+                                          class="form-control"
+                                          rows="3"
+                                          required></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="archivoFaltaCompleta" class="form-label">Justificante</label>
+                                <input id="archivoFaltaCompleta"
+                                       type="file"
+                                       name="archivo"
+                                       class="form-control"
+                                       required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-mc-primary mt-3 w-100">
+                            <i class="fas fa-file-circle-check me-2" aria-hidden="true"></i>
+                            Registrar falta con justificante
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <section class="card h-100" aria-labelledby="registrar-aviso-falta">
+                <div class="card-body">
+                    <h2 id="registrar-aviso-falta" class="h4 mb-3">Registrar aviso sin justificante</h2>
+                    <p class="text-muted mb-3">
+                        Usa este bloque si quieres dejar primero el aviso y adjuntar el justificante más tarde en esta misma pantalla.
+                    </p>
+
+                    <form th:action="@{/alumno/faltas/avisar}" method="post">
+                        <input type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
+                        <div class="row g-3">
+                            <div class="col-12 col-md-4">
+                                <label for="fechaAvisoFalta" class="form-label">Fecha de la falta</label>
+                                <input id="fechaAvisoFalta"
+                                       type="date"
+                                       name="fechaFalta"
+                                       class="form-control"
+                                       required>
+                            </div>
+
+                            <div class="col-12 col-md-8">
+                                <label for="observacionAvisoFalta" class="form-label">Motivo o detalle de la falta</label>
+                                <textarea id="observacionAvisoFalta"
+                                          name="observacion"
+                                          class="form-control"
+                                          rows="2"
+                                          placeholder="Ej.: cita médica, trámite oficial, incidencia personal"></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-mc-tertiary mt-3 w-100">
+                            <i class="fas fa-bell me-2" aria-hidden="true"></i>
+                            Registrar aviso
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </section>
+
     <section th:if="${faltas == null or #lists.isEmpty(faltas)}" class="card">
         <div class="card-body">
             <p class="mb-0 text-muted">No tienes faltas registradas actualmente.</p>
@@ -70,7 +187,7 @@
                 <article class="card h-100">
                     <div class="card-body">
                         <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
-                            <div class="flex-grow-1">
+                            <div class="flex-grow-1 mc-min-w-0">
                                 <header class="mb-3">
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                                         <h3 class="h5 mb-0"
@@ -95,6 +212,11 @@
                                             Pendiente de revisión
                                         </span>
 
+                                        <span th:if="${falta.estado.name() == 'VERIFICADA_EMPRESA'}"
+                                              class="badge badge-pendiente">
+                                            Verificada por empresa
+                                        </span>
+
                                         <span th:if="${falta.estado.name() == 'JUSTIFICADA'}"
                                               class="badge badge-justificada">
                                             Justificada
@@ -109,9 +231,44 @@
 
                                 <section th:if="${falta.justificante != null}" class="mb-3">
                                     <h4 class="h6">Justificante adjuntado</h4>
-                                    <p class="mb-0 text-muted"
-                                       th:text="${falta.justificante.nombreArchivo}">
-                                        justificante.pdf
+                                    <p class="mb-0 text-muted">
+                                        <a th:href="@{/documentos/{id}/ver(id=${falta.justificante.id})}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="mc-break-anywhere"
+                                           th:text="${falta.justificante.nombreArchivo}">
+                                            justificante.pdf
+                                        </a>
+                                    </p>
+                                </section>
+
+                                <section th:if="${falta.motivoJustificacion != null and !#strings.isEmpty(falta.motivoJustificacion)}" class="mb-3">
+                                    <h4 class="h6">Motivo indicado</h4>
+                                    <p class="mb-1 text-muted" th:text="${falta.motivoJustificacion}">Motivo</p>
+                                    <p class="mb-0 text-muted">
+                                        Horas ausente:
+                                        <strong th:text="${falta.horasAusencia != null ? falta.horasAusencia : '—'}">—</strong>
+                                    </p>
+                                </section>
+
+                                <section th:if="${falta.comentarioVerificacionEmpresa != null and !#strings.isEmpty(falta.comentarioVerificacionEmpresa)}" class="mb-3">
+                                    <h4 class="h6">Verificación del tutor de empresa</h4>
+                                    <p class="mb-0 text-muted" th:text="${falta.comentarioVerificacionEmpresa}">
+                                        Verificación de empresa
+                                    </p>
+                                </section>
+
+                                <section th:if="${falta.comentarioRevisionCentro != null and !#strings.isEmpty(falta.comentarioRevisionCentro)}" class="mb-3">
+                                    <h4 class="h6">Revisión del tutor de centro</h4>
+                                    <p class="mb-0 text-muted" th:text="${falta.comentarioRevisionCentro}">
+                                        Comentario del tutor de centro
+                                    </p>
+                                </section>
+
+                                <section th:if="${falta.motivoDenegacion != null and !#strings.isEmpty(falta.motivoDenegacion)}" class="mb-3">
+                                    <h4 class="h6">Motivo de denegación</h4>
+                                    <p class="mb-0 text-muted" th:text="${falta.motivoDenegacion}">
+                                        Motivo de denegación
                                     </p>
                                 </section>
                             </div>
@@ -128,6 +285,30 @@
                                         <input type="hidden"
                                                th:name="${_csrf.parameterName}"
                                                th:value="${_csrf.token}">
+
+                                        <div class="mb-3">
+                                            <label th:for="'motivo-' + ${falta.id}" class="form-label">
+                                                Motivo de la falta
+                                            </label>
+                                            <textarea th:id="'motivo-' + ${falta.id}"
+                                                      name="motivoJustificacion"
+                                                      class="form-control"
+                                                      rows="3"
+                                                      required></textarea>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label th:for="'horas-' + ${falta.id}" class="form-label">
+                                                Horas que faltaste
+                                            </label>
+                                            <input type="number"
+                                                   step="0.5"
+                                                   min="0.5"
+                                                   th:id="'horas-' + ${falta.id}"
+                                                   name="horasAusencia"
+                                                   class="form-control"
+                                                   required>
+                                        </div>
 
                                         <div class="mb-3">
                                             <label th:for="'archivo-' + ${falta.id}" class="form-label">

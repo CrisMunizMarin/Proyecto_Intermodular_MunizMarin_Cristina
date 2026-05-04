@@ -163,8 +163,11 @@ public class TutorCentroController {
             documentosPendientes.addAll(documentoService.findPendientesByAlumno(alumno));
         }
 
+        documentosPendientes.removeIf(Documento::esJustificante);
+
         for (FaltaAsistencia falta : faltaAsistenciaService.findByTutorCentro(tutor.getId())) {
-            if (falta.getEstado() == EstadoFaltaEnum.PENDIENTE_REVISION
+            if ((falta.getEstado() == EstadoFaltaEnum.PENDIENTE_REVISION
+                    || falta.getEstado() == EstadoFaltaEnum.VERIFICADA_EMPRESA)
                     && falta.getJustificante() != null) {
                 justificantesPendientes.add(falta);
             }
@@ -547,6 +550,7 @@ public class TutorCentroController {
     //APROBAR FALTA ASISTENCIA
     @PostMapping("/faltas/{idFalta}/aprobar")
     public String aprobarJustificante(@PathVariable Long idFalta,
+                                      @RequestParam(value = "comentario", required = false) String comentario,
                                       Principal principal,
                                       RedirectAttributes redirectAttributes) {
         try {
@@ -562,7 +566,7 @@ public class TutorCentroController {
                 throw new RuntimeException("No puedes revisar faltas de un alumno no asignado");
             }
 
-            faltaAsistenciaService.aprobarJustificante(idFalta, tutor);
+            faltaAsistenciaService.aprobarJustificante(idFalta, tutor, comentario);
 
             redirectAttributes.addFlashAttribute("successMsg",
                     "Justificante aprobado correctamente.");
@@ -662,7 +666,9 @@ public class TutorCentroController {
                     tarea.getFechaRegistro(),
                     tarea.getHorasDedicadas(),
                     tarea.getAreaActividad(),
-                    tarea.getDescripcion()
+                    tarea.getDescripcion(),
+                    tarea.getValoracionTutorEmpresa(),
+                    tarea.getComentarioTutorEmpresa()
             ));
         }
 
@@ -675,7 +681,9 @@ public class TutorCentroController {
             LocalDate fechaRegistro,
             BigDecimal horasDedicadas,
             String areaActividad,
-            String descripcion
+            String descripcion,
+            Integer valoracionTutorEmpresa,
+            String comentarioTutorEmpresa
     ) {
     }
 }

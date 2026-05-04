@@ -15,52 +15,160 @@
         </p>
         <h1 class="mc-h1 mb-2">Seguimiento de tareas</h1>
         <p class="text-muted mb-0">
-            Consulta qué alumnos tienes asignados y desde aquí organizaremos el seguimiento operativo de sus tareas.
+            Revisa las tareas registradas por tu alumnado y añade tu valoración operativa sin interferir en la validación formal del tutor de centro.
         </p>
     </header>
 
-    <section th:if="${asignaciones == null or #lists.isEmpty(asignaciones)}" class="card">
-        <div class="card-body">
-            <p class="mb-0 text-muted">No tienes alumnos activos para seguimiento de tareas.</p>
+    <section th:if="${successMsg}" class="alert alert-success" aria-live="polite">
+        <p class="mb-0" th:text="${successMsg}">Operación realizada correctamente.</p>
+    </section>
+
+    <section th:if="${errorMsg}" class="alert alert-danger" aria-live="assertive">
+        <p class="mb-0" th:text="${errorMsg}">Se ha producido un error.</p>
+    </section>
+
+    <section class="row g-4 mb-4">
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Tareas registradas</p>
+                    <h2 class="mc-h2 mb-0" th:text="${tareas != null ? #lists.size(tareas) : 0}">0</h2>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Pendientes de centro</p>
+                    <h2 class="mc-h2 mb-0" th:text="${tareasPendientesCentro}">0</h2>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-3">
+            <article class="card h-100">
+                <div class="card-body">
+                    <p class="mc-caption text-muted mb-2">Con seguimiento empresa</p>
+                    <h2 class="mc-h2 mb-0" th:text="${tareasConSeguimientoEmpresa}">0</h2>
+                </div>
+            </article>
         </div>
     </section>
 
-    <section th:if="${asignaciones != null and !#lists.isEmpty(asignaciones)}" aria-labelledby="listado-tareas-base">
-        <h2 id="listado-tareas-base" class="visually-hidden">Alumnos en seguimiento de tareas</h2>
+    <section th:if="${tareas == null or #lists.isEmpty(tareas)}" class="card">
+        <div class="card-body">
+            <p class="mb-0 text-muted">Todavía no hay tareas registradas por tu alumnado asignado.</p>
+        </div>
+    </section>
+
+    <section th:if="${tareas != null and !#lists.isEmpty(tareas)}" aria-labelledby="listado-tareas">
+        <h2 id="listado-tareas" class="visually-hidden">Listado de tareas de alumnos asignados</h2>
 
         <div class="row g-4">
-            <div class="col-12 col-lg-6" th:each="asignacion : ${asignaciones}">
+            <div class="col-12" th:each="tarea : ${tareas}">
                 <article class="card h-100">
                     <div class="card-body">
-                        <h3 class="h5 mb-2"
-                            th:text="${asignacion.alumno != null ? asignacion.alumno.nombreCompleto : 'Alumno'}">
-                            Alumno
-                        </h3>
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                            <div class="flex-grow-1">
+                                <header class="mb-3">
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                        <h3 class="h5 mb-0"
+                                            th:text="${tarea.alumno != null ? tarea.alumno.nombreCompleto : 'Alumno'}">
+                                            Alumno
+                                        </h3>
+                                        <span class="badge text-bg-light border" th:text="${tarea.estadoValidacion}">PENDIENTE</span>
+                                    </div>
+                                    <p class="text-muted mb-0">
+                                        Fecha:
+                                        <span th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</span>
+                                        · Horas:
+                                        <span th:text="${tarea.horasDedicadas}">0</span>
+                                        <span th:if="${tarea.areaActividad != null and !#strings.isEmpty(tarea.areaActividad)}">
+                                            · Área:
+                                            <span th:text="${tarea.areaActividad}">Área</span>
+                                        </span>
+                                    </p>
+                                </header>
 
-                        <p class="text-muted mb-3">
-                            Usuario:
-                            <span th:text="${asignacion.alumno != null ? asignacion.alumno.nombreUsuario : 'usuario'}">usuario</span>
-                            · Grupo:
-                            <span th:text="${asignacion.alumno != null and asignacion.alumno.grupo != null ? asignacion.alumno.grupo : '—'}">—</span>
-                        </p>
+                                <p class="mb-3" th:text="${tarea.descripcion}">Descripción de la tarea.</p>
 
-                        <dl class="row mb-3">
-                            <dt class="col-sm-4">Empresa</dt>
-                            <dd class="col-sm-8" th:text="${asignacion.empresa != null ? asignacion.empresa.nombre : '—'}">—</dd>
+                                <div class="row g-3">
+                                    <div class="col-12 col-lg-6">
+                                        <div class="border rounded p-3 h-100">
+                                            <h4 class="h6 mb-2">Revisión del tutor de centro</h4>
+                                            <p class="mb-1">
+                                                Estado:
+                                                <strong th:text="${tarea.estadoValidacion}">PENDIENTE</strong>
+                                            </p>
+                                            <p class="mb-0 text-muted"
+                                               th:text="${tarea.comentarioTutor != null and !#strings.isEmpty(tarea.comentarioTutor) ? tarea.comentarioTutor : 'Todavía no hay comentario del tutor de centro.'}">
+                                                Todavía no hay comentario del tutor de centro.
+                                            </p>
+                                        </div>
+                                    </div>
 
-                            <dt class="col-sm-4">Inicio</dt>
-                            <dd class="col-sm-8"
-                                th:text="${asignacion.fechaInicio != null ? #temporals.format(asignacion.fechaInicio, 'dd/MM/yyyy') : '—'}">
-                                —
-                            </dd>
+                                    <div class="col-12 col-lg-6">
+                                        <div class="border rounded p-3 h-100">
+                                            <h4 class="h6 mb-2">Último seguimiento de empresa</h4>
+                                            <p class="mb-1">
+                                                Valoración:
+                                                <strong th:text="${tarea.valoracionTutorEmpresa != null ? tarea.valoracionTutorEmpresa + '/5' : 'Sin registrar'}">
+                                                    Sin registrar
+                                                </strong>
+                                            </p>
+                                            <p class="mb-1 text-muted"
+                                               th:text="${tarea.comentarioTutorEmpresa != null and !#strings.isEmpty(tarea.comentarioTutorEmpresa) ? tarea.comentarioTutorEmpresa : 'Todavía no has añadido comentario.'}">
+                                                Todavía no has añadido comentario.
+                                            </p>
+                                            <p class="mb-0 text-muted small"
+                                               th:if="${tarea.fechaRevisionEmpresa != null}"
+                                               th:text="'Actualizado el ' + ${#temporals.format(tarea.fechaRevisionEmpresa, 'dd/MM/yyyy HH:mm')}">
+                                                Actualizado el 01/01/2026 10:00
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                            <dt class="col-sm-4">Estado FE</dt>
-                            <dd class="col-sm-8" th:text="${asignacion.estado}">EN_CURSO</dd>
-                        </dl>
+                            <aside class="col-12 col-xl-4">
+                                <div class="border rounded p-3 h-100">
+                                    <h4 class="h6 mb-3">Añadir seguimiento</h4>
 
-                        <p class="mb-0 text-muted">
-                            Base lista para añadir el seguimiento detallado de tareas del tutor de empresa sin mezclar todavía reglas nuevas de negocio.
-                        </p>
+                                    <form th:action="@{/tutor-empresa/tareas/{id}/seguimiento(id=${tarea.id})}" method="post">
+                                        <input type="hidden"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}">
+
+                                        <div class="mb-3">
+                                            <label th:for="'valoracion-' + ${tarea.id}" class="form-label">Valoración</label>
+                                            <select th:id="'valoracion-' + ${tarea.id}" name="valoracionEmpresa" class="form-select">
+                                                <option value="">Sin valorar</option>
+                                                <option value="1" th:selected="${tarea.valoracionTutorEmpresa == 1}">1 · Muy mejorable</option>
+                                                <option value="2" th:selected="${tarea.valoracionTutorEmpresa == 2}">2 · Mejorable</option>
+                                                <option value="3" th:selected="${tarea.valoracionTutorEmpresa == 3}">3 · Correcta</option>
+                                                <option value="4" th:selected="${tarea.valoracionTutorEmpresa == 4}">4 · Buena</option>
+                                                <option value="5" th:selected="${tarea.valoracionTutorEmpresa == 5}">5 · Muy buena</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label th:for="'comentario-' + ${tarea.id}" class="form-label">Comentario</label>
+                                            <textarea th:id="'comentario-' + ${tarea.id}"
+                                                      name="comentarioEmpresa"
+                                                      class="form-control"
+                                                      rows="4"
+                                                      th:text="${tarea.comentarioTutorEmpresa}"></textarea>
+                                        </div>
+
+                                        <input type="hidden" name="volverA" value="tareas">
+
+                                        <button type="submit" class="btn btn-mc-primary w-100">
+                                            <i class="fas fa-floppy-disk me-2" aria-hidden="true"></i>
+                                            Guardar seguimiento
+                                        </button>
+                                    </form>
+                                </div>
+                            </aside>
+                        </div>
                     </div>
                 </article>
             </div>

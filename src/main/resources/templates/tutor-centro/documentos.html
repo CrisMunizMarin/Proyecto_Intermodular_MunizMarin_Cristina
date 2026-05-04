@@ -61,7 +61,7 @@
                 <article class="card h-100">
                     <div class="card-body">
                         <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
-                            <div class="flex-grow-1">
+                            <div class="flex-grow-1 mc-min-w-0">
                                 <header class="mb-3">
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                                         <h3 class="h5 mb-0"
@@ -157,7 +157,7 @@
                 <article class="card h-100">
                     <div class="card-body">
                         <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
-                            <div class="flex-grow-1">
+                            <div class="flex-grow-1 mc-min-w-0">
                                 <header class="mb-3">
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                                         <h3 class="h5 mb-0">
@@ -175,7 +175,15 @@
                                         · Fecha de falta:
                                         <span th:text="${#temporals.format(falta.fechaFalta, 'dd/MM/yyyy')}">01/01/2026</span>
                                         · Archivo:
-                                        <span th:text="${falta.justificante != null ? falta.justificante.nombreArchivo : 'justificante.pdf'}">justificante.pdf</span>
+                                        <a th:if="${falta.justificante != null}"
+                                           th:href="@{/documentos/{id}/ver(id=${falta.justificante.id})}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="mc-break-anywhere"
+                                           th:text="${falta.justificante.nombreArchivo}">
+                                            justificante.pdf
+                                        </a>
+                                        <span th:if="${falta.justificante == null}">justificante.pdf</span>
                                     </p>
                                 </header>
 
@@ -184,6 +192,24 @@
                                     <p class="mb-0 text-muted"
                                        th:text="${falta.observacion != null and !#strings.isEmpty(falta.observacion) ? falta.observacion : 'Sin observaciones adicionales.'}">
                                         Sin observaciones adicionales.
+                                    </p>
+                                </section>
+
+                                <section class="mt-3"
+                                         th:if="${falta.motivoJustificacion != null and !#strings.isEmpty(falta.motivoJustificacion)}">
+                                    <h4 class="h6">Justificación del alumno</h4>
+                                    <p class="mb-1 text-muted" th:text="${falta.motivoJustificacion}">Motivo</p>
+                                    <p class="mb-0 text-muted">
+                                        Horas ausente:
+                                        <strong th:text="${falta.horasAusencia != null ? falta.horasAusencia : '—'}">—</strong>
+                                    </p>
+                                </section>
+
+                                <section class="mt-3"
+                                         th:if="${falta.comentarioVerificacionEmpresa != null and !#strings.isEmpty(falta.comentarioVerificacionEmpresa)}">
+                                    <h4 class="h6">Verificación del tutor de empresa</h4>
+                                    <p class="mb-0 text-muted" th:text="${falta.comentarioVerificacionEmpresa}">
+                                        Verificación de empresa
                                     </p>
                                 </section>
                             </div>
@@ -198,7 +224,19 @@
                                         <input type="hidden"
                                                th:name="${_csrf.parameterName}"
                                                th:value="${_csrf.token}">
-                                        <button type="submit" class="btn btn-mc-secondary w-100">
+                                        <div class="mb-2">
+                                            <label th:for="'comentario-falta-aprobar-' + ${falta.id}" class="form-label">
+                                                Comentario para el alumno
+                                            </label>
+                                            <textarea th:id="'comentario-falta-aprobar-' + ${falta.id}"
+                                                      name="comentario"
+                                                      class="form-control"
+                                                      rows="2"
+                                                      placeholder="Añade un comentario para el alumno"></textarea>
+                                        </div>
+                                        <button type="submit"
+                                                class="btn btn-mc-secondary w-100"
+                                                th:disabled="${falta.estado.name() != 'VERIFICADA_EMPRESA'}">
                                             <i class="fas fa-check me-2" aria-hidden="true"></i>
                                             Aprobar justificante
                                         </button>
@@ -224,6 +262,11 @@
                                             Denegar justificante
                                         </button>
                                     </form>
+
+                                    <p class="mt-3 mb-0 text-muted small"
+                                       th:if="${falta.estado.name() == 'PENDIENTE_REVISION'}">
+                                        Esperando verificación del tutor de empresa antes de la revisión final del centro.
+                                    </p>
                                 </div>
                             </aside>
                         </div>

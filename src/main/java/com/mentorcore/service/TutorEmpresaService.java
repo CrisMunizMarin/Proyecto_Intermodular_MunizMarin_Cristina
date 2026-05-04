@@ -28,7 +28,7 @@ public class TutorEmpresaService {
 
     @Transactional(readOnly = true)
     public Optional<TutorEmpresa> findById(Long id) {
-        return tutorEmpresaRepository.findById(id);
+        return tutorEmpresaRepository.findDetalleById(id);
     }
 
     /**

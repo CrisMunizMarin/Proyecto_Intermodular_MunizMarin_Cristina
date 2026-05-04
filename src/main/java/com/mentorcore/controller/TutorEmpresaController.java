@@ -2,25 +2,36 @@ package com.mentorcore.controller;
 
 import com.mentorcore.model.Alumno;
 import com.mentorcore.model.Asignacion;
+import com.mentorcore.model.Convenio;
+import com.mentorcore.model.Documento;
 import com.mentorcore.model.Notificacion;
+import com.mentorcore.model.TipoDocumento;
 import com.mentorcore.model.TutorEmpresa;
 import com.mentorcore.model.Valoracion;
 import com.mentorcore.model.FaltaAsistencia;
 import com.mentorcore.model.Tarea;
+import com.mentorcore.model.enums.ContextoDocumentoEnum;
 import com.mentorcore.model.enums.ResultadoEnum;
 import com.mentorcore.model.enums.TipoFaltaEnum;
 import com.mentorcore.model.enums.TipoEvaluadorEnum;
 import com.mentorcore.model.enums.EstadoFaltaEnum;
+import com.mentorcore.model.enums.EstadoValidacionEnum;
+import com.mentorcore.model.enums.TipoNotificacionEnum;
 import com.mentorcore.service.AsignacionService;
+import com.mentorcore.service.ConvenioService;
 import com.mentorcore.service.DocumentoService;
 import com.mentorcore.service.FaltaAsistenciaService;
 import com.mentorcore.service.NotificacionService;
 import com.mentorcore.service.TareaService;
+import com.mentorcore.service.TipoDocumentoService;
 import com.mentorcore.service.TutorEmpresaService;
 import com.mentorcore.service.ValoracionService;
 import com.mentorcore.util.ControllerMessageUtil;
+import com.mentorcore.util.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,10 +39,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -51,8 +65,14 @@ public class TutorEmpresaController {
     private final TareaService tareaService;
     private final FaltaAsistenciaService faltaAsistenciaService;
     private final DocumentoService documentoService;
+    private final ConvenioService convenioService;
     private final NotificacionService notificacionService;
     private final ValoracionService valoracionService;
+    private final TipoDocumentoService tipoDocumentoService;
+    private final FileUploadUtil fileUploadUtil;
+
+    @Value("${mentorcore.uploads.ruta-base}")
+    private String rutaBaseUploads;
 
 
     // INICIO
@@ -62,7 +82,7 @@ public class TutorEmpresaController {
         TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
         cargarDatosBase(model, tutor);
 
-        List<Asignacion> asignacionesActivas = asignacionService.findActivasByTutorEmpresa(tutor);
+        List<Asignacion> asignacionesActivas = asignacionService.findActivasByTutorEmpresaId(tutor.getId());
 
         model.addAttribute("seccionActiva", "inicio");
         model.addAttribute("asignacionesActivas", asignacionesActivas);
@@ -81,7 +101,7 @@ public class TutorEmpresaController {
         TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
         cargarDatosBase(model, tutor);
 
-        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresa(tutor);
+        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresaId(tutor.getId());
         model.addAttribute("seccionActiva", "busqueda-alumno");
         model.addAttribute("asignaciones", asignaciones);
 
@@ -118,11 +138,69 @@ public class TutorEmpresaController {
         TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
         cargarDatosBase(model, tutor);
 
-        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresa(tutor);
+        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresaId(tutor.getId());
+        List<Tarea> tareas = new ArrayList<>();
+
+        for (Asignacion asignacion : asignaciones) {
+            tareas.addAll(tareaService.findByAlumno(asignacion.getAlumno()));
+        }
+
+        tareas.sort(Comparator
+                .comparing(Tarea::getFechaRegistro, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(Tarea::getFechaCreacion, Comparator.nullsLast(Comparator.reverseOrder())));
+
         model.addAttribute("seccionActiva", "tareas");
-        model.addAttribute("asignaciones", asignaciones);
+        model.addAttribute("tareas", tareas);
+        model.addAttribute("tareasPendientesCentro", tareas.stream()
+                .filter(tarea -> tarea.getEstadoValidacion() == EstadoValidacionEnum.PENDIENTE)
+                .count());
+        model.addAttribute("tareasConSeguimientoEmpresa", tareas.stream()
+                .filter(tarea -> tarea.getValoracionTutorEmpresa() != null
+                        || (tarea.getComentarioTutorEmpresa() != null
+                        && !tarea.getComentarioTutorEmpresa().isBlank()))
+                .count());
 
         return "tutor-empresa/tareas";
+    }
+
+    @PostMapping("/tareas/{idTarea}/seguimiento")
+    public String registrarSeguimientoTarea(@PathVariable Long idTarea,
+                                            @RequestParam(value = "valoracionEmpresa", required = false) Integer valoracionEmpresa,
+                                            @RequestParam(value = "comentarioEmpresa", required = false) String comentarioEmpresa,
+                                            @RequestParam(value = "idAlumno", required = false) Long idAlumno,
+                                            @RequestParam(value = "volverA", required = false) String volverA,
+                                            Principal principal,
+                                            RedirectAttributes redirectAttributes) {
+        try {
+            TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
+            Tarea tarea = tareaService.findDetalleById(idTarea)
+                    .orElseThrow(() -> new RuntimeException(
+                            "No se ha encontrado la tarea seleccionada"));
+
+            Alumno alumno = getAlumnoAsignado(tarea.getAlumno().getId(), tutor);
+            tareaService.registrarSeguimientoEmpresa(idTarea, valoracionEmpresa, comentarioEmpresa);
+
+            redirectAttributes.addFlashAttribute("successMsg",
+                    "Seguimiento de tarea guardado correctamente.");
+
+            if ("detalle".equals(volverA) && idAlumno != null && alumno.getId().equals(idAlumno)) {
+                return "redirect:/tutor-empresa/alumnos/" + idAlumno;
+            }
+        } catch (Exception e) {
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al registrar seguimiento de tarea desde tutor de empresa",
+                    e,
+                    "No se pudo guardar el seguimiento de la tarea. Inténtalo de nuevo."
+            );
+
+            if ("detalle".equals(volverA) && idAlumno != null) {
+                return "redirect:/tutor-empresa/alumnos/" + idAlumno;
+            }
+        }
+
+        return "redirect:/tutor-empresa/tareas";
     }
 
 
@@ -133,11 +211,100 @@ public class TutorEmpresaController {
         TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
         cargarDatosBase(model, tutor);
 
-        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresa(tutor);
+        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresaId(tutor.getId());
+        List<DocumentacionAlumnoView> documentacion = new ArrayList<>();
+
+        for (Asignacion asignacion : asignaciones) {
+            Alumno alumno = asignacion.getAlumno();
+            documentacion.add(new DocumentacionAlumnoView(
+                    alumno.getId(),
+                    alumno.getNombreCompleto(),
+                    alumno.getNombreUsuario(),
+                    alumno.getGrupo(),
+                    asignacion.getEmpresa() != null ? asignacion.getEmpresa().getNombre() : "—",
+                    documentoService.findByAlumno(alumno),
+                    convenioService.findByAlumno(alumno)
+            ));
+        }
+
         model.addAttribute("seccionActiva", "documentos");
-        model.addAttribute("asignaciones", asignaciones);
+        model.addAttribute("documentacion", documentacion);
+        model.addAttribute("tiposDocumentoEmpresa",
+                tipoDocumentoService.findActivosPorRoles("TUTOR_EMPRESA", "TODOS"));
 
         return "tutor-empresa/documentos";
+    }
+
+    @PostMapping("/documentos/subir")
+    public String subirDocumentoEmpresa(@RequestParam("idAlumno") Long idAlumno,
+                                        @RequestParam("idTipoDocumento") Long idTipoDocumento,
+                                        @RequestParam("archivo") MultipartFile archivo,
+                                        Principal principal,
+                                        RedirectAttributes redirectAttributes) {
+        try {
+            TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
+            Alumno alumno = getAlumnoAsignado(idAlumno, tutor);
+
+            TipoDocumento tipoDocumento = tipoDocumentoService.findById(idTipoDocumento)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Tipo de documento no encontrado con id: " + idTipoDocumento));
+
+            if (archivo == null || archivo.isEmpty()) {
+                throw new IllegalArgumentException("Debes seleccionar un archivo");
+            }
+
+            String extension = "";
+            String nombreOriginal = archivo.getOriginalFilename();
+            if (nombreOriginal != null && nombreOriginal.contains(".")) {
+                extension = nombreOriginal.substring(nombreOriginal.lastIndexOf(".") + 1).toLowerCase();
+            }
+
+            if (!tipoDocumento.isExtensionValida(extension)) {
+                throw new IllegalArgumentException(
+                        "La extensión del archivo no está permitida para este tipo de documento");
+            }
+
+            String subcarpeta = "alumnos/" + alumno.getId() + "/empresa";
+            String rutaGuardada = fileUploadUtil.guardarArchivo(
+                    rutaBaseUploads,
+                    subcarpeta,
+                    archivo
+            );
+
+            documentoService.subirDocumento(
+                    alumno,
+                    tipoDocumento,
+                    tutor,
+                    archivo.getOriginalFilename(),
+                    rutaGuardada,
+                    archivo.getContentType(),
+                    archivo.getSize(),
+                    false,
+                    ContextoDocumentoEnum.EXPEDIENTE
+            );
+
+            if (alumno.getTutorCentro() != null) {
+                notificacionService.enviarSistema(
+                        alumno.getTutorCentro(),
+                        TipoNotificacionEnum.AVISO,
+                        "Nuevo documento subido por empresa",
+                        "El tutor de empresa ha subido un documento para " + alumno.getNombreCompleto() + "."
+                );
+            }
+
+            redirectAttributes.addFlashAttribute("successMsg",
+                    "Documento de empresa subido correctamente.");
+        } catch (Exception e) {
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al subir documento desde tutor de empresa",
+                    e,
+                    "No se pudo subir el documento. Inténtalo de nuevo."
+            );
+        }
+
+        return "redirect:/tutor-empresa/documentos";
     }
 
 
@@ -148,7 +315,7 @@ public class TutorEmpresaController {
         TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
         cargarDatosBase(model, tutor);
 
-        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresa(tutor);
+        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresaId(tutor.getId());
         List<FaltaAsistencia> faltasRegistradas = new ArrayList<>();
 
         for (Asignacion asignacion : asignaciones) {
@@ -156,12 +323,18 @@ public class TutorEmpresaController {
             faltasRegistradas.addAll(faltaAsistenciaService.findByAlumno(alumno));
         }
 
+        List<FaltaAsistencia> faltasPendientesEmpresa = faltasRegistradas.stream()
+                .filter(faltaAsistenciaService::requiereVerificacionEmpresa)
+                .sorted(Comparator
+                        .comparing(FaltaAsistencia::getFechaFalta, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(FaltaAsistencia::getFechaCreacion, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+
         model.addAttribute("seccionActiva", "faltas");
         model.addAttribute("asignaciones", asignaciones);
         model.addAttribute("faltasRegistradas", faltasRegistradas);
-        model.addAttribute("faltasPendientesRevision", faltasRegistradas.stream()
-                .filter(falta -> falta.getEstado() == EstadoFaltaEnum.PENDIENTE_REVISION)
-                .count());
+        model.addAttribute("faltasPendientesEmpresa", faltasPendientesEmpresa);
+        model.addAttribute("faltasPendientesRevision", faltasPendientesEmpresa.size());
 
         return "tutor-empresa/faltas";
     }
@@ -210,7 +383,7 @@ public class TutorEmpresaController {
         TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
         cargarDatosBase(model, tutor);
 
-        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresa(tutor);
+        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresaId(tutor.getId());
         List<Alumno> alumnos = new ArrayList<>();
         List<Valoracion> valoraciones = new ArrayList<>();
 
@@ -240,6 +413,7 @@ public class TutorEmpresaController {
         try {
             TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
             Alumno alumno = getAlumnoAsignado(idAlumno, tutor);
+            LocalDate fecha = LocalDate.parse(fechaFalta);
 
             Asignacion asignacion = asignacionService.findAsignacionActiva(alumno)
                     .orElseThrow(() -> new RuntimeException(
@@ -249,7 +423,7 @@ public class TutorEmpresaController {
                     alumno,
                     asignacion,
                     tutor,
-                    java.time.LocalDate.parse(fechaFalta),
+                    fecha,
                     tipo,
                     observacion
             );
@@ -265,6 +439,16 @@ public class TutorEmpresaController {
 
             redirectAttributes.addFlashAttribute("successMsg",
                     "Falta registrada correctamente.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        } catch (DataIntegrityViolationException e) {
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error de integridad al registrar falta desde tutor de empresa",
+                    e,
+                    "No se pudo registrar la falta porque la base de datos no tiene la estructura esperada. Revisa la tabla de faltas y vuelve a intentarlo."
+            );
         } catch (Exception e) {
             ControllerMessageUtil.addSafeErrorMessage(
                     redirectAttributes,
@@ -272,6 +456,48 @@ public class TutorEmpresaController {
                     "Error al registrar falta desde tutor de empresa",
                     e,
                     "No se pudo registrar la falta. Inténtalo de nuevo."
+            );
+        }
+
+        return "redirect:/tutor-empresa/faltas";
+    }
+
+    @PostMapping("/faltas/{idFalta}/verificar")
+    public String verificarJustificanteEmpresa(@PathVariable Long idFalta,
+                                               @RequestParam(value = "comentarioVerificacion", required = false) String comentarioVerificacion,
+                                               Principal principal,
+                                               RedirectAttributes redirectAttributes) {
+        try {
+            TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
+
+            FaltaAsistencia falta = faltaAsistenciaService.findById(idFalta)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Falta no encontrada con id: " + idFalta));
+
+            Alumno alumno = getAlumnoAsignado(falta.getAlumno().getId(), tutor);
+            faltaAsistenciaService.verificarJustificanteEmpresa(idFalta, tutor, comentarioVerificacion);
+
+            if (alumno.getTutorCentro() != null) {
+                notificacionService.enviarSistema(
+                        alumno.getTutorCentro(),
+                        TipoNotificacionEnum.AVISO,
+                        "Justificante verificado por empresa",
+                        "El tutor de empresa ha verificado el justificante de la falta del "
+                                + falta.getFechaFalta() + " de " + alumno.getNombreCompleto() + "."
+                );
+            }
+
+            redirectAttributes.addFlashAttribute("successMsg",
+                    "Justificante verificado por empresa correctamente.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
+        } catch (Exception e) {
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al verificar justificante desde tutor de empresa",
+                    e,
+                    "No se pudo verificar el justificante. Inténtalo de nuevo."
             );
         }
 
@@ -365,7 +591,7 @@ public class TutorEmpresaController {
     }
     
     private Alumno getAlumnoAsignado(Long idAlumno, TutorEmpresa tutor) {
-        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresa(tutor);
+        List<Asignacion> asignaciones = asignacionService.findActivasByTutorEmpresaId(tutor.getId());
 
         return asignaciones.stream()
                 .map(Asignacion::getAlumno)
@@ -373,6 +599,17 @@ public class TutorEmpresaController {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException(
                         "El alumno no está asignado a este tutor de empresa"));
+    }
+
+    private record DocumentacionAlumnoView(
+            Long idAlumno,
+            String nombreAlumno,
+            String nombreUsuario,
+            String grupo,
+            String nombreEmpresa,
+            List<Documento> documentos,
+            List<Convenio> convenios
+    ) {
     }
 
 }

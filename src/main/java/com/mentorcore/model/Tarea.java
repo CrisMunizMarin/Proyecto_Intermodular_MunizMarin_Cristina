@@ -63,6 +63,23 @@ public class Tarea {
     private String comentarioTutor;
 
     /**
+     * Comentario operativo del tutor de empresa sobre la ejecución diaria.
+     * Se mantiene separado de la revisión formal del tutor de centro.
+     */
+    @Column(name = "comentario_tutor_empresa", columnDefinition = "TEXT")
+    private String comentarioTutorEmpresa;
+
+    /**
+     * Valoración rápida del tutor de empresa sobre la tarea diaria.
+     * Escala interna de 1 a 5.
+     */
+    @Column(name = "valoracion_tutor_empresa")
+    private Integer valoracionTutorEmpresa;
+
+    @Column(name = "fecha_revision_empresa")
+    private LocalDateTime fechaRevisionEmpresa;
+
+    /**
      * Tutor que validó o rechazó la tarea. RF5
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -114,5 +131,11 @@ public class Tarea {
         this.validador = tutor;
         this.comentarioTutor = motivo;
         this.fechaValidacion = LocalDateTime.now();
+    }
+
+    public void registrarSeguimientoEmpresa(Integer valoracion, String comentario) {
+        this.valoracionTutorEmpresa = valoracion;
+        this.comentarioTutorEmpresa = comentario;
+        this.fechaRevisionEmpresa = LocalDateTime.now();
     }
 }

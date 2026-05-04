@@ -13,57 +13,128 @@
         <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
             Expediente documental
         </p>
-        <h1 class="mc-h1 mb-2">Documentos de alumnos</h1>
+        <h1 class="mc-h1 mb-2">Documentos y convenios</h1>
         <p class="text-muted mb-0">
-            Consulta el contexto de los alumnos asignados para preparar la futura revisión o seguimiento documental desde empresa.
+            Consulta la documentación del alumno, revisa convenios vinculados y sube documentos relacionados con la empresa.
         </p>
     </header>
 
-    <section th:if="${asignaciones == null or #lists.isEmpty(asignaciones)}" class="card">
+    <section th:if="${successMsg}" class="alert alert-success" aria-live="polite">
+        <p class="mb-0" th:text="${successMsg}">Operación realizada correctamente.</p>
+    </section>
+
+    <section th:if="${errorMsg}" class="alert alert-danger" aria-live="assertive">
+        <p class="mb-0" th:text="${errorMsg}">Se ha producido un error.</p>
+    </section>
+
+    <section th:if="${documentacion == null or #lists.isEmpty(documentacion)}" class="card">
         <div class="card-body">
             <p class="mb-0 text-muted">No tienes alumnos activos para seguimiento documental.</p>
         </div>
     </section>
 
-    <section th:if="${asignaciones != null and !#lists.isEmpty(asignaciones)}" aria-labelledby="listado-documentos-base">
-        <h2 id="listado-documentos-base" class="visually-hidden">Alumnos para seguimiento documental</h2>
+    <section th:if="${documentacion != null and !#lists.isEmpty(documentacion)}" aria-labelledby="listado-documentacion">
+        <h2 id="listado-documentacion" class="visually-hidden">Documentación de alumnos asignados</h2>
 
         <div class="row g-4">
-            <div class="col-12 col-lg-6" th:each="asignacion : ${asignaciones}">
+            <div class="col-12" th:each="item : ${documentacion}">
                 <article class="card h-100">
                     <div class="card-body">
-                        <h3 class="h5 mb-2"
-                            th:text="${asignacion.alumno != null ? asignacion.alumno.nombreCompleto : 'Alumno'}">
-                            Alumno
-                        </h3>
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                            <div class="flex-grow-1">
+                                <header class="mb-3">
+                                    <h3 class="h5 mb-2" th:text="${item.nombreAlumno}">Alumno</h3>
+                                    <p class="text-muted mb-0">
+                                        Usuario:
+                                        <span th:text="${item.nombreUsuario}">usuario</span>
+                                        · Grupo:
+                                        <span th:text="${item.grupo != null ? item.grupo : '—'}">—</span>
+                                        · Empresa:
+                                        <span th:text="${item.nombreEmpresa}">Empresa</span>
+                                    </p>
+                                </header>
 
-                        <p class="text-muted mb-3">
-                            Usuario:
-                            <span th:text="${asignacion.alumno != null ? asignacion.alumno.nombreUsuario : 'usuario'}">usuario</span>
-                            · Grupo:
-                            <span th:text="${asignacion.alumno != null and asignacion.alumno.grupo != null ? asignacion.alumno.grupo : '—'}">—</span>
-                        </p>
+                                <div class="row g-3">
+                                    <div class="col-12 col-lg-6">
+                                        <div class="border rounded p-3 h-100">
+                                            <h4 class="h6 mb-3">Documentos del alumno</h4>
+                                            <div th:if="${item.documentos == null or #lists.isEmpty(item.documentos)}">
+                                                <p class="mb-0 text-muted">No hay documentos registrados.</p>
+                                            </div>
+                                            <ul th:if="${item.documentos != null and !#lists.isEmpty(item.documentos)}" class="list-unstyled mb-0">
+                                                <li th:each="documento : ${item.documentos}" class="mb-2">
+                                                    <strong th:text="${documento.tipoDocumento != null ? documento.tipoDocumento.nombre : 'Documento'}">Documento</strong>
+                                                    <span class="text-muted"> · </span>
+                                                    <span th:text="${documento.nombreArchivo}">archivo.pdf</span>
+                                                    <span class="text-muted"> · </span>
+                                                    <span th:text="${documento.estado}">PENDIENTE</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
 
-                        <dl class="row mb-3">
-                            <dt class="col-sm-4">Empresa</dt>
-                            <dd class="col-sm-8" th:text="${asignacion.empresa != null ? asignacion.empresa.nombre : '—'}">—</dd>
+                                    <div class="col-12 col-lg-6">
+                                        <div class="border rounded p-3 h-100">
+                                            <h4 class="h6 mb-3">Convenios y documentos de centro</h4>
+                                            <div th:if="${item.convenios == null or #lists.isEmpty(item.convenios)}">
+                                                <p class="mb-0 text-muted">No hay convenios registrados para este alumno.</p>
+                                            </div>
+                                            <ul th:if="${item.convenios != null and !#lists.isEmpty(item.convenios)}" class="list-unstyled mb-0">
+                                                <li th:each="convenio : ${item.convenios}" class="mb-2">
+                                                    <strong th:text="${convenio.numeroConvenio}">CONV-001</strong>
+                                                    <span class="text-muted"> · </span>
+                                                    <span th:text="${convenio.estado}">VIGENTE</span>
+                                                    <span class="text-muted"> · </span>
+                                                    <span th:text="${#temporals.format(convenio.fechaInicio, 'dd/MM/yyyy')}">01/01/2026</span>
+                                                    <span th:if="${convenio.archivoPdfUrl != null and !#strings.isEmpty(convenio.archivoPdfUrl)}" class="text-muted">
+                                                        · PDF disponible
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                            <dt class="col-sm-4">Tutor centro</dt>
-                            <dd class="col-sm-8"
-                                th:text="${asignacion.alumno != null and asignacion.alumno.tutorCentro != null ? asignacion.alumno.tutorCentro.nombreCompleto : '—'}">
-                                —
-                            </dd>
+                            <aside class="col-12 col-xl-4">
+                                <div class="border rounded p-3 h-100">
+                                    <h4 class="h6 mb-3">Subir documento de empresa</h4>
 
-                            <dt class="col-sm-4">Curso</dt>
-                            <dd class="col-sm-8"
-                                th:text="${asignacion.alumno != null and asignacion.alumno.cursoAcademico != null ? asignacion.alumno.cursoAcademico.nombreCompleto : '—'}">
-                                —
-                            </dd>
-                        </dl>
+                                    <form th:action="@{/tutor-empresa/documentos/subir}" method="post" enctype="multipart/form-data">
+                                        <input type="hidden"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}">
+                                        <input type="hidden" name="idAlumno" th:value="${item.idAlumno}">
 
-                        <p class="mb-0 text-muted">
-                            Vista base preparada para definir después qué nivel de acceso documental tendrá exactamente el tutor de empresa.
-                        </p>
+                                        <div class="mb-3">
+                                            <label th:for="'tipoDocumento-' + ${item.idAlumno}" class="form-label">Tipo de documento</label>
+                                            <select th:id="'tipoDocumento-' + ${item.idAlumno}" name="idTipoDocumento" class="form-select" required>
+                                                <option value="">Selecciona un tipo</option>
+                                                <option th:each="tipo : ${tiposDocumentoEmpresa}"
+                                                        th:value="${tipo.id}"
+                                                        th:text="${tipo.nombre}">
+                                                    Tipo
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label th:for="'archivoEmpresa-' + ${item.idAlumno}" class="form-label">Archivo</label>
+                                            <input type="file"
+                                                   th:id="'archivoEmpresa-' + ${item.idAlumno}"
+                                                   name="archivo"
+                                                   class="form-control"
+                                                   required>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-mc-primary w-100">
+                                            <i class="fas fa-upload me-2" aria-hidden="true"></i>
+                                            Subir documento
+                                        </button>
+                                    </form>
+                                </div>
+                            </aside>
+                        </div>
                     </div>
                 </article>
             </div>

@@ -118,6 +118,93 @@
         </div>
     </section>
 
+    <section th:if="${faltasPendientesEmpresa != null and !#lists.isEmpty(faltasPendientesEmpresa)}"
+             aria-labelledby="verificaciones-pendientes"
+             class="mb-4">
+        <h2 id="verificaciones-pendientes" class="h4 mb-3">Justificantes pendientes de verificar</h2>
+
+        <div class="row g-4">
+            <div class="col-12" th:each="falta : ${faltasPendientesEmpresa}">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <div class="row g-4 align-items-start">
+                            <div class="col-12 col-xl-7">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h3 class="h5 mb-0"
+                                        th:text="${falta.alumno != null ? falta.alumno.nombreCompleto : 'Alumno'}">
+                                        Alumno
+                                    </h3>
+                                    <span class="badge"
+                                          style="background-color: var(--mc-rosa-suave); color: var(--mc-texto);">
+                                        Pendiente de verificación
+                                    </span>
+                                </div>
+
+                                <p class="text-muted mb-2">
+                                    Fecha:
+                                    <span th:text="${#temporals.format(falta.fechaFalta, 'dd/MM/yyyy')}">01/01/2026</span>
+                                    <span th:if="${falta.justificante != null}">
+                                        · Justificante:
+                                        <a th:href="@{/documentos/{id}/ver(id=${falta.justificante.id})}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="mc-break-anywhere"
+                                           th:text="${falta.justificante.nombreArchivo}">
+                                            justificante.pdf
+                                        </a>
+                                    </span>
+                                </p>
+
+                                <p class="mb-0"
+                                   th:text="${falta.observacion != null and !#strings.isEmpty(falta.observacion) ? falta.observacion : 'Sin observaciones registradas.'}">
+                                    Sin observaciones registradas.
+                                </p>
+
+                                <div th:if="${falta.motivoJustificacion != null and !#strings.isEmpty(falta.motivoJustificacion)}" class="mt-3">
+                                    <h4 class="h6 mb-2">Justificación del alumno</h4>
+                                    <p class="mb-1 text-muted" th:text="${falta.motivoJustificacion}">Motivo</p>
+                                    <p class="mb-0 text-muted">
+                                        Horas ausente:
+                                        <strong th:text="${falta.horasAusencia != null ? falta.horasAusencia : '—'}">—</strong>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <aside class="col-12 col-xl-5">
+                                <div class="border rounded p-3 h-100">
+                                    <h4 class="h6 mb-3">Verificar justificante</h4>
+
+                                    <form th:action="@{/tutor-empresa/faltas/{idFalta}/verificar(idFalta=${falta.id})}"
+                                          method="post">
+                                        <input type="hidden"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}">
+
+                                        <div class="mb-3">
+                                            <label th:for="'comentarioVerificacionPendiente-' + ${falta.id}" class="form-label">
+                                                Comentario de verificación
+                                            </label>
+                                            <textarea th:id="'comentarioVerificacionPendiente-' + ${falta.id}"
+                                                      name="comentarioVerificacion"
+                                                      class="form-control"
+                                                      rows="3"
+                                                      placeholder="Indica si la justificación coincide con lo ocurrido en la empresa"></textarea>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-mc-primary w-100">
+                                            <i class="fas fa-check me-2" aria-hidden="true"></i>
+                                            Verificar justificante
+                                        </button>
+                                    </form>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
     <section th:if="${faltasRegistradas != null and !#lists.isEmpty(faltasRegistradas)}" aria-labelledby="historial-faltas">
         <h2 id="historial-faltas" class="h4 mb-3">Historial reciente de faltas</h2>
 
@@ -126,7 +213,7 @@
                 <article class="card h-100">
                     <div class="card-body">
                         <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
-                            <div class="flex-grow-1">
+                            <div class="flex-grow-1 mc-min-w-0">
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                                     <h3 class="h5 mb-0"
                                         th:text="${falta.alumno != null ? falta.alumno.nombreCompleto : 'Alumno'}">
@@ -150,13 +237,38 @@
                                     <span th:text="${#temporals.format(falta.fechaFalta, 'dd/MM/yyyy')}">01/01/2026</span>
                                     <span th:if="${falta.justificante != null}">
                                         · Justificante:
-                                        <span th:text="${falta.justificante.nombreArchivo}">justificante.pdf</span>
+                                        <a th:href="@{/documentos/{id}/ver(id=${falta.justificante.id})}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           class="mc-break-anywhere"
+                                           th:text="${falta.justificante.nombreArchivo}">
+                                            justificante.pdf
+                                        </a>
                                     </span>
                                 </p>
 
                                 <p class="mb-0"
                                    th:text="${falta.observacion != null and !#strings.isEmpty(falta.observacion) ? falta.observacion : 'Sin observaciones registradas.'}">
                                     Sin observaciones registradas.
+                                </p>
+
+                                <div th:if="${falta.motivoJustificacion != null and !#strings.isEmpty(falta.motivoJustificacion)}" class="mt-3">
+                                    <h4 class="h6 mb-2">Justificación del alumno</h4>
+                                    <p class="mb-1 text-muted" th:text="${falta.motivoJustificacion}">Motivo</p>
+                                    <p class="mb-0 text-muted">
+                                        Horas ausente:
+                                        <strong th:text="${falta.horasAusencia != null ? falta.horasAusencia : '—'}">—</strong>
+                                    </p>
+                                </div>
+
+                                <div th:if="${falta.comentarioVerificacionEmpresa != null and !#strings.isEmpty(falta.comentarioVerificacionEmpresa)}" class="mt-3">
+                                    <h4 class="h6 mb-2">Verificación registrada</h4>
+                                    <p class="mb-0 text-muted" th:text="${falta.comentarioVerificacionEmpresa}">Verificación</p>
+                                </div>
+
+                                <p th:if="${falta.justificante != null and falta.comentarioVerificacionEmpresa == null}"
+                                   class="mt-3 mb-0 text-muted small">
+                                    Este justificante sigue pendiente de verificación en el bloque superior.
                                 </p>
                             </div>
                         </div>

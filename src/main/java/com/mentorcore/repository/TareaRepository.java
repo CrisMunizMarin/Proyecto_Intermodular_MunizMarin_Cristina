@@ -2,6 +2,7 @@ package com.mentorcore.repository;
 
 import com.mentorcore.model.Alumno;
 import com.mentorcore.model.Tarea;
+import com.mentorcore.model.enums.EstadoFeEnum;
 import com.mentorcore.model.enums.EstadoValidacionEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,7 +21,11 @@ import java.util.Optional;
 public interface TareaRepository extends JpaRepository<Tarea, Long> {
 
     // Tareas de un alumno ordenadas por fecha descendente (RF2)
-    List<Tarea> findByAlumnoOrderByFechaRegistroDesc(Alumno alumno);
+    @Query("SELECT t FROM Tarea t " +
+           "JOIN FETCH t.alumno a " +
+           "WHERE a = :alumno " +
+           "ORDER BY t.fechaRegistro DESC, t.fechaCreacion DESC")
+    List<Tarea> findByAlumnoOrderByFechaRegistroDesc(@Param("alumno") Alumno alumno);
 
     // Tareas pendientes de revisión de un alumno (RF5)
     List<Tarea> findByAlumnoAndEstadoValidacion(
@@ -39,6 +44,17 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
            "LEFT JOIN FETCH a.tutorCentro " +
            "WHERE t.id = :id")
     Optional<Tarea> findDetalleById(@Param("id") Long id);
+
+    @Query("SELECT DISTINCT t FROM Tarea t " +
+           "JOIN FETCH t.alumno a " +
+           "WHERE a.id IN (" +
+           "    SELECT asig.alumno.id FROM Asignacion asig " +
+           "    WHERE asig.tutorEmpresa.id = :idTutorEmpresa " +
+           "    AND asig.estado = :estadoFe" +
+           ") " +
+           "ORDER BY t.fechaRegistro DESC, t.fechaCreacion DESC")
+    List<Tarea> findByTutorEmpresa(@Param("idTutorEmpresa") Long idTutorEmpresa,
+                                   @Param("estadoFe") EstadoFeEnum estadoFe);
 
     // Tareas de un alumno en un rango de fechas (RF8 - informes)
     @Query("SELECT t FROM Tarea t WHERE t.alumno = :alumno " +
