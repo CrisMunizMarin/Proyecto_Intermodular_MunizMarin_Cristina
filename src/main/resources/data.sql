@@ -62,6 +62,17 @@ UPDATE usuario
 SET password_hash = '$2a$12$rAM9dfgvHRrrPlZLsr3oBuBtCMs6vQXebumyxPccF0HvacTdKeLfG'
 WHERE nombre_usuario IN ('admin', 'tutorcentro1', 'tutorempresa1', 'alumno1');
 
+-- Perfil extendido del administrador
+INSERT INTO administrador
+    (id_usuario)
+SELECT
+    (SELECT id FROM usuario WHERE nombre_usuario = 'admin')
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM administrador
+    WHERE id_usuario = (SELECT id FROM usuario WHERE nombre_usuario = 'admin')
+);
+
 -- -----------------------------------------------------
 -- EMPRESA DE PRUEBA
 -- -----------------------------------------------------
@@ -91,6 +102,30 @@ VALUES
     '2º DAW Vespertino',
     'DAW vespertino',
     'SEGUNDO',
+    '2025-2026',
+    TRUE
+),
+(
+    '1IFC302',
+    '1º DAM Diurno',
+    'DAM diurno',
+    'PRIMERO',
+    '2025-2026',
+    TRUE
+),
+(
+    '2IFC302',
+    '2º DAM Diurno',
+    'DAM diurno',
+    'SEGUNDO',
+    '2025-2026',
+    TRUE
+),
+(
+    '1VIFC303',
+    '1º DAW Vespertino',
+    'DAW vespertino',
+    'PRIMERO',
     '2025-2026',
     TRUE
 );
@@ -138,10 +173,9 @@ VALUES
 -- -----------------------------------------------------
 -- PERIODO DE FORMACIÓN DE PRUEBA
 -- -----------------------------------------------------
-INSERT IGNORE INTO periodo_formacion
+INSERT INTO periodo_formacion
     (id_curso, tipo, anio_academico, fecha_inicio, fecha_fin, horas_totales, estado, id_creado_por)
-VALUES
-(
+SELECT
     (SELECT id FROM curso_academico WHERE codigo_curso = '2VIFC303'),
     'ORDINARIO',
     '2025-2026',
@@ -150,6 +184,85 @@ VALUES
     400,
     'ACTIVO',
     (SELECT id FROM usuario WHERE nombre_usuario = 'admin')
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM periodo_formacion
+    WHERE id_curso = (SELECT id FROM curso_academico WHERE codigo_curso = '2VIFC303')
+      AND tipo = 'ORDINARIO'
+      AND anio_academico = '2025-2026'
+      AND fecha_inicio = '2026-01-12'
+      AND fecha_fin = '2026-03-27'
+);
+
+INSERT INTO periodo_formacion
+    (id_curso, tipo, anio_academico, fecha_inicio, fecha_fin, horas_totales, estado, id_creado_por)
+SELECT
+    (SELECT id FROM curso_academico WHERE codigo_curso = '2IFC302'),
+    'ORDINARIO',
+    '2025-2026',
+    '2026-01-19',
+    '2026-04-10',
+    400,
+    'PLANIFICADO',
+    (SELECT id FROM usuario WHERE nombre_usuario = 'admin')
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM periodo_formacion
+    WHERE id_curso = (SELECT id FROM curso_academico WHERE codigo_curso = '2IFC302')
+      AND tipo = 'ORDINARIO'
+      AND anio_academico = '2025-2026'
+      AND fecha_inicio = '2026-01-19'
+      AND fecha_fin = '2026-04-10'
+);
+
+INSERT INTO periodo_formacion
+    (id_curso, tipo, anio_academico, fecha_inicio, fecha_fin, horas_totales, estado, id_creado_por)
+SELECT
+    (SELECT id FROM curso_academico WHERE codigo_curso = '1VIFC303'),
+    'EXTRAORDINARIO',
+    '2025-2026',
+    '2026-05-04',
+    '2026-07-03',
+    400,
+    'PLANIFICADO',
+    (SELECT id FROM usuario WHERE nombre_usuario = 'admin')
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM periodo_formacion
+    WHERE id_curso = (SELECT id FROM curso_academico WHERE codigo_curso = '1VIFC303')
+      AND tipo = 'EXTRAORDINARIO'
+      AND anio_academico = '2025-2026'
+      AND fecha_inicio = '2026-05-04'
+      AND fecha_fin = '2026-07-03'
+);
+
+-- -----------------------------------------------------
+-- ASIGNACIÓN DE PRUEBA
+-- Vincula al alumno con la empresa y tutor de empresa
+-- para que los flujos de tutor-empresa sean operativos.
+-- -----------------------------------------------------
+INSERT INTO asignacion
+    (id_alumno, id_empresa, id_tutor_empresa, id_periodo, fecha_inicio, estado)
+SELECT
+    (SELECT id FROM usuario WHERE nombre_usuario = 'alumno1'),
+    (SELECT id FROM empresa WHERE cif = 'B33123456'),
+    (SELECT id FROM usuario WHERE nombre_usuario = 'tutorempresa1'),
+    (SELECT id
+     FROM periodo_formacion
+     WHERE id_curso = (SELECT id FROM curso_academico WHERE codigo_curso = '2VIFC303')
+       AND tipo = 'ORDINARIO'
+       AND anio_academico = '2025-2026'
+       AND fecha_inicio = '2026-01-12'
+       AND fecha_fin = '2026-03-27'
+     ORDER BY id DESC
+     LIMIT 1),
+    '2026-01-12',
+    'EN_CURSO'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM asignacion
+    WHERE id_alumno = (SELECT id FROM usuario WHERE nombre_usuario = 'alumno1')
+      AND estado = 'EN_CURSO'
 );
 
 -- -----------------------------------------------------
@@ -233,5 +346,13 @@ VALUES
     FALSE,
     'ALUMNO',
     'pdf,jpg,png',
+    TRUE
+),
+(
+    'Informe de Seguimiento Empresa',
+    'Documento subido por el tutor de empresa con información de seguimiento o incidencias',
+    FALSE,
+    'TUTOR_EMPRESA',
+    'pdf,doc,docx',
     TRUE
 );

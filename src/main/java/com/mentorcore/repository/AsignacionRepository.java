@@ -19,6 +19,30 @@ import java.util.Optional;
 @Repository
 public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
 
+    @Query("SELECT a FROM Asignacion a " +
+           "JOIN FETCH a.alumno al " +
+           "LEFT JOIN FETCH al.tutorCentro " +
+           "LEFT JOIN FETCH al.cursoAcademico " +
+           "JOIN FETCH a.empresa " +
+           "JOIN FETCH a.tutorEmpresa te " +
+           "LEFT JOIN FETCH te.empresa " +
+           "LEFT JOIN FETCH a.periodo " +
+           "LEFT JOIN FETCH a.reasignadoPor " +
+           "WHERE a.id = :id")
+    Optional<Asignacion> findDetalleById(@Param("id") Long id);
+
+    @Query("SELECT a FROM Asignacion a " +
+           "JOIN FETCH a.alumno al " +
+           "LEFT JOIN FETCH al.tutorCentro " +
+           "LEFT JOIN FETCH al.cursoAcademico " +
+           "JOIN FETCH a.empresa " +
+           "JOIN FETCH a.tutorEmpresa te " +
+           "LEFT JOIN FETCH te.empresa " +
+           "LEFT JOIN FETCH a.periodo " +
+           "LEFT JOIN FETCH a.reasignadoPor " +
+           "ORDER BY a.fechaCreacion DESC, a.id DESC")
+    List<Asignacion> findAllDetalleOrderByFechaCreacionDesc();
+
     // Asignación activa de un alumno — debe existir solo una (RF21)
     @Query("SELECT a FROM Asignacion a " +
            "JOIN FETCH a.alumno al " +
@@ -46,6 +70,18 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
            "ORDER BY al.apellidos ASC, al.nombre ASC")
     List<Asignacion> findByTutorEmpresaAndEstado(@Param("tutor") TutorEmpresa tutor,
                                                  @Param("estado") EstadoFeEnum estado);
+
+    @Query("SELECT a FROM Asignacion a " +
+           "JOIN FETCH a.alumno al " +
+           "LEFT JOIN FETCH al.tutorCentro " +
+           "LEFT JOIN FETCH al.cursoAcademico " +
+           "JOIN FETCH a.empresa " +
+           "JOIN FETCH a.tutorEmpresa te " +
+           "LEFT JOIN FETCH a.periodo " +
+           "WHERE te.id = :idTutorEmpresa AND a.estado = :estado " +
+           "ORDER BY al.apellidos ASC, al.nombre ASC")
+    List<Asignacion> findByTutorEmpresaIdAndEstado(@Param("idTutorEmpresa") Long idTutorEmpresa,
+                                                   @Param("estado") EstadoFeEnum estado);
 
     // Verificar si un alumno tiene asignación activa (RF13)
     boolean existsByAlumnoAndEstado(Alumno alumno, EstadoFeEnum estado);

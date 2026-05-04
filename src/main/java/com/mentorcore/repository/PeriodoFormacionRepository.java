@@ -20,6 +20,18 @@ import java.util.Optional;
 @Repository
 public interface PeriodoFormacionRepository extends JpaRepository<PeriodoFormacion, Long> {
 
+    @Query("SELECT p FROM PeriodoFormacion p " +
+           "JOIN FETCH p.cursoAcademico " +
+           "LEFT JOIN FETCH p.creadoPor " +
+           "ORDER BY p.fechaInicio DESC, p.id DESC")
+    List<PeriodoFormacion> findAllDetalle();
+
+    @Query("SELECT p FROM PeriodoFormacion p " +
+           "JOIN FETCH p.cursoAcademico " +
+           "LEFT JOIN FETCH p.creadoPor " +
+           "WHERE p.id = :id")
+    Optional<PeriodoFormacion> findDetalleById(@Param("id") Long id);
+
     List<PeriodoFormacion> findByCursoAcademico(CursoAcademico curso);
 
     List<PeriodoFormacion> findByEstado(EstadoPeriodoEnum estado);

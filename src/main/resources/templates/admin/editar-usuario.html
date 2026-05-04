@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Editar Usuario',
+        ~{layout/sidebar-admin :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">Edición de usuario</p>
+        <h1 class="mc-h1 mb-2">Actualizar usuario</h1>
+        <p class="text-muted mb-0">Puedes modificar datos comunes y campos propios del perfil actual.</p>
+    </header>
+
+    <section th:if="${errorMsg}" class="alert alert-danger"><p class="mb-0" th:text="${errorMsg}">Error</p></section>
+
+    <form th:action="@{/admin/usuarios/editar/{id}(id=${usuario.id})}" method="post" class="card">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" name="rol" th:value="${usuario.rol.name()}">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-12 col-lg-4">
+                    <label class="form-label">Rol</label>
+                    <input class="form-control" th:value="${usuario.rol.name()}" disabled>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <label for="nombreUsuario" class="form-label">Nombre de usuario</label>
+                    <input id="nombreUsuario" name="nombreUsuario" class="form-control" th:value="${usuario.nombreUsuario}" required>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <label for="email" class="form-label">Email</label>
+                    <input id="email" name="email" type="email" class="form-control" th:value="${usuario.email}" required>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <label for="password" class="form-label">Nueva contraseña</label>
+                    <input id="password" name="password" type="password" class="form-control">
+                    <div class="form-text">Déjalo vacío si no quieres cambiarla.</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <label for="nombre" class="form-label">Nombre</label>
+                    <input id="nombre" name="nombre" class="form-control" th:value="${usuario.nombre}" required>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <label for="apellidos" class="form-label">Apellidos</label>
+                    <input id="apellidos" name="apellidos" class="form-control" th:value="${usuario.apellidos}" required>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <label for="telefono" class="form-label">Teléfono</label>
+                    <input id="telefono" name="telefono" class="form-control" th:value="${usuario.telefono}">
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <section th:if="${usuario.rol.name() == 'ALUMNO'}">
+                <h2 class="h5 mb-3">Datos de alumno</h2>
+                <div class="row g-3">
+                    <div class="col-12 col-lg-4">
+                        <label for="idCurso" class="form-label">Curso</label>
+                        <select id="idCurso" name="idCurso" class="form-select" required>
+                            <option value="">Selecciona un curso</option>
+                            <option th:each="curso : ${cursos}"
+                                    th:value="${curso.id}"
+                                    th:selected="${cursoSeleccionadoId != null and curso.id == cursoSeleccionadoId}"
+                                    th:text="${curso.nombreCompleto}">
+                                Curso
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="idTutorCentro" class="form-label">Tutor de centro</label>
+                        <select id="idTutorCentro" name="idTutorCentro" class="form-select" required>
+                            <option value="">Selecciona un tutor</option>
+                            <option th:each="tutor : ${tutoresCentro}"
+                                    th:value="${tutor.id}"
+                                    th:selected="${tutorCentroSeleccionadoId != null and tutor.id == tutorCentroSeleccionadoId}"
+                                    th:text="${tutor.nombreCompleto}">
+                                Tutor
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="grupo" class="form-label">Grupo</label>
+                        <input id="grupo" name="grupo" class="form-control" th:value="${usuario.grupo}">
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="dni" class="form-label">DNI</label>
+                        <input id="dni" name="dni" class="form-control" th:value="${usuario.dni}">
+                    </div>
+                </div>
+            </section>
+
+            <section th:if="${usuario.rol.name() == 'TUTOR_CENTRO'}">
+                <h2 class="h5 mb-3">Datos de tutor de centro</h2>
+                <div class="row g-3">
+                    <div class="col-12 col-lg-4">
+                        <label for="departamento" class="form-label">Departamento</label>
+                        <input id="departamento" name="departamento" class="form-control" th:value="${usuario.departamento}">
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="especialidad" class="form-label">Especialidad</label>
+                        <input id="especialidad" name="especialidad" class="form-control" th:value="${usuario.especialidad}">
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="numExpedienteDocente" class="form-label">N.º expediente docente</label>
+                        <input id="numExpedienteDocente" name="numExpedienteDocente" class="form-control" th:value="${usuario.numExpedienteDocente}">
+                    </div>
+                </div>
+            </section>
+
+            <section th:if="${usuario.rol.name() == 'TUTOR_EMPRESA'}">
+                <h2 class="h5 mb-3">Datos de tutor de empresa</h2>
+                <div class="row g-3">
+                    <div class="col-12 col-lg-4">
+                        <label for="idEmpresa" class="form-label">Empresa</label>
+                        <select id="idEmpresa" name="idEmpresa" class="form-select" required>
+                            <option value="">Selecciona una empresa</option>
+                            <option th:each="empresa : ${empresasActivas}"
+                                    th:value="${empresa.id}"
+                                    th:selected="${empresaSeleccionadaId != null and empresa.id == empresaSeleccionadaId}"
+                                    th:text="${empresa.nombre}">
+                                Empresa
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="cargo" class="form-label">Cargo</label>
+                        <input id="cargo" name="cargo" class="form-control" th:value="${usuario.cargo}">
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="departamentoEmpresa" class="form-label">Departamento empresa</label>
+                        <input id="departamentoEmpresa" name="departamentoEmpresa" class="form-control" th:value="${usuario.departamentoEmpresa}">
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between gap-3 flex-wrap">
+            <a th:href="@{/admin/usuarios}" class="btn btn-outline-secondary">Volver</a>
+            <button type="submit" class="btn btn-mc-primary">Guardar cambios</button>
+        </div>
+    </form>
+</section>
+</html>

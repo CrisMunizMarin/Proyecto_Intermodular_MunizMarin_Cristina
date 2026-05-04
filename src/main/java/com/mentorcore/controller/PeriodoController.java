@@ -28,7 +28,7 @@ import java.time.LocalDate;
  * RF20
  */
 @Controller
-@RequestMapping("/periodos")
+@RequestMapping("/admin/periodos")
 @RequiredArgsConstructor
 @Slf4j
 public class PeriodoController {
@@ -39,8 +39,9 @@ public class PeriodoController {
 
     @GetMapping
     public String listar(Model model, Principal principal) {
-        validarAdmin(principal);
+        Usuario admin = validarAdmin(principal);
 
+        model.addAttribute("adminActual", admin);
         model.addAttribute("periodos", periodoFormacionService.findAll());
         model.addAttribute("cursos", cursoAcademicoService.findAll());
         model.addAttribute("tiposPeriodo", TipoPeriodoEnum.values());
@@ -89,7 +90,7 @@ public class PeriodoController {
             );
         }
 
-        return "redirect:/periodos";
+        return "redirect:/admin/periodos";
     }
 
     @PostMapping("/{id}/activar")
@@ -111,7 +112,7 @@ public class PeriodoController {
             );
         }
 
-        return "redirect:/periodos";
+        return "redirect:/admin/periodos";
     }
 
     @PostMapping("/{id}/cerrar")
@@ -133,7 +134,7 @@ public class PeriodoController {
             );
         }
 
-        return "redirect:/periodos";
+        return "redirect:/admin/periodos";
     }
 
     private Usuario validarAdmin(Principal principal) {

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Empresas Administrador',
+        ~{layout/sidebar-admin :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4">
+        <div>
+            <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">Empresas colaboradoras</p>
+            <h1 class="mc-h1 mb-2">Empresas</h1>
+            <p class="text-muted mb-0">Administra altas, cambios de estado y fichas de empresas colaboradoras.</p>
+        </div>
+        <a th:href="@{/admin/empresas/crear}" class="btn btn-mc-primary">Crear empresa</a>
+    </header>
+
+    <section th:if="${successMsg}" class="alert alert-success"><p class="mb-0" th:text="${successMsg}">OK</p></section>
+    <section th:if="${errorMsg}" class="alert alert-danger"><p class="mb-0" th:text="${errorMsg}">Error</p></section>
+
+    <div class="row g-4" th:if="${empresas != null and !#lists.isEmpty(empresas)}">
+        <div class="col-12 col-xl-6" th:each="empresa : ${empresas}">
+            <article class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                        <div>
+                            <h2 class="h5 mb-1" th:text="${empresa.nombre}">Empresa</h2>
+                            <p class="text-muted mb-0">
+                                CIF: <span th:text="${empresa.cif}">CIF</span>
+                            </p>
+                        </div>
+                        <span class="badge"
+                              th:classappend="${empresa.estado.name() == 'ACTIVA'} ? ' bg-success' : ' bg-warning text-dark'"
+                              th:text="${empresa.estado}">
+                            ACTIVA
+                        </span>
+                    </div>
+
+                    <p class="mb-1"><strong>Sector:</strong> <span th:text="${empresa.sector != null ? empresa.sector : 'Sin indicar'}">Sector</span></p>
+                    <p class="mb-1"><strong>Municipio:</strong> <span th:text="${empresa.municipio != null ? empresa.municipio : 'Sin indicar'}">Municipio</span></p>
+                    <p class="mb-0"><strong>Contacto:</strong> <span th:text="${empresa.emailContacto != null ? empresa.emailContacto : 'Sin email'}">mail</span></p>
+                </div>
+                <div class="card-footer d-flex flex-wrap gap-2">
+                    <a th:href="@{/admin/empresas/editar/{id}(id=${empresa.id})}" class="btn btn-sm btn-outline-primary">Editar</a>
+                    <form th:if="${empresa.estado.name() == 'ACTIVA'}" th:action="@{/admin/empresas/desactivar/{id}(id=${empresa.id})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-sm btn-outline-warning">Desactivar</button>
+                    </form>
+                    <form th:if="${empresa.estado.name() != 'ACTIVA'}" th:action="@{/admin/empresas/reactivar/{id}(id=${empresa.id})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-sm btn-outline-success">Reactivar</button>
+                    </form>
+                    <form th:action="@{/admin/empresas/eliminar/{id}(id=${empresa.id})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <section th:if="${empresas == null or #lists.isEmpty(empresas)}" class="card">
+        <div class="card-body"><p class="mb-0 text-muted">No hay empresas registradas todavía.</p></div>
+    </section>
+</section>
+</html>

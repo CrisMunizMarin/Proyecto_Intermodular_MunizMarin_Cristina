@@ -1,6 +1,7 @@
 package com.mentorcore.controller;
 
 import com.mentorcore.model.Alumno;
+import com.mentorcore.model.Asignacion;
 import com.mentorcore.model.Notificacion;
 import com.mentorcore.model.Valoracion;
 import com.mentorcore.model.Tarea;
@@ -8,7 +9,9 @@ import com.mentorcore.model.Documento;
 import com.mentorcore.model.TipoDocumento;
 import com.mentorcore.model.FaltaAsistencia;
 import com.mentorcore.model.enums.ContextoDocumentoEnum;
+import com.mentorcore.model.enums.TipoNotificacionEnum;
 import com.mentorcore.service.AlumnoService;
+import com.mentorcore.service.AsignacionService;
 import com.mentorcore.service.DocumentoService;
 import com.mentorcore.service.FaltaAsistenciaService;
 import com.mentorcore.service.NotificacionService;
@@ -50,6 +53,7 @@ import java.time.LocalDate;
 public class AlumnoController {
 
     private final AlumnoService alumnoService;
+    private final AsignacionService asignacionService;
     private final TareaService tareaService;
     private final DocumentoService documentoService;
     private final FaltaAsistenciaService faltaAsistenciaService;
@@ -136,10 +140,13 @@ public class AlumnoController {
         cargarDatosBase(model, alumno);
 
         model.addAttribute("seccionActiva", "documentos");
-        model.addAttribute("documentos", documentoService.findByAlumno(alumno));
+        model.addAttribute("documentos",
+                documentoService.findByAlumnoAndContexto(alumno, ContextoDocumentoEnum.EXPEDIENTE));
         model.addAttribute("documentosPendientes",
                 documentoService.findPendientesByAlumno(alumno));
-        model.addAttribute("tiposDocumento", tipoDocumentoService.findActivos());
+        model.addAttribute("tiposDocumento", tipoDocumentoService.findActivos().stream()
+                .filter(tipo -> !"Justificante de Falta".equalsIgnoreCase(tipo.getNombre()))
+                .toList());
 
         return "alumno/documentos";
     }
@@ -216,6 +223,8 @@ public class AlumnoController {
 
         model.addAttribute("seccionActiva", "faltas");
         model.addAttribute("faltas", faltaAsistenciaService.findByAlumno(alumno));
+        model.addAttribute("asignacionActiva",
+                asignacionService.findAsignacionActiva(alumno).orElse(null));
         model.addAttribute("faltasJustificadas",
                 faltaAsistenciaService.contarJustificadas(alumno));
         model.addAttribute("faltasInjustificadas",
@@ -223,12 +232,130 @@ public class AlumnoController {
 
         return "alumno/faltas";
     }
+
+    @PostMapping("/faltas/avisar")
+    public String avisarFalta(@RequestParam("fechaFalta") String fechaFalta,
+                              @RequestParam(value = "observacion", required = false) String observacion,
+                              Principal principal,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            Alumno alumno = getAlumnoAutenticado(principal);
+            Asignacion asignacion = asignacionService.findAsignacionActiva(alumno)
+                    .orElseThrow(() -> new RuntimeException(
+                            "No tienes una asignación activa para registrar el aviso de falta"));
+
+            FaltaAsistencia falta = faltaAsistenciaService.registrarAvisoAlumno(
+                    alumno,
+                    asignacion,
+                    LocalDate.parse(fechaFalta),
+                    observacion
+            );
+
+            if (asignacion.getTutorEmpresa() != null) {
+                notificacionService.enviarSistema(
+                        asignacion.getTutorEmpresa(),
+                        TipoNotificacionEnum.AVISO,
+                        "Aviso de falta del alumno",
+                        alumno.getNombreCompleto() + " ha avisado de una falta para el día "
+                                + falta.getFechaFalta() + "."
+                );
+            }
+
+            if (alumno.getTutorCentro() != null) {
+                notificacionService.enviarSistema(
+                        alumno.getTutorCentro(),
+                        TipoNotificacionEnum.AVISO,
+                        "Aviso de falta del alumno",
+                        alumno.getNombreCompleto() + " ha comunicado una futura falta para el día "
+                                + falta.getFechaFalta() + "."
+                );
+            }
+
+            redirectAttributes.addFlashAttribute("successMsg",
+                    "Aviso de falta registrado correctamente.");
+        } catch (Exception e) {
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al registrar aviso de falta del alumno",
+                    e,
+                    "No se pudo registrar el aviso de falta. Inténtalo de nuevo."
+            );
+        }
+
+        return "redirect:/alumno/faltas";
+    }
+
+    @PostMapping("/faltas/registrar-con-justificante")
+    public String registrarFaltaConJustificante(@RequestParam("fechaFalta") String fechaFalta,
+                                                @RequestParam(value = "observacion", required = false) String observacion,
+                                                @RequestParam("archivo") MultipartFile archivo,
+                                                @RequestParam("motivoJustificacion") String motivoJustificacion,
+                                                @RequestParam("horasAusencia") BigDecimal horasAusencia,
+                                                Principal principal,
+                                                RedirectAttributes redirectAttributes) {
+        try {
+            Alumno alumno = getAlumnoAutenticado(principal);
+            Asignacion asignacion = asignacionService.findAsignacionActiva(alumno)
+                    .orElseThrow(() -> new RuntimeException(
+                            "No tienes una asignación activa para registrar la falta"));
+
+            FaltaAsistencia falta = faltaAsistenciaService.registrarAvisoAlumno(
+                    alumno,
+                    asignacion,
+                    LocalDate.parse(fechaFalta),
+                    observacion
+            );
+
+            Documento documento = guardarJustificanteAlumno(alumno, archivo);
+
+            faltaAsistenciaService.adjuntarJustificante(
+                    falta.getId(),
+                    documento,
+                    motivoJustificacion,
+                    horasAusencia
+            );
+
+            if (falta.getRegistradoPor() != null) {
+                notificacionService.enviarSistema(
+                        falta.getRegistradoPor(),
+                        TipoNotificacionEnum.AVISO,
+                        "Justificante pendiente de verificar",
+                        alumno.getNombreCompleto() + " ha registrado una falta con justificante para el día "
+                                + falta.getFechaFalta() + "."
+                );
+            }
+
+            if (alumno.getTutorCentro() != null) {
+                notificacionService.notificarJustificante(
+                        alumno.getTutorCentro(),
+                        alumno.getNombreCompleto(),
+                        falta.getFechaFalta().toString()
+                );
+            }
+
+            redirectAttributes.addFlashAttribute("successMsg",
+                    "Falta registrada con justificante correctamente.");
+        } catch (Exception e) {
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al registrar falta con justificante del alumno",
+                    e,
+                    "No se pudo registrar la falta con justificante. Inténtalo de nuevo."
+            );
+        }
+
+        return "redirect:/alumno/faltas";
+    }
     
     
     //JUSTIFICAR FALTA
     @PostMapping("/faltas/{idFalta}/justificar")
     public String adjuntarJustificante(@PathVariable Long idFalta,
                                        @RequestParam("archivo") MultipartFile archivo,
+                                       @RequestParam("motivoJustificacion") String motivoJustificacion,
+                                       @RequestParam("horasAusencia") BigDecimal horasAusencia,
                                        Principal principal,
                                        RedirectAttributes redirectAttributes) {
         try {
@@ -242,46 +369,24 @@ public class AlumnoController {
                 throw new RuntimeException("No puedes justificar una falta que no es tuya");
             }
 
-            if (archivo == null || archivo.isEmpty()) {
-                throw new IllegalArgumentException("Debes seleccionar un archivo");
-            }
+            Documento documento = guardarJustificanteAlumno(alumno, archivo);
 
-            TipoDocumento tipoDocumento = tipoDocumentoService
-                    .findByNombreActivo("Justificante de Falta")
-                    .orElseThrow(() -> new RuntimeException(
-                            "No existe un tipo de documento activo llamado 'Justificante de Falta'"));
-
-            String extension = "";
-            String nombreOriginal = archivo.getOriginalFilename();
-            if (nombreOriginal != null && nombreOriginal.contains(".")) {
-                extension = nombreOriginal.substring(nombreOriginal.lastIndexOf(".") + 1).toLowerCase();
-            }
-
-            if (!tipoDocumento.isExtensionValida(extension)) {
-                throw new IllegalArgumentException(
-                        "La extensión del archivo no está permitida para justificantes");
-            }
-
-            String subcarpeta = "alumnos/" + alumno.getId() + "/justificantes";
-            String rutaGuardada = fileUploadUtil.guardarArchivo(
-                    rutaBaseUploads,
-                    subcarpeta,
-                    archivo
+            faltaAsistenciaService.adjuntarJustificante(
+                    idFalta,
+                    documento,
+                    motivoJustificacion,
+                    horasAusencia
             );
 
-            Documento documento = documentoService.subirDocumento(
-                    alumno,
-                    tipoDocumento,
-                    alumno,
-                    archivo.getOriginalFilename(),
-                    rutaGuardada,
-                    archivo.getContentType(),
-                    archivo.getSize(),
-                    false,
-                    ContextoDocumentoEnum.JUSTIFICANTE_FALTA
-            );
-
-            faltaAsistenciaService.adjuntarJustificante(idFalta, documento);
+            if (falta.getRegistradoPor() != null) {
+                notificacionService.enviarSistema(
+                        falta.getRegistradoPor(),
+                        TipoNotificacionEnum.AVISO,
+                        "Justificante pendiente de verificar",
+                        alumno.getNombreCompleto() + " ha adjuntado un justificante para la falta del "
+                                + falta.getFechaFalta() + "."
+                );
+            }
 
             if (alumno.getTutorCentro() != null) {
                 notificacionService.notificarJustificante(
@@ -304,6 +409,47 @@ public class AlumnoController {
         }
 
         return "redirect:/alumno/faltas";
+    }
+
+    private Documento guardarJustificanteAlumno(Alumno alumno, MultipartFile archivo) {
+        if (archivo == null || archivo.isEmpty()) {
+            throw new IllegalArgumentException("Debes seleccionar un archivo");
+        }
+
+        TipoDocumento tipoDocumento = tipoDocumentoService
+                .findByNombreActivo("Justificante de Falta")
+                .orElseThrow(() -> new RuntimeException(
+                        "No existe un tipo de documento activo llamado 'Justificante de Falta'"));
+
+        String extension = "";
+        String nombreOriginal = archivo.getOriginalFilename();
+        if (nombreOriginal != null && nombreOriginal.contains(".")) {
+            extension = nombreOriginal.substring(nombreOriginal.lastIndexOf(".") + 1).toLowerCase();
+        }
+
+        if (!tipoDocumento.isExtensionValida(extension)) {
+            throw new IllegalArgumentException(
+                    "La extensión del archivo no está permitida para justificantes");
+        }
+
+        String subcarpeta = "alumnos/" + alumno.getId() + "/justificantes";
+        String rutaGuardada = fileUploadUtil.guardarArchivo(
+                rutaBaseUploads,
+                subcarpeta,
+                archivo
+        );
+
+        return documentoService.subirDocumento(
+                alumno,
+                tipoDocumento,
+                alumno,
+                archivo.getOriginalFilename(),
+                rutaGuardada,
+                archivo.getContentType(),
+                archivo.getSize(),
+                false,
+                ContextoDocumentoEnum.JUSTIFICANTE_FALTA
+        );
     }
 
 

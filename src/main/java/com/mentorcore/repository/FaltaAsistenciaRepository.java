@@ -22,8 +22,11 @@ public interface FaltaAsistenciaRepository extends JpaRepository<FaltaAsistencia
 
     // Todas las faltas de un alumno (RF22)
     @Query("SELECT f FROM FaltaAsistencia f " +
+           "JOIN FETCH f.alumno a " +
+           "LEFT JOIN FETCH a.tutorCentro " +
            "LEFT JOIN FETCH f.justificante " +
-           "WHERE f.alumno = :alumno " +
+           "LEFT JOIN FETCH f.registradoPor " +
+           "WHERE a = :alumno " +
            "ORDER BY f.fechaFalta DESC")
     List<FaltaAsistencia> findByAlumnoOrderByFechaFaltaDesc(@Param("alumno") Alumno alumno);
 
@@ -32,8 +35,11 @@ public interface FaltaAsistenciaRepository extends JpaRepository<FaltaAsistencia
 
     // Faltas por estado (RF22)
     @Query("SELECT f FROM FaltaAsistencia f " +
+           "JOIN FETCH f.alumno a " +
+           "LEFT JOIN FETCH a.tutorCentro " +
            "LEFT JOIN FETCH f.justificante " +
-           "WHERE f.alumno = :alumno AND f.estado = :estado " +
+           "LEFT JOIN FETCH f.registradoPor " +
+           "WHERE a = :alumno AND f.estado = :estado " +
            "ORDER BY f.fechaFalta DESC")
     List<FaltaAsistencia> findByAlumnoAndEstado(@Param("alumno") Alumno alumno,
                                                 @Param("estado") EstadoFaltaEnum estado);
@@ -49,6 +55,7 @@ public interface FaltaAsistenciaRepository extends JpaRepository<FaltaAsistencia
            "JOIN FETCH f.alumno a " +
            "LEFT JOIN FETCH a.tutorCentro " +
            "LEFT JOIN FETCH f.justificante " +
+           "LEFT JOIN FETCH f.registradoPor " +
            "WHERE a.tutorCentro.id = :idTutor " +
            "ORDER BY f.fechaFalta DESC")
     List<FaltaAsistencia> findByTutorCentro(@Param("idTutor") Long idTutor);
@@ -57,6 +64,7 @@ public interface FaltaAsistenciaRepository extends JpaRepository<FaltaAsistencia
            "JOIN FETCH f.alumno a " +
            "LEFT JOIN FETCH a.tutorCentro " +
            "LEFT JOIN FETCH f.justificante " +
+           "LEFT JOIN FETCH f.registradoPor " +
            "WHERE f.id = :id")
     Optional<FaltaAsistencia> findDetalleById(@Param("id") Long id);
 }

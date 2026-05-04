@@ -1,0 +1,39 @@
+<nav th:fragment="sidebar" class="d-flex flex-column p-3 h-100 border-end bg-white">
+    <div class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-1" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Panel administrador
+        </p>
+        <h2 class="h5 mb-0">Gestión global</h2>
+    </div>
+
+    <div class="nav nav-pills flex-column gap-2">
+        <a th:href="@{/admin/inicio}" class="nav-link">
+            <i class="fas fa-house me-2" aria-hidden="true"></i>
+            Inicio
+        </a>
+        <a th:href="@{/admin/usuarios}" class="nav-link">
+            <i class="fas fa-users me-2" aria-hidden="true"></i>
+            Usuarios
+        </a>
+        <a th:href="@{/admin/empresas}" class="nav-link">
+            <i class="fas fa-building me-2" aria-hidden="true"></i>
+            Empresas
+        </a>
+        <a th:href="@{/admin/cursos}" class="nav-link">
+            <i class="fas fa-graduation-cap me-2" aria-hidden="true"></i>
+            Cursos
+        </a>
+        <a th:href="@{/admin/periodos}" class="nav-link">
+            <i class="fas fa-calendar-days me-2" aria-hidden="true"></i>
+            Periodos
+        </a>
+        <a th:href="@{/admin/asignaciones}" class="nav-link">
+            <i class="fas fa-diagram-project me-2" aria-hidden="true"></i>
+            Asignaciones
+        </a>
+        <a th:href="@{/admin/configuracion}" class="nav-link">
+            <i class="fas fa-sliders me-2" aria-hidden="true"></i>
+            Configuración
+        </a>
+    </div>
+</nav>

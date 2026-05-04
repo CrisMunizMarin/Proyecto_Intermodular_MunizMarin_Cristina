@@ -5,6 +5,7 @@ import com.mentorcore.model.Asignacion;
 import com.mentorcore.model.FaltaAsistencia;
 import com.mentorcore.model.TutorCentro;
 import com.mentorcore.model.TutorEmpresa;
+import com.mentorcore.model.enums.TipoNotificacionEnum;
 import com.mentorcore.service.AsignacionService;
 import com.mentorcore.service.FaltaAsistenciaService;
 import com.mentorcore.service.NotificacionService;
@@ -87,6 +88,7 @@ public class FaltaAsistenciaController {
 
     @PostMapping("/{idFalta}/aprobar")
     public String aprobar(@PathVariable Long idFalta,
+                          @RequestParam(value = "comentario", required = false) String comentario,
                           Principal principal,
                           RedirectAttributes redirectAttributes) {
         try {
@@ -102,7 +104,7 @@ public class FaltaAsistenciaController {
                 throw new RuntimeException("No puedes revisar faltas de un alumno no asignado");
             }
 
-            faltaAsistenciaService.aprobarJustificante(idFalta, tutor);
+            faltaAsistenciaService.aprobarJustificante(idFalta, tutor, comentario);
             redirectAttributes.addFlashAttribute("successMsg",
                     "Justificante aprobado correctamente.");
         } catch (Exception e) {
@@ -116,6 +118,46 @@ public class FaltaAsistenciaController {
         }
 
         return "redirect:/tutor-centro/documentos";
+    }
+
+    @PostMapping("/{idFalta}/verificar-empresa")
+    public String verificarEmpresa(@PathVariable Long idFalta,
+                                   @RequestParam(value = "comentarioVerificacion", required = false) String comentarioVerificacion,
+                                   Principal principal,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
+
+            FaltaAsistencia falta = faltaAsistenciaService.findById(idFalta)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Falta no encontrada con id: " + idFalta));
+
+            Alumno alumno = getAlumnoAsignado(falta.getAlumno().getId(), tutor);
+            faltaAsistenciaService.verificarJustificanteEmpresa(idFalta, tutor, comentarioVerificacion);
+
+            if (alumno.getTutorCentro() != null) {
+                notificacionService.enviarSistema(
+                        alumno.getTutorCentro(),
+                        TipoNotificacionEnum.AVISO,
+                        "Justificante verificado por empresa",
+                        "El tutor de empresa ha verificado el justificante de la falta del "
+                                + falta.getFechaFalta() + " de " + alumno.getNombreCompleto() + "."
+                );
+            }
+
+            redirectAttributes.addFlashAttribute("successMsg",
+                    "Justificante verificado por empresa correctamente.");
+        } catch (Exception e) {
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al verificar justificante desde tutor de empresa",
+                    e,
+                    "No se pudo verificar el justificante. Inténtalo de nuevo."
+            );
+        }
+
+        return "redirect:/tutor-empresa/faltas";
     }
 
     @PostMapping("/{idFalta}/denegar")

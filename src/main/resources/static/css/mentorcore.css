@@ -218,6 +218,15 @@ img {
     border-left-color: #ffc107;
 }
 
+.mc-break-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.mc-min-w-0 {
+    min-width: 0;
+}
+
 .form-label {
     font-weight: 700;
     color: var(--mc-indigo);

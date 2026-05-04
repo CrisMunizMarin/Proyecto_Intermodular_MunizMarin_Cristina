@@ -64,6 +64,12 @@ public class FaltaAsistencia {
     @Column(name = "observacion", columnDefinition = "TEXT")
     private String observacion;
 
+    @Column(name = "motivo_justificacion", columnDefinition = "TEXT")
+    private String motivoJustificacion;
+
+    @Column(name = "horas_ausencia", precision = 4, scale = 2)
+    private java.math.BigDecimal horasAusencia;
+
     /**
      * Documento justificante adjuntado por el alumno. RF22
      */
@@ -80,6 +86,18 @@ public class FaltaAsistencia {
 
     @Column(name = "fecha_validacion")
     private LocalDateTime fechaValidacion;
+
+    @Column(name = "comentario_verificacion_empresa", columnDefinition = "TEXT")
+    private String comentarioVerificacionEmpresa;
+
+    @Column(name = "fecha_verificacion_empresa")
+    private LocalDateTime fechaVerificacionEmpresa;
+
+    @Column(name = "motivo_denegacion", columnDefinition = "TEXT")
+    private String motivoDenegacion;
+
+    @Column(name = "comentario_revision_centro", columnDefinition = "TEXT")
+    private String comentarioRevisionCentro;
 
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
@@ -105,27 +123,45 @@ public class FaltaAsistencia {
     /**
      * Alumno adjunta justificante para solicitar revisión. RF22
      */
-    public void adjuntarJustificante(Documento doc) {
+    public void adjuntarJustificante(Documento doc, String motivoJustificacion,
+                                     java.math.BigDecimal horasAusencia) {
         this.justificante = doc;
+        this.motivoJustificacion = motivoJustificacion;
+        this.horasAusencia = horasAusencia;
         this.estado = EstadoFaltaEnum.PENDIENTE_REVISION;
+        this.comentarioVerificacionEmpresa = null;
+        this.fechaVerificacionEmpresa = null;
+        this.motivoDenegacion = null;
+    }
+
+    public void verificarPorEmpresa(String comentarioVerificacionEmpresa) {
+        this.estado = EstadoFaltaEnum.VERIFICADA_EMPRESA;
+        this.comentarioVerificacionEmpresa = comentarioVerificacionEmpresa;
+        this.fechaVerificacionEmpresa = LocalDateTime.now();
     }
 
     /**
      * Tutor Centro aprueba el justificante. RF22
      */
-    public void aprobarJustificante(TutorCentro tutor) {
+    public void aprobarJustificante(TutorCentro tutor, String comentarioRevisionCentro) {
         this.estado = EstadoFaltaEnum.JUSTIFICADA;
         this.validadoPor = tutor;
         this.fechaValidacion = LocalDateTime.now();
+        this.motivoDenegacion = null;
+        this.comentarioRevisionCentro = comentarioRevisionCentro;
     }
 
     /**
      * Tutor Centro deniega el justificante. RF22
      */
-    public void denegarJustificante(TutorCentro tutor) {
+    public void denegarJustificante(TutorCentro tutor, String motivoDenegacion) {
         this.estado = EstadoFaltaEnum.INJUSTIFICADA;
         this.justificante = null;
         this.validadoPor = tutor;
         this.fechaValidacion = LocalDateTime.now();
+        this.motivoDenegacion = motivoDenegacion;
+        this.comentarioRevisionCentro = motivoDenegacion;
+        this.comentarioVerificacionEmpresa = null;
+        this.fechaVerificacionEmpresa = null;
     }
 }

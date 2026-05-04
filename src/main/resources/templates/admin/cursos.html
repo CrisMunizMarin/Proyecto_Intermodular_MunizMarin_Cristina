@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Cursos Administrador',
+        ~{layout/sidebar-admin :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">Oferta académica</p>
+        <h1 class="mc-h1 mb-2">Cursos</h1>
+        <p class="text-muted mb-0">Crea nuevos cursos y mantén actualizados los grupos existentes.</p>
+    </header>
+
+    <section th:if="${successMsg}" class="alert alert-success"><p class="mb-0" th:text="${successMsg}">OK</p></section>
+    <section th:if="${errorMsg}" class="alert alert-danger"><p class="mb-0" th:text="${errorMsg}">Error</p></section>
+
+    <section class="card mb-4">
+        <div class="card-header-mc"><h2 class="h5 mb-0">Crear curso</h2></div>
+        <div class="card-body">
+            <form th:action="@{/admin/cursos/crear}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <div class="row g-3">
+                    <div class="col-12 col-lg-2"><label class="form-label">Código</label><input name="codigoCurso" class="form-control" required></div>
+                    <div class="col-12 col-lg-3"><label class="form-label">Nombre</label><input name="nombre" class="form-control" required></div>
+                    <div class="col-12 col-lg-3"><label class="form-label">Ciclo formativo</label><input name="cicloFormativo" class="form-control" required></div>
+                    <div class="col-12 col-lg-2"><label class="form-label">Nivel</label><select name="nivel" class="form-select" required><option th:each="nivel : ${niveles}" th:value="${nivel.name()}" th:text="${nivel.name()}">PRIMERO</option></select></div>
+                    <div class="col-12 col-lg-2"><label class="form-label">Año académico</label><input name="anioAcademico" class="form-control" placeholder="2026-2027" required></div>
+                </div>
+                <div class="mt-3 text-end"><button type="submit" class="btn btn-mc-primary">Crear curso</button></div>
+            </form>
+        </div>
+    </section>
+
+    <div class="row g-4" th:if="${cursos != null and !#lists.isEmpty(cursos)}">
+        <div class="col-12" th:each="curso : ${cursos}">
+            <article class="card">
+                <div class="card-body">
+                    <form th:action="@{/admin/cursos/editar/{id}(id=${curso.id})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-12 col-lg-2"><label class="form-label">Código</label><input name="codigoCurso" class="form-control" th:value="${curso.codigoCurso}" required></div>
+                            <div class="col-12 col-lg-3"><label class="form-label">Nombre</label><input name="nombre" class="form-control" th:value="${curso.nombre}" required></div>
+                            <div class="col-12 col-lg-3"><label class="form-label">Ciclo</label><input name="cicloFormativo" class="form-control" th:value="${curso.cicloFormativo}" required></div>
+                            <div class="col-12 col-lg-2"><label class="form-label">Nivel</label><select name="nivel" class="form-select" required><option th:each="nivel : ${niveles}" th:value="${nivel.name()}" th:selected="${nivel == curso.nivel}" th:text="${nivel.name()}">PRIMERO</option></select></div>
+                            <div class="col-12 col-lg-2"><label class="form-label">Año</label><input name="anioAcademico" class="form-control" th:value="${curso.anioAcademico}" required></div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mt-3">
+                            <span class="badge" th:classappend="${curso.activo} ? ' bg-success' : ' bg-warning text-dark'" th:text="${curso.activo ? 'ACTIVO' : 'INACTIVO'}">ACTIVO</span>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
+                        </div>
+                    </form>
+                    <div class="d-flex flex-wrap gap-2 justify-content-end mt-3">
+                        <form th:if="${curso.activo}" th:action="@{/admin/cursos/desactivar/{id}(id=${curso.id})}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="btn btn-sm btn-outline-warning">Desactivar</button>
+                        </form>
+                        <form th:if="${!curso.activo}" th:action="@{/admin/cursos/activar/{id}(id=${curso.id})}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                        </form>
+                        <form th:action="@{/admin/cursos/eliminar/{id}(id=${curso.id})}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+</html>

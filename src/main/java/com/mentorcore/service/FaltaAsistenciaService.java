@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -68,8 +69,9 @@ public class FaltaAsistenciaService {
      */
     @Transactional(readOnly = true)
     public List<FaltaAsistencia> findPendientesByAlumno(Alumno alumno) {
-        return faltaAsistenciaRepository.findByAlumnoAndEstado(
-                alumno, EstadoFaltaEnum.PENDIENTE_REVISION);
+        return findByAlumno(alumno).stream()
+                .filter(this::requiereVerificacionEmpresa)
+                .toList();
     }
 
     /**
@@ -135,6 +137,31 @@ public class FaltaAsistenciaService {
         return guardada;
     }
 
+    /**
+     * El alumno avisa de una futura falta sin adjuntar todavía justificante.
+     */
+    @Transactional
+    public FaltaAsistencia registrarAvisoAlumno(Alumno alumno, Asignacion asignacion,
+                                                LocalDate fechaFalta, String observacion) {
+        if (asignacion.getTutorEmpresa() == null) {
+            throw new IllegalStateException(
+                    "No se puede registrar el aviso porque el alumno no tiene tutor de empresa asignado");
+        }
+
+        String observacionNormalizada = (observacion != null && !observacion.isBlank())
+                ? "[Aviso del alumno] " + observacion.trim()
+                : "[Aviso del alumno] Ausencia comunicada por el alumno";
+
+        return registrar(
+                alumno,
+                asignacion,
+                asignacion.getTutorEmpresa(),
+                fechaFalta,
+                TipoFaltaEnum.INJUSTIFICADA,
+                observacionNormalizada
+        );
+    }
+
 
     // GESTIÓN DE JUSTIFICANTES
 
@@ -142,7 +169,9 @@ public class FaltaAsistenciaService {
      * Adjunta un justificante a una falta injustificada. RF22
      */
     @Transactional
-    public void adjuntarJustificante(Long idFalta, Documento documento) {
+    public void adjuntarJustificante(Long idFalta, Documento documento,
+                                     String motivoJustificacion,
+                                     BigDecimal horasAusencia) {
         FaltaAsistencia falta = getOrThrow(idFalta);
 
         if (falta.getEstado() != EstadoFaltaEnum.INJUSTIFICADA) {
@@ -151,7 +180,17 @@ public class FaltaAsistenciaService {
                             "Estado actual: " + falta.getEstado());
         }
 
-        falta.adjuntarJustificante(documento);
+        if (motivoJustificacion == null || motivoJustificacion.isBlank()) {
+            throw new IllegalStateException(
+                    "Debes indicar el motivo de la falta para adjuntar el justificante");
+        }
+
+        if (horasAusencia == null || horasAusencia.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalStateException(
+                    "Debes indicar cuántas horas faltaste a la empresa");
+        }
+
+        falta.adjuntarJustificante(documento, motivoJustificacion.trim(), horasAusencia);
         faltaAsistenciaRepository.save(falta);
 
         log.info("Justificante adjuntado a falta id={} (alumno '{}', fecha {})",
@@ -159,20 +198,51 @@ public class FaltaAsistenciaService {
     }
 
     /**
+     * El TutorEmpresa verifica el justificante antes de la revisión final del centro.
+     */
+    @Transactional
+    public void verificarJustificanteEmpresa(Long idFalta, TutorEmpresa tutorEmpresa, String comentario) {
+        FaltaAsistencia falta = getOrThrow(idFalta);
+
+        if (!requiereVerificacionEmpresa(falta)) {
+            throw new IllegalStateException(
+                    "Solo se pueden verificar faltas con justificante pendiente de revisión. " +
+                            "Estado actual: " + falta.getEstado());
+        }
+
+        if (!falta.getRegistradoPor().getId().equals(tutorEmpresa.getId())) {
+            throw new IllegalStateException(
+                    "Solo el tutor de empresa asignado puede verificar este justificante");
+        }
+
+        falta.verificarPorEmpresa(comentario != null && !comentario.isBlank() ? comentario.trim() : null);
+        faltaAsistenciaRepository.save(falta);
+
+        log.info("Justificante VERIFICADO por empresa — falta id={} (alumno '{}', fecha {}) por '{}'",
+                idFalta, falta.getAlumno().getNombreUsuario(),
+                falta.getFechaFalta(), tutorEmpresa.getNombreUsuario());
+    }
+
+    /**
      * El TutorCentro aprueba el justificante. RF22
      */
     @Transactional
-    public void aprobarJustificante(Long idFalta, TutorCentro validadoPor) {
+    public void aprobarJustificante(Long idFalta, TutorCentro validadoPor, String comentarioRevisionCentro) {
         FaltaAsistencia falta = getOrThrow(idFalta);
 
-        if (falta.getEstado() != EstadoFaltaEnum.PENDIENTE_REVISION) {
+        if (falta.getEstado() != EstadoFaltaEnum.VERIFICADA_EMPRESA) {
             throw new IllegalStateException(
-                    "Solo se pueden aprobar faltas en estado PENDIENTE_REVISION. " +
+                    "Solo se pueden aprobar faltas verificadas por empresa. " +
                             "Estado actual: " + falta.getEstado());
         }
 
         falta.setTipo(TipoFaltaEnum.JUSTIFICADA);
-        falta.aprobarJustificante(validadoPor);
+        falta.aprobarJustificante(
+                validadoPor,
+                comentarioRevisionCentro != null && !comentarioRevisionCentro.isBlank()
+                        ? comentarioRevisionCentro.trim()
+                        : null
+        );
         faltaAsistenciaRepository.save(falta);
 
         log.info("Justificante APROBADO — falta id={} (alumno '{}', fecha {}) por '{}'",
@@ -187,13 +257,14 @@ public class FaltaAsistenciaService {
     public void denegarJustificante(Long idFalta, TutorCentro validadoPor, String motivo) {
         FaltaAsistencia falta = getOrThrow(idFalta);
 
-        if (falta.getEstado() != EstadoFaltaEnum.PENDIENTE_REVISION) {
+        if (falta.getEstado() != EstadoFaltaEnum.PENDIENTE_REVISION &&
+            falta.getEstado() != EstadoFaltaEnum.VERIFICADA_EMPRESA) {
             throw new IllegalStateException(
-                    "Solo se pueden denegar faltas en estado PENDIENTE_REVISION. " +
+                    "Solo se pueden denegar faltas en revisión o verificadas por empresa. " +
                             "Estado actual: " + falta.getEstado());
         }
 
-        falta.denegarJustificante(validadoPor);
+        falta.denegarJustificante(validadoPor, motivo);
         faltaAsistenciaRepository.save(falta);
 
         log.warn("Justificante DENEGADO — falta id={} (alumno '{}', fecha {}) por '{}'. Motivo: {}",
@@ -216,5 +287,13 @@ public class FaltaAsistenciaService {
         return faltaAsistenciaRepository.findDetalleById(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Falta de asistencia no encontrada con id: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public boolean requiereVerificacionEmpresa(FaltaAsistencia falta) {
+        return falta.getJustificante() != null
+                && falta.getComentarioVerificacionEmpresa() == null
+                && falta.getEstado() != EstadoFaltaEnum.VERIFICADA_EMPRESA
+                && falta.getEstado() != EstadoFaltaEnum.JUSTIFICADA;
     }
 }

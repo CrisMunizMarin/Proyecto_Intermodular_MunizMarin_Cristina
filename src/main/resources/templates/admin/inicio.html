@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(
+        'Inicio Administrador',
+        ~{layout/sidebar-admin :: sidebar},
+        ~{::contenido},
+        null,
+        null
+      )}">
+<section th:fragment="contenido">
+    <header class="mb-4">
+        <p class="mc-caption text-uppercase fw-bold mb-2" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+            Administración del sistema
+        </p>
+        <h1 class="mc-h1">Visión global de MentorCore</h1>
+        <p class="text-muted mb-0">
+            Gestiona usuarios, empresas, cursos, periodos y asignaciones desde un único panel.
+        </p>
+    </header>
+
+    <section class="row g-4 mb-4" aria-label="Resumen general">
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100"><div class="card-body">
+                <p class="mc-caption text-muted mb-2">Usuarios</p>
+                <h2 class="mc-h2 mb-0" th:text="${totalUsuarios}">0</h2>
+            </div></article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100"><div class="card-body">
+                <p class="mc-caption text-muted mb-2">Empresas</p>
+                <h2 class="mc-h2 mb-0" th:text="${totalEmpresas}">0</h2>
+            </div></article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100"><div class="card-body">
+                <p class="mc-caption text-muted mb-2">Cursos</p>
+                <h2 class="mc-h2 mb-0" th:text="${totalCursos}">0</h2>
+            </div></article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100"><div class="card-body">
+                <p class="mc-caption text-muted mb-2">Alumnos</p>
+                <h2 class="mc-h2 mb-0" th:text="${totalAlumnos}">0</h2>
+            </div></article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100"><div class="card-body">
+                <p class="mc-caption text-muted mb-2">Periodos</p>
+                <h2 class="mc-h2 mb-0" th:text="${totalPeriodos}">0</h2>
+            </div></article>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="card h-100"><div class="card-body">
+                <p class="mc-caption text-muted mb-2">Asignaciones activas</p>
+                <h2 class="mc-h2 mb-0" th:text="${totalAsignacionesActivas}">0</h2>
+            </div></article>
+        </div>
+    </section>
+
+    <section class="row g-4">
+        <div class="col-12 col-xl-8">
+            <article class="card h-100">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Accesos rápidos</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <a th:href="@{/admin/usuarios}" class="btn btn-mc-primary w-100">Gestionar usuarios</a>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <a th:href="@{/admin/empresas}" class="btn btn-mc-secondary w-100">Gestionar empresas</a>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <a th:href="@{/admin/cursos}" class="btn btn-mc-tertiary w-100">Gestionar cursos</a>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <a th:href="@{/admin/periodos}" class="btn btn-outline-primary w-100">Gestionar periodos</a>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <a th:href="@{/admin/asignaciones}" class="btn btn-outline-primary w-100">Gestionar asignaciones</a>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <a th:href="@{/admin/configuracion}" class="btn btn-outline-secondary w-100">Configuración global</a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <aside class="card h-100">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Tu sesión</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Administrador:</strong></p>
+                    <p class="text-muted mb-0"
+                       th:text="${adminActual != null ? adminActual.nombreCompleto : 'Administrador'}">Administrador</p>
+                </div>
+            </aside>
+        </div>
+    </section>
+</section>
+</html>

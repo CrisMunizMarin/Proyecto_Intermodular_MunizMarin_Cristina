@@ -34,7 +34,12 @@ public class AsignacionService {
 
     @Transactional(readOnly = true)
     public Optional<Asignacion> findById(Long id) {
-        return asignacionRepository.findById(id);
+        return asignacionRepository.findDetalleById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Asignacion> findAll() {
+        return asignacionRepository.findAllDetalleOrderByFechaCreacionDesc();
     }
 
     @Transactional(readOnly = true)
@@ -51,6 +56,12 @@ public class AsignacionService {
     public List<Asignacion> findActivasByTutorEmpresa(TutorEmpresa tutorEmpresa) {
         return asignacionRepository
                 .findByTutorEmpresaAndEstado(tutorEmpresa, EstadoFeEnum.EN_CURSO);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Asignacion> findActivasByTutorEmpresaId(Long idTutorEmpresa) {
+        return asignacionRepository
+                .findByTutorEmpresaIdAndEstado(idTutorEmpresa, EstadoFeEnum.EN_CURSO);
     }
 
     @Transactional(readOnly = true)
@@ -156,4 +167,3 @@ public class AsignacionService {
                 .orElse(false);
     }
 }
-

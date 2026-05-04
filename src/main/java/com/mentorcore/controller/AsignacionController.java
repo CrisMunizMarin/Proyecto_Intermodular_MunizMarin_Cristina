@@ -4,10 +4,12 @@ import com.mentorcore.model.Alumno;
 import com.mentorcore.model.Asignacion;
 import com.mentorcore.model.Empresa;
 import com.mentorcore.model.PeriodoFormacion;
-import com.mentorcore.model.TutorCentro;
 import com.mentorcore.model.TutorEmpresa;
 import com.mentorcore.model.Usuario;
+import com.mentorcore.model.enums.EstadoFeEnum;
+import com.mentorcore.model.enums.EstadoPeriodoEnum;
 import com.mentorcore.model.enums.RolEnum;
+import com.mentorcore.model.enums.TipoNotificacionEnum;
 import com.mentorcore.service.AlumnoService;
 import com.mentorcore.service.AsignacionService;
 import com.mentorcore.service.EmpresaService;
@@ -19,6 +21,8 @@ import com.mentorcore.util.ControllerMessageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,13 +31,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
- * Controlador genérico de asignaciones.
+ * Controlador de asignaciones del administrador.
  * RF13, RF21
  */
 @Controller
-@RequestMapping("/asignaciones")
+@RequestMapping("/admin/asignaciones")
 @RequiredArgsConstructor
 @Slf4j
 public class AsignacionController {
@@ -46,6 +51,97 @@ public class AsignacionController {
     private final AsignacionService asignacionService;
     private final NotificacionService notificacionService;
 
+    @GetMapping
+    public String listar(Model model, Principal principal) {
+        Usuario admin = validarAdmin(principal);
+
+        List<Asignacion> asignaciones = asignacionService.findAll();
+
+        model.addAttribute("adminActual", admin);
+        model.addAttribute("asignacionesActivas",
+                asignaciones.stream()
+                        .filter(asignacion -> asignacion.getEstado() == EstadoFeEnum.EN_CURSO)
+                        .toList());
+        model.addAttribute("asignacionesHistoricas",
+                asignaciones.stream()
+                        .filter(asignacion -> asignacion.getEstado() != EstadoFeEnum.EN_CURSO)
+                        .toList());
+        model.addAttribute("alumnosSinAsignacion",
+                alumnoService.findAll().stream()
+                        .filter(alumno -> !asignacionService.tieneAsignacionActiva(alumno))
+                        .toList());
+        model.addAttribute("empresasActivas", empresaService.findActivas());
+        model.addAttribute("tutoresEmpresa", tutorEmpresaService.findAll());
+        model.addAttribute("periodosDisponibles",
+                periodoFormacionService.findAll().stream()
+                        .filter(periodo -> periodo.getEstado() != EstadoPeriodoEnum.CERRADO)
+                        .toList());
+
+        return "admin/asignaciones";
+    }
+
+    @PostMapping("/crear")
+    public String crear(@RequestParam("idAlumno") Long idAlumno,
+                        @RequestParam("idEmpresa") Long idEmpresa,
+                        @RequestParam("idTutorEmpresa") Long idTutorEmpresa,
+                        @RequestParam("idPeriodo") Long idPeriodo,
+                        @RequestParam("fechaInicio") String fechaInicio,
+                        Principal principal,
+                        RedirectAttributes redirectAttributes) {
+        try {
+            validarAdmin(principal);
+
+            Alumno alumno = alumnoService.findById(idAlumno)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Alumno no encontrado con id: " + idAlumno));
+            Empresa empresa = empresaService.findById(idEmpresa)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Empresa no encontrada con id: " + idEmpresa));
+            TutorEmpresa tutorEmpresa = tutorEmpresaService.findById(idTutorEmpresa)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Tutor de empresa no encontrado con id: " + idTutorEmpresa));
+            PeriodoFormacion periodo = periodoFormacionService.findById(idPeriodo)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Periodo no encontrado con id: " + idPeriodo));
+
+            validarTutorEmpresa(tutorEmpresa, empresa);
+
+            asignacionService.crear(
+                    alumno,
+                    empresa,
+                    tutorEmpresa,
+                    periodo,
+                    LocalDate.parse(fechaInicio)
+            );
+
+            notificacionService.enviarSistema(
+                    alumno,
+                    TipoNotificacionEnum.AVISO,
+                    "Nueva asignación de prácticas",
+                    "Se te ha asignado la empresa " + empresa.getNombre() + "."
+            );
+            notificacionService.enviarSistema(
+                    tutorEmpresa,
+                    TipoNotificacionEnum.AVISO,
+                    "Nuevo alumno asignado",
+                    "Se te ha asignado el alumno " + alumno.getNombreCompleto() + "."
+            );
+
+            redirectAttributes.addFlashAttribute("successMsg",
+                    "Asignación creada correctamente.");
+        } catch (Exception e) {
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al crear asignacion",
+                    e,
+                    "No se pudo crear la asignación. Inténtalo de nuevo."
+            );
+        }
+
+        return "redirect:/admin/asignaciones";
+    }
+
     @PostMapping("/reasignar/{idAlumno}")
     public String reasignar(@PathVariable Long idAlumno,
                             @RequestParam("idEmpresa") Long idEmpresa,
@@ -56,25 +152,22 @@ public class AsignacionController {
                             Principal principal,
                             RedirectAttributes redirectAttributes) {
         try {
-            Usuario usuario = getUsuarioAutenticado(principal);
+            Usuario usuario = validarAdmin(principal);
 
             Alumno alumno = alumnoService.findById(idAlumno)
                     .orElseThrow(() -> new RuntimeException(
                             "Alumno no encontrado con id: " + idAlumno));
-
-            validarGestionAlumno(usuario, alumno);
-
             Empresa empresa = empresaService.findById(idEmpresa)
                     .orElseThrow(() -> new RuntimeException(
                             "Empresa no encontrada con id: " + idEmpresa));
-
             TutorEmpresa tutorEmpresa = tutorEmpresaService.findById(idTutorEmpresa)
                     .orElseThrow(() -> new RuntimeException(
                             "Tutor de empresa no encontrado con id: " + idTutorEmpresa));
-
             PeriodoFormacion periodo = periodoFormacionService.findById(idPeriodo)
                     .orElseThrow(() -> new RuntimeException(
                             "Periodo no encontrado con id: " + idPeriodo));
+
+            validarTutorEmpresa(tutorEmpresa, empresa);
 
             asignacionService.reasignar(
                     alumno,
@@ -114,13 +207,11 @@ public class AsignacionController {
                             Principal principal,
                             RedirectAttributes redirectAttributes) {
         try {
-            Usuario usuario = getUsuarioAutenticado(principal);
+            validarAdmin(principal);
 
             Asignacion asignacion = asignacionService.findById(idAsignacion)
                     .orElseThrow(() -> new RuntimeException(
                             "Asignación no encontrada con id: " + idAsignacion));
-
-            validarGestionAlumno(usuario, asignacion.getAlumno());
 
             asignacionService.finalizar(
                     asignacion,
@@ -143,23 +234,27 @@ public class AsignacionController {
         return "redirect:/admin/asignaciones";
     }
 
-    private Usuario getUsuarioAutenticado(Principal principal) {
-        return usuarioService.findByNombreUsuario(principal.getName())
+    private Usuario validarAdmin(Principal principal) {
+        if (principal == null) {
+            throw new RuntimeException("No hay usuario autenticado");
+        }
+
+        Usuario usuario = usuarioService.findByNombreUsuario(principal.getName())
                 .orElseThrow(() -> new RuntimeException(
                         "Usuario no autenticado"));
+
+        if (usuario.getRol() != RolEnum.ADMIN) {
+            throw new RuntimeException("Acceso denegado: solo el administrador puede gestionar asignaciones");
+        }
+
+        return usuario;
     }
 
-    private void validarGestionAlumno(Usuario usuario, Alumno alumno) {
-        if (usuario.getRol() == RolEnum.ADMIN) {
-            return;
+    private void validarTutorEmpresa(TutorEmpresa tutorEmpresa, Empresa empresa) {
+        if (tutorEmpresa.getEmpresa() == null ||
+                !tutorEmpresa.getEmpresa().getId().equals(empresa.getId())) {
+            throw new RuntimeException(
+                    "El tutor de empresa seleccionado no pertenece a la empresa elegida.");
         }
-
-        if (usuario instanceof TutorCentro tutorCentro &&
-                alumno.getTutorCentro() != null &&
-                alumno.getTutorCentro().getId().equals(tutorCentro.getId())) {
-            return;
-        }
-
-        throw new RuntimeException("No tienes permisos para gestionar este alumno");
     }
 }

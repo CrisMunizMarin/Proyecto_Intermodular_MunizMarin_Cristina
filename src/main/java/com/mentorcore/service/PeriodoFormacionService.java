@@ -25,12 +25,12 @@ public class PeriodoFormacionService {
 
     @Transactional(readOnly = true)
     public Optional<PeriodoFormacion> findById(Long id) {
-        return periodoFormacionRepository.findById(id);
+        return periodoFormacionRepository.findDetalleById(id);
     }
 
     @Transactional(readOnly = true)
     public List<PeriodoFormacion> findAll() {
-        return periodoFormacionRepository.findAll();
+        return periodoFormacionRepository.findAllDetalle();
     }
 
     @Transactional(readOnly = true)
@@ -105,4 +105,3 @@ public class PeriodoFormacionService {
                         "Periodo de formación no encontrado con id: " + id));
     }
 }
-
