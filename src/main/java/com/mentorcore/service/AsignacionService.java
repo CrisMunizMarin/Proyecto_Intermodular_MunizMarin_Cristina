@@ -2,10 +2,12 @@ package com.mentorcore.service;
 
 import com.mentorcore.model.Alumno;
 import com.mentorcore.model.Asignacion;
+import com.mentorcore.model.Convenio;
 import com.mentorcore.model.Empresa;
 import com.mentorcore.model.PeriodoFormacion;
 import com.mentorcore.model.TutorEmpresa;
 import com.mentorcore.model.Usuario;
+import com.mentorcore.model.enums.EstadoConvenioEnum;
 import com.mentorcore.model.enums.EstadoFeEnum;
 import com.mentorcore.repository.AsignacionRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import java.util.Optional;
 public class AsignacionService {
 
     private final AsignacionRepository asignacionRepository;
+    private final ConvenioService convenioService;
 
 
     // BÚSQUEDAS
@@ -119,7 +122,6 @@ public class AsignacionService {
         actual.setMotivoCambio(motivoCambio);
         actual.setReasignadoPor(reasignadoPor);
         asignacionRepository.save(actual);
-
         log.info("Asignación id={} finalizada — alumno='{}' deja empresa='{}'",
                 actual.getId(), alumno.getNombreUsuario(),
                 actual.getEmpresa().getNombre());
@@ -165,5 +167,42 @@ public class AsignacionService {
                 .findByAlumnoAndEstado(alumno, EstadoFeEnum.EN_CURSO)
                 .map(a -> a.getTutorEmpresa().getId().equals(tutorEmpresa.getId()))
                 .orElse(false);
+    }
+
+    @Transactional
+    public void asegurarConvenioInicial(Asignacion asignacion) {
+        Alumno alumno = asignacion.getAlumno();
+        Empresa empresa = asignacion.getEmpresa();
+        PeriodoFormacion periodo = asignacion.getPeriodo();
+        Long idAsignacion = asignacion.getId();
+
+        boolean yaExiste = convenioService.findByAlumno(alumno).stream()
+                .anyMatch(convenio ->
+                        convenio.getEmpresa() != null
+                                && convenio.getEmpresa().getId().equals(empresa.getId())
+                                && convenio.getFechaInicio() != null
+                                && convenio.getFechaInicio().equals(periodo.getFechaInicio())
+                                && convenio.getFechaFin() != null
+                                && convenio.getFechaFin().equals(periodo.getFechaFin())
+                && convenio.getEstado() != EstadoConvenioEnum.ANULADO);
+
+        if (yaExiste) {
+            return;
+        }
+
+        String numeroConvenio = "MC-" + periodo.getAnioAcademico().replace("-", "") + "-" + idAsignacion;
+        Convenio convenio = new Convenio(
+                alumno,
+                empresa,
+                alumno.getTutorCentro(),
+                numeroConvenio,
+                periodo.getFechaInicio(),
+                periodo.getFechaFin()
+        );
+        convenio.setHorasSemanales(35);
+        convenio.setHorarioDescripcion("Pendiente de completar por el centro y la empresa.");
+        convenio.setActividadesPrevistas("Pendiente de completar en el plan inicial de formación.");
+
+        convenioService.crear(convenio);
     }
 }

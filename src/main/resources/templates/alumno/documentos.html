@@ -16,7 +16,7 @@
             </p>
             <h1 class="mc-h1 mb-2">Mis documentos</h1>
             <p class="text-muted mb-0">
-                Sube la documentación general de tu expediente y revisa su estado de validación.
+                Gestiona tus documentos personales y consulta la documentación de formación en empresa.
             </p>
         </div>
     </header>
@@ -33,7 +33,7 @@
         <div class="col-12 col-xl-4">
             <section class="card" aria-labelledby="subida-documento">
                 <div class="card-header-mc">
-                    <h2 id="subida-documento" class="h5 mb-0">Subir documento</h2>
+                    <h2 id="subida-documento" class="h5 mb-0">Subir documento personal</h2>
                 </div>
 
                 <div class="card-body">
@@ -49,7 +49,7 @@
                                 <label for="idTipoDocumento" class="form-label">Tipo de documento</label>
                                 <select id="idTipoDocumento" name="idTipoDocumento" class="form-select" required>
                                     <option value="">Selecciona una opción</option>
-                                    <option th:each="tipo : ${tiposDocumento}"
+                                    <option th:each="tipo : ${tiposDocumentoPersonales}"
                                             th:value="${tipo.id}"
                                             th:text="${tipo.nombre}">
                                         Tipo
@@ -64,6 +64,7 @@
                                        name="archivo"
                                        class="form-control"
                                        required>
+                                <div class="form-text">Aquí solo puedes subir tu DNI/NIE y tu seguro escolar. Los justificantes de falta van en la sección de faltas.</div>
                             </div>
                         </fieldset>
 
@@ -79,37 +80,38 @@
         <div class="col-12 col-xl-8">
             <section class="card" aria-labelledby="listado-documentos">
                 <div class="card-header-mc">
-                    <h2 id="listado-documentos" class="h5 mb-0">Documentación registrada</h2>
+                    <h2 id="listado-documentos" class="h5 mb-0">Documentos personales del alumno</h2>
                 </div>
 
                 <div class="card-body">
-                    <div th:if="${documentos == null or #lists.isEmpty(documentos)}">
+                    <div th:if="${documentosPersonales == null or #lists.isEmpty(documentosPersonales)}">
                         <p class="mb-0 text-muted">
-                            Todavía no has subido documentos.
+                            Todavía no has subido tus documentos personales.
                         </p>
                     </div>
 
-                    <div th:if="${documentos != null and !#lists.isEmpty(documentos)}" class="table-responsive">
-                        <table class="table table-hover align-middle table-mc">
-                            <caption class="visually-hidden">Listado de documentos del alumno</caption>
-                            <thead>
-                            <tr>
-                                <th scope="col">Tipo</th>
-                                <th scope="col">Archivo</th>
-                                <th scope="col">Fecha</th>
-                                <th scope="col">Estado</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="documento : ${documentos}">
-                                <td th:text="${documento.tipoDocumento != null ? documento.tipoDocumento.nombre : 'Sin tipo'}">
-                                    Tipo
-                                </td>
-                                <td th:text="${documento.nombreArchivo}">archivo.pdf</td>
-                                <td th:text="${#temporals.format(documento.fechaSubida, 'dd/MM/yyyy HH:mm')}">
-                                    01/01/2026 09:00
-                                </td>
-                                <td>
+                    <div th:if="${documentosPersonales != null and !#lists.isEmpty(documentosPersonales)}" class="mc-card-list">
+                        <article th:each="documento : ${documentosPersonales}" class="border rounded p-3">
+                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                <div class="mc-min-w-0">
+                                    <h3 class="h6 mb-2"
+                                        th:text="${documento.tipoDocumento != null ? documento.tipoDocumento.nombre : 'Sin tipo'}">
+                                        Tipo
+                                    </h3>
+                                    <p class="mb-1 mc-break-anywhere">
+                                        <a th:href="@{/documentos/{id}/ver(id=${documento.id})}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           th:text="${documento.nombreArchivo}">
+                                            archivo.pdf
+                                        </a>
+                                    </p>
+                                    <p class="mb-0 text-muted"
+                                       th:text="${#temporals.format(documento.fechaSubida, 'dd/MM/yyyy HH:mm')}">
+                                        01/01/2026 09:00
+                                    </p>
+                                </div>
+                                <div>
                                     <span th:if="${documento.estado.name() == 'PENDIENTE'}"
                                           class="badge badge-pendiente">
                                         Pendiente
@@ -122,10 +124,97 @@
                                           class="badge badge-rechazado">
                                         Rechazado
                                     </span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mt-4" aria-labelledby="documentacion-fe">
+                <div class="card-header-mc">
+                    <h2 id="documentacion-fe" class="h5 mb-0">Documentación relativa a la FE</h2>
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h3 class="h6 mb-3">Convenio de formación en empresa</h3>
+                        <div th:if="${convenios == null or #lists.isEmpty(convenios)}">
+                            <p class="mb-0 text-muted">Todavía no hay convenio disponible.</p>
+                        </div>
+                        <div th:if="${convenios != null and !#lists.isEmpty(convenios)}" class="mc-card-list">
+                            <article th:each="convenio : ${convenios}" class="border rounded p-3">
+                                <p class="mb-1">
+                                    <strong th:text="${convenio.numeroConvenio}">CONV-001</strong>
+                                    <span class="text-muted"> · </span>
+                                    <span th:text="${convenio.estado}">VIGENTE</span>
+                                </p>
+                                <p class="mb-1 text-muted">
+                                    Inicio:
+                                    <span th:text="${#temporals.format(convenio.fechaInicio, 'dd/MM/yyyy')}">01/01/2026</span>
+                                    <span class="text-muted"> · </span>
+                                    Fin:
+                                    <span th:text="${#temporals.format(convenio.fechaFin, 'dd/MM/yyyy')}">31/03/2026</span>
+                                </p>
+                                <p class="mb-0">
+                                    <a th:if="${convenio.archivoPdfUrl != null and !#strings.isEmpty(convenio.archivoPdfUrl)}"
+                                       th:href="@{/convenios/{id}/ver(id=${convenio.id})}"
+                                       target="_blank"
+                                       rel="noopener">
+                                        Ver o descargar PDF del convenio
+                                    </a>
+                                    <span th:if="${convenio.archivoPdfUrl == null or #strings.isEmpty(convenio.archivoPdfUrl)}"
+                                          class="text-muted">
+                                        PDF todavía no disponible
+                                    </span>
+                                </p>
+                            </article>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="h6 mb-3">Plan de formación e informes de empresa</h3>
+                        <div th:if="${documentosFe == null or #lists.isEmpty(documentosFe)}">
+                            <p class="mb-0 text-muted">Todavía no hay documentación FE disponible.</p>
+                        </div>
+                        <div th:if="${documentosFe != null and !#lists.isEmpty(documentosFe)}" class="mc-card-list">
+                            <article th:each="documento : ${documentosFe}" class="border rounded p-3">
+                                <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                    <div class="mc-min-w-0">
+                                        <h4 class="h6 mb-2"
+                                            th:text="${documento.tipoDocumento != null ? documento.tipoDocumento.nombre : 'Documento FE'}">
+                                            Documento FE
+                                        </h4>
+                                        <p class="mb-1 mc-break-anywhere">
+                                            <a th:href="@{/documentos/{id}/ver(id=${documento.id})}"
+                                               target="_blank"
+                                               rel="noopener"
+                                               th:text="${documento.nombreArchivo}">
+                                                archivo.pdf
+                                            </a>
+                                        </p>
+                                        <p class="mb-0 text-muted"
+                                           th:text="${#temporals.format(documento.fechaSubida, 'dd/MM/yyyy HH:mm')}">
+                                            01/01/2026 09:00
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span th:if="${documento.estado.name() == 'PENDIENTE'}"
+                                              class="badge badge-pendiente">
+                                            Pendiente
+                                        </span>
+                                        <span th:if="${documento.estado.name() == 'VALIDADO'}"
+                                              class="badge badge-validado">
+                                            Validado
+                                        </span>
+                                        <span th:if="${documento.estado.name() == 'RECHAZADO'}"
+                                              class="badge badge-rechazado">
+                                            Rechazado
+                                        </span>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
                     </div>
                 </div>
             </section>

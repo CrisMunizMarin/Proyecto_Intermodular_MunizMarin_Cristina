@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Servicio de gestión del expediente digital del alumno.
@@ -24,6 +26,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class DocumentoService {
+
+    private static final Set<String> TIPOS_DOCUMENTO_PERSONAL = Set.of(
+            "DNI / NIE del Alumno",
+            "Seguro Escolar"
+    );
+
+    private static final Set<String> TIPOS_DOCUMENTO_FE = Set.of(
+            "Anexo I - Plan de Formación",
+            "Informe de Seguimiento Empresa"
+    );
 
     private final DocumentoRepository documentoRepository;
 
@@ -44,6 +56,22 @@ public class DocumentoService {
     public List<Documento> findByAlumnoAndContexto(Alumno alumno,
                                                    ContextoDocumentoEnum contexto) {
         return documentoRepository.findByAlumnoAndContexto(alumno, contexto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Documento> findPersonalesByAlumno(Alumno alumno) {
+        return documentoRepository.findByAlumnoOrderByFechaSubidaDesc(alumno).stream()
+                .filter(documento -> documento.getTipoDocumento() != null)
+                .filter(documento -> TIPOS_DOCUMENTO_PERSONAL.contains(documento.getTipoDocumento().getNombre()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Documento> findFormacionEmpresaByAlumno(Alumno alumno) {
+        return documentoRepository.findByAlumnoOrderByFechaSubidaDesc(alumno).stream()
+                .filter(documento -> documento.getTipoDocumento() != null)
+                .filter(documento -> TIPOS_DOCUMENTO_FE.contains(documento.getTipoDocumento().getNombre()))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

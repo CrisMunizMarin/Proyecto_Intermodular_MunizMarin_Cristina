@@ -45,6 +45,8 @@ public class PeriodoFormacionService {
 
     @Transactional
     public PeriodoFormacion crear(PeriodoFormacion periodo) {
+        validarFechas(periodo);
+
         List<PeriodoFormacion> solapados = periodoFormacionRepository.findSolapados(
                 periodo.getCursoAcademico(),
                 periodo.getFechaInicio(),
@@ -66,6 +68,8 @@ public class PeriodoFormacionService {
 
     @Transactional
     public PeriodoFormacion actualizar(PeriodoFormacion periodo) {
+        validarFechas(periodo);
+
         List<PeriodoFormacion> solapados = periodoFormacionRepository.findSolapados(
                 periodo.getCursoAcademico(),
                 periodo.getFechaInicio(),
@@ -103,5 +107,15 @@ public class PeriodoFormacionService {
         return periodoFormacionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Periodo de formación no encontrado con id: " + id));
+    }
+
+    private void validarFechas(PeriodoFormacion periodo) {
+        if (periodo.getFechaInicio() == null || periodo.getFechaFin() == null) {
+            throw new IllegalArgumentException("Debes indicar fecha de inicio y de fin.");
+        }
+
+        if (periodo.getFechaFin().isBefore(periodo.getFechaInicio())) {
+            throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio.");
+        }
     }
 }

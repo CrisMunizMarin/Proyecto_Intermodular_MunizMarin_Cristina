@@ -42,6 +42,21 @@
                     <p class="mb-1"><strong>Sector:</strong> <span th:text="${empresa.sector != null ? empresa.sector : 'Sin indicar'}">Sector</span></p>
                     <p class="mb-1"><strong>Municipio:</strong> <span th:text="${empresa.municipio != null ? empresa.municipio : 'Sin indicar'}">Municipio</span></p>
                     <p class="mb-0"><strong>Contacto:</strong> <span th:text="${empresa.emailContacto != null ? empresa.emailContacto : 'Sin email'}">mail</span></p>
+
+                    <details class="mc-details-toggle border rounded p-3 mt-3">
+                        <summary class="d-flex align-items-center justify-content-between">
+                            <span class="fw-semibold">Más datos</span>
+                            <i class="fas fa-chevron-down mc-details-toggle__icon" aria-hidden="true"></i>
+                        </summary>
+                        <div class="mt-3 small">
+                            <p class="mb-1"><strong>Dirección:</strong> <span th:text="${empresa.direccion != null ? empresa.direccion : 'Sin indicar'}">Dirección</span></p>
+                            <p class="mb-1"><strong>Provincia:</strong> <span th:text="${empresa.provincia != null ? empresa.provincia : 'Sin indicar'}">Provincia</span></p>
+                            <p class="mb-1"><strong>Código postal:</strong> <span th:text="${empresa.codigoPostal != null ? empresa.codigoPostal : 'Sin indicar'}">CP</span></p>
+                            <p class="mb-1"><strong>Teléfono:</strong> <span th:text="${empresa.telefono != null ? empresa.telefono : 'Sin indicar'}">Teléfono</span></p>
+                            <p class="mb-1"><strong>Web:</strong> <span th:text="${empresa.web != null ? empresa.web : 'Sin indicar'}">Web</span></p>
+                            <p class="mb-0"><strong>Notas:</strong> <span th:text="${empresa.notas != null ? empresa.notas : 'Sin notas'}">Notas</span></p>
+                        </div>
+                    </details>
                 </div>
                 <div class="card-footer d-flex flex-wrap gap-2">
                     <a th:href="@{/admin/empresas/editar/{id}(id=${empresa.id})}" class="btn btn-sm btn-outline-primary">Editar</a>

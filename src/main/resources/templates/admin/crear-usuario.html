@@ -38,7 +38,16 @@
                 </div>
                 <div class="col-12 col-lg-4">
                     <label for="password" class="form-label">Contraseña</label>
-                    <input id="password" name="password" type="password" class="form-control" required>
+                    <div class="input-group">
+                        <input id="password" name="password" type="password" class="form-control" required>
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-password-toggle
+                                data-target="password"
+                                aria-label="Mostrar u ocultar contraseña">
+                            <i class="fas fa-eye" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="col-12 col-lg-4">
                     <label for="nombre" class="form-label">Nombre</label>
@@ -76,10 +85,19 @@
                     <div class="col-12 col-lg-4">
                         <label for="grupo" class="form-label">Grupo</label>
                         <input id="grupo" name="grupo" class="form-control">
+                        <div class="form-text">Subgrupo o clase dentro del curso, por ejemplo `2VIFC303-A`.</div>
                     </div>
                     <div class="col-12 col-lg-4">
                         <label for="dni" class="form-label">DNI</label>
                         <input id="dni" name="dni" class="form-control">
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="fechaNacimiento" class="form-label">Fecha de nacimiento</label>
+                        <input id="fechaNacimiento" name="fechaNacimiento" type="date" class="form-control">
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="numSeguridadSocial" class="form-label">N.º Seguridad Social</label>
+                        <input id="numSeguridadSocial" name="numSeguridadSocial" class="form-control">
                     </div>
                 </div>
             </section>
@@ -145,6 +163,22 @@
 
             roleSelect.addEventListener('change', updateSections);
             updateSections();
+
+            document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const targetId = button.dataset.target;
+                    const input = document.getElementById(targetId);
+                    const icon = button.querySelector('i');
+                    if (!input) return;
+
+                    const showing = input.type === 'text';
+                    input.type = showing ? 'password' : 'text';
+                    if (icon) {
+                        icon.classList.toggle('fa-eye', showing);
+                        icon.classList.toggle('fa-eye-slash', !showing);
+                    }
+                });
+            });
         })();
     </script>
 </section>

@@ -30,7 +30,7 @@ public class ConvenioService {
 
     @Transactional(readOnly = true)
     public Optional<Convenio> findById(Long id) {
-        return convenioRepository.findById(id);
+        return convenioRepository.findDetalleById(id);
     }
 
     /**

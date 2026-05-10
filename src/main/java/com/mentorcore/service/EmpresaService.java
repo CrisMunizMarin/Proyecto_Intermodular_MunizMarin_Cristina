@@ -98,7 +98,28 @@ public class EmpresaService {
      */
     @Transactional
     public Empresa actualizar(Empresa empresa) {
-        Empresa guardada = empresaRepository.save(empresa);
+        Empresa existente = getOrThrow(empresa.getId());
+
+        empresaRepository.findByCif(empresa.getCif())
+                .filter(otra -> !otra.getId().equals(empresa.getId()))
+                .ifPresent(otra -> {
+                    throw new IllegalArgumentException(
+                            "Ya existe otra empresa con el CIF: " + empresa.getCif());
+                });
+
+        existente.setNombre(empresa.getNombre());
+        existente.setCif(empresa.getCif());
+        existente.setSector(empresa.getSector());
+        existente.setDireccion(empresa.getDireccion());
+        existente.setMunicipio(empresa.getMunicipio());
+        existente.setProvincia(empresa.getProvincia());
+        existente.setCodigoPostal(empresa.getCodigoPostal());
+        existente.setTelefono(empresa.getTelefono());
+        existente.setEmailContacto(empresa.getEmailContacto());
+        existente.setWeb(empresa.getWeb());
+        existente.setNotas(empresa.getNotas());
+
+        Empresa guardada = empresaRepository.save(existente);
         log.info("Empresa actualizada: '{}' (id={})",
                 guardada.getNombre(), guardada.getId());
         return guardada;

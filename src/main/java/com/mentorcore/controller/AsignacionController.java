@@ -32,6 +32,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.Set;
 
 /**
  * Controlador de asignaciones del administrador.
@@ -62,14 +64,15 @@ public class AsignacionController {
                 asignaciones.stream()
                         .filter(asignacion -> asignacion.getEstado() == EstadoFeEnum.EN_CURSO)
                         .toList());
-        model.addAttribute("asignacionesHistoricas",
-                asignaciones.stream()
-                        .filter(asignacion -> asignacion.getEstado() != EstadoFeEnum.EN_CURSO)
-                        .toList());
-        model.addAttribute("alumnosSinAsignacion",
-                alumnoService.findAll().stream()
-                        .filter(alumno -> !asignacionService.tieneAsignacionActiva(alumno))
-                        .toList());
+        model.addAttribute("asignacionesHistoricas", asignaciones);
+        List<Alumno> alumnos = alumnoService.findAll();
+        Set<Long> alumnosConAsignacionActivaIds = alumnos.stream()
+                .filter(asignacionService::tieneAsignacionActiva)
+                .map(Alumno::getId)
+                .collect(java.util.stream.Collectors.toSet());
+
+        model.addAttribute("alumnos", alumnos);
+        model.addAttribute("alumnosConAsignacionActivaIds", alumnosConAsignacionActivaIds);
         model.addAttribute("empresasActivas", empresaService.findActivas());
         model.addAttribute("tutoresEmpresa", tutorEmpresaService.findAll());
         model.addAttribute("periodosDisponibles",

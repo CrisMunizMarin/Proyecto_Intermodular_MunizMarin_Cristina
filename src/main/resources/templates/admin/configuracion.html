@@ -24,28 +24,35 @@
                 <div class="card-body">
                     <form th:action="@{/admin/configuracion/actualizar/{id}(id=${parametro.id})}" method="post">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                        <div class="row g-3 align-items-end">
-                            <div class="col-12 col-lg-3">
-                                <label class="form-label">Clave</label>
-                                <input class="form-control" th:value="${parametro.clave}" disabled>
+                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
+                            <div class="mc-min-w-0">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h2 class="h6 mb-0" th:text="${parametro.clave}">clave</h2>
+                                    <span class="badge bg-light text-dark border"
+                                          th:text="${parametro.tipoDato != null ? parametro.tipoDato : 'texto'}">
+                                        texto
+                                    </span>
+                                </div>
+                                <p class="small text-muted mb-0"
+                                   th:text="${parametro.descripcion != null ? parametro.descripcion : 'Sin descripción adicional.'}">
+                                    Descripción
+                                </p>
                             </div>
-                            <div class="col-12 col-lg-6">
+                            <div class="text-lg-end small text-muted">
+                                <span>ID </span><span th:text="${parametro.id}">1</span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 align-items-end">
+                            <div class="col-12">
                                 <label class="form-label">Valor</label>
                                 <textarea name="valor" rows="2" class="form-control" th:text="${parametro.valor}">valor</textarea>
                             </div>
-                            <div class="col-12 col-lg-2">
-                                <label class="form-label">Tipo</label>
-                                <input class="form-control" th:value="${parametro.tipoDato != null ? parametro.tipoDato : 'texto'}" disabled>
-                            </div>
-                            <div class="col-12 col-lg-1">
-                                <button type="submit" class="btn btn-mc-primary w-100">Guardar</button>
+                            <div class="col-12 d-flex justify-content-end">
+                                <button type="submit" class="btn btn-mc-primary">Guardar</button>
                             </div>
                         </div>
                     </form>
-                    <p class="small text-muted mt-3 mb-0"
-                       th:text="${parametro.descripcion != null ? parametro.descripcion : 'Sin descripción adicional.'}">
-                        Descripción
-                    </p>
                 </div>
             </article>
         </div>

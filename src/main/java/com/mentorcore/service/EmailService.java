@@ -2,6 +2,7 @@ package com.mentorcore.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -23,6 +24,9 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    @Value("${mentorcore.app.base-url:http://localhost:8080}")
+    private String baseUrl;
+
     // Remitente por defecto
     private static final String FROM = "noreply@mentorcore.es";
 
@@ -38,7 +42,7 @@ public class EmailService {
      */
     @Async
     public void enviarRecuperacionPassword(String emailDestino, String token) {
-        String enlace = "http://localhost:8080/auth/reset-password?token=" + token;
+        String enlace = buildUrl("/auth/reset-password?token=" + token);
 
         String cuerpo = """
                 Hola,
@@ -81,10 +85,10 @@ public class EmailService {
                 
                 Por seguridad, te recomendamos cambiar tu contraseña en el primer acceso.
                 
-                Accede a la plataforma en: http://localhost:8080/login
+                Accede a la plataforma en: %s/login
                 
                 El equipo de MentorCore
-                """.formatted(nombreUsuario, passwordTemporal);
+                """.formatted(nombreUsuario, passwordTemporal, getBaseUrl());
 
         enviarSimple(emailDestino, "Bienvenido/a a MentorCore — Tus credenciales", cuerpo);
     }
@@ -104,10 +108,10 @@ public class EmailService {
                 El alumno %s ha registrado una nueva tarea el %s.
                 
                 Accede a MentorCore para revisar y validar la tarea:
-                http://localhost:8080/tutor-centro/tareas
+                %s/tutor-centro/tareas
                 
                 El equipo de MentorCore
-                """.formatted(nombreAlumno, fechaTarea);
+                """.formatted(nombreAlumno, fechaTarea, getBaseUrl());
 
         enviarSimple(emailTutor,
                 "Nueva tarea registrada — " + nombreAlumno, cuerpo);
@@ -130,10 +134,10 @@ public class EmailService {
                 Comentario del tutor: %s
                 
                 Accede a MentorCore para ver el detalle:
-                http://localhost:8080/alumno/tareas
+                %s/alumno/tareas
                 
                 El equipo de MentorCore
-                """.formatted(fechaTarea, estado, comentario != null ? comentario : "—");
+                """.formatted(fechaTarea, estado, comentario != null ? comentario : "—", getBaseUrl());
 
         enviarSimple(emailAlumno,
                 "Revisión de tarea — " + estado, cuerpo);
@@ -155,10 +159,10 @@ public class EmailService {
                   Observación: %s
                 
                 Si dispones de justificante, adjúntalo en MentorCore:
-                http://localhost:8080/alumno/faltas
+                %s/alumno/faltas
                 
                 El equipo de MentorCore
-                """.formatted(fecha, tipo, observacion != null ? observacion : "—");
+                """.formatted(fecha, tipo, observacion != null ? observacion : "—", getBaseUrl());
 
         enviarSimple(emailAlumno,
                 "Falta de asistencia registrada — " + fecha, cuerpo);
@@ -176,10 +180,10 @@ public class EmailService {
                 El alumno %s ha adjuntado un justificante para la falta del %s.
                 
                 Accede a MentorCore para revisarlo:
-                http://localhost:8080/tutor-centro/faltas
+                %s/tutor-centro/faltas
                 
                 El equipo de MentorCore
-                """.formatted(nombreAlumno, fechaFalta);
+                """.formatted(nombreAlumno, fechaFalta, getBaseUrl());
 
         enviarSimple(emailTutor,
                 "Justificante pendiente de revisión — " + nombreAlumno, cuerpo);
@@ -201,10 +205,10 @@ public class EmailService {
                   Nueva empresa: %s
                 
                 Accede a MentorCore para ver los detalles:
-                http://localhost:8080/login
+                %s/login
                 
                 El equipo de MentorCore
-                """.formatted(nombreAlumno, nuevaEmpresa);
+                """.formatted(nombreAlumno, nuevaEmpresa, getBaseUrl());
 
         enviarSimple(emailDestinatario,
                 "Reasignación de empresa — " + nombreAlumno, cuerpo);
@@ -250,5 +254,18 @@ public class EmailService {
         } catch (Exception e) {
             log.error("Error enviando email a '{}': {}", emailDestino, e.getMessage());
         }
+    }
+
+    private String getBaseUrl() {
+        return baseUrl != null ? baseUrl.replaceAll("/+$", "") : "http://localhost:8080";
+    }
+
+    private String buildUrl(String path) {
+        if (path == null || path.isBlank()) {
+            return getBaseUrl();
+        }
+        return path.startsWith("/")
+                ? getBaseUrl() + path
+                : getBaseUrl() + "/" + path;
     }
 }

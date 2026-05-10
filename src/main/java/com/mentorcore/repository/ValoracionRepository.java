@@ -27,6 +27,11 @@ public interface ValoracionRepository extends JpaRepository<Valoracion, Long> {
             @Param("alumno") Alumno alumno,
             @Param("tipoEvaluador") TipoEvaluadorEnum tipoEvaluador);
 
+    @Query("SELECT v FROM Valoracion v " +
+           "JOIN FETCH v.alumno " +
+           "WHERE v.id = :id")
+    Optional<Valoracion> findDetalleById(@Param("id") Long id);
+
     // Todas las valoraciones de un alumno (RF7)
     @Query("SELECT v FROM Valoracion v " +
            "JOIN FETCH v.alumno " +

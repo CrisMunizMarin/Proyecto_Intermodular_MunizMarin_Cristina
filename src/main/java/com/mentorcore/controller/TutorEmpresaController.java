@@ -47,6 +47,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Controlador del panel del tutor de empresa.
@@ -59,6 +60,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class TutorEmpresaController {
+
+    private static final Set<String> EXTENSIONES_PLAN_FORMACION = Set.of("pdf", "doc", "docx", "odt");
 
     private final TutorEmpresaService tutorEmpresaService;
     private final AsignacionService asignacionService;
@@ -125,6 +128,9 @@ public class TutorEmpresaController {
         model.addAttribute("tareas", tareaService.findByAlumno(alumno));
         model.addAttribute("faltas", faltaAsistenciaService.findByAlumno(alumno));
         model.addAttribute("documentos", documentoService.findByAlumno(alumno));
+        model.addAttribute("documentosPersonales", documentoService.findPersonalesByAlumno(alumno));
+        model.addAttribute("documentosFe", documentoService.findFormacionEmpresaByAlumno(alumno));
+        model.addAttribute("convenios", convenioService.findByAlumno(alumno));
         model.addAttribute("valoraciones", valoracionService.findByAlumno(alumno));
 
         return "tutor-empresa/detalle-alumno";
@@ -222,15 +228,19 @@ public class TutorEmpresaController {
                     alumno.getNombreUsuario(),
                     alumno.getGrupo(),
                     asignacion.getEmpresa() != null ? asignacion.getEmpresa().getNombre() : "—",
-                    documentoService.findByAlumno(alumno),
+                    documentoService.findPersonalesByAlumno(alumno),
+                    documentoService.findFormacionEmpresaByAlumno(alumno),
                     convenioService.findByAlumno(alumno)
             ));
         }
 
         model.addAttribute("seccionActiva", "documentos");
         model.addAttribute("documentacion", documentacion);
-        model.addAttribute("tiposDocumentoEmpresa",
-                tipoDocumentoService.findActivosPorRoles("TUTOR_EMPRESA", "TODOS"));
+        model.addAttribute("tiposDocumentoFeTutorEmpresa",
+                tipoDocumentoService.findActivosPorNombres(
+                        "Anexo I - Plan de Formación",
+                        "Informe de Seguimiento Empresa"
+                ));
 
         return "tutor-empresa/documentos";
     }
@@ -249,6 +259,15 @@ public class TutorEmpresaController {
                     .orElseThrow(() -> new RuntimeException(
                             "Tipo de documento no encontrado con id: " + idTipoDocumento));
 
+            Set<String> tiposPermitidosEmpresa = Set.of(
+                    "Anexo I - Plan de Formación",
+                    "Informe de Seguimiento Empresa"
+            );
+            if (!tiposPermitidosEmpresa.contains(tipoDocumento.getNombre())) {
+                throw new IllegalArgumentException(
+                        "Desde esta sección solo puedes subir el plan de formación o informes de seguimiento de empresa");
+            }
+
             if (archivo == null || archivo.isEmpty()) {
                 throw new IllegalArgumentException("Debes seleccionar un archivo");
             }
@@ -259,7 +278,11 @@ public class TutorEmpresaController {
                 extension = nombreOriginal.substring(nombreOriginal.lastIndexOf(".") + 1).toLowerCase();
             }
 
-            if (!tipoDocumento.isExtensionValida(extension)) {
+            boolean extensionValida = "Anexo I - Plan de Formación".equals(tipoDocumento.getNombre())
+                    ? EXTENSIONES_PLAN_FORMACION.contains(extension)
+                    : tipoDocumento.isExtensionValida(extension);
+
+            if (!extensionValida) {
                 throw new IllegalArgumentException(
                         "La extensión del archivo no está permitida para este tipo de documento");
             }
@@ -280,7 +303,7 @@ public class TutorEmpresaController {
                     archivo.getContentType(),
                     archivo.getSize(),
                     false,
-                    ContextoDocumentoEnum.EXPEDIENTE
+                    ContextoDocumentoEnum.FORMACION_EMPRESA
             );
 
             if (alumno.getTutorCentro() != null) {
@@ -301,6 +324,83 @@ public class TutorEmpresaController {
                     "Error al subir documento desde tutor de empresa",
                     e,
                     "No se pudo subir el documento. Inténtalo de nuevo."
+            );
+        }
+
+        return "redirect:/tutor-empresa/documentos";
+    }
+
+    @PostMapping("/documentos/convenio/{idConvenio}/subir")
+    public String subirPdfConvenio(@PathVariable Long idConvenio,
+                                   @RequestParam("archivo") MultipartFile archivo,
+                                   Principal principal,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
+            Convenio convenio = convenioService.findById(idConvenio)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Convenio no encontrado con id: " + idConvenio));
+
+            Alumno alumno = getAlumnoAsignado(convenio.getAlumno().getId(), tutor);
+
+            if (archivo == null || archivo.isEmpty()) {
+                throw new IllegalArgumentException("Debes seleccionar un PDF de convenio");
+            }
+
+            String subcarpeta = "alumnos/" + alumno.getId() + "/convenios";
+            String rutaGuardada = fileUploadUtil.guardarArchivo(
+                    rutaBaseUploads,
+                    subcarpeta,
+                    archivo
+            );
+
+            convenioService.guardarPdf(idConvenio, rutaGuardada);
+
+            if (alumno.getTutorCentro() != null) {
+                notificacionService.enviarSistema(
+                        alumno.getTutorCentro(),
+                        TipoNotificacionEnum.AVISO,
+                        "Convenio actualizado por empresa",
+                        "El tutor de empresa ha subido o actualizado el PDF del convenio de " + alumno.getNombreCompleto() + "."
+                );
+            }
+
+            redirectAttributes.addFlashAttribute("successMsg",
+                    "PDF del convenio actualizado correctamente.");
+        } catch (Exception e) {
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al subir PDF de convenio desde tutor de empresa",
+                    e,
+                    "No se pudo actualizar el PDF del convenio. Inténtalo de nuevo."
+            );
+        }
+
+        return "redirect:/tutor-empresa/documentos";
+    }
+
+    @PostMapping("/documentos/convenio/crear")
+    public String crearConvenioInicial(@RequestParam("idAlumno") Long idAlumno,
+                                       Principal principal,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            TutorEmpresa tutor = getTutorEmpresaAutenticado(principal);
+            Alumno alumno = getAlumnoAsignado(idAlumno, tutor);
+            Asignacion asignacion = asignacionService.findAsignacionActiva(alumno)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "El alumno no tiene una asignación activa para generar el convenio"));
+
+            asignacionService.asegurarConvenioInicial(asignacion);
+            redirectAttributes.addFlashAttribute("successMsg",
+                    "Convenio inicial generado correctamente. Ya puedes subir el PDF.");
+        } catch (Exception e) {
+            ControllerMessageUtil.addSafeErrorMessage(
+                    redirectAttributes,
+                    log,
+                    "Error al crear convenio inicial desde tutor de empresa",
+                    e,
+                    "No se pudo generar el convenio inicial. Inténtalo de nuevo."
             );
         }
 
@@ -534,6 +634,23 @@ public class TutorEmpresaController {
                     resultado
             );
 
+            notificacionService.enviarSistema(
+                    alumno,
+                    TipoNotificacionEnum.AVISO,
+                    "Nueva valoración del tutor de empresa",
+                    "Tu tutor de empresa ha emitido o actualizado tu valoración final."
+            );
+
+            if (alumno.getTutorCentro() != null) {
+                notificacionService.enviarSistema(
+                        alumno.getTutorCentro(),
+                        TipoNotificacionEnum.AVISO,
+                        "Valoración emitida por empresa",
+                        "El tutor de empresa ha emitido o actualizado la valoración de "
+                                + alumno.getNombreCompleto() + "."
+                );
+            }
+
             redirectAttributes.addFlashAttribute("successMsg",
                     "Valoración emitida correctamente.");
         } catch (Exception e) {
@@ -607,7 +724,8 @@ public class TutorEmpresaController {
             String nombreUsuario,
             String grupo,
             String nombreEmpresa,
-            List<Documento> documentos,
+            List<Documento> documentosPersonales,
+            List<Documento> documentosFe,
             List<Convenio> convenios
     ) {
     }

@@ -1,0 +1,11 @@
+.git
+.gitignore
+.classpath
+.project
+.settings
+.DS_Store
+target
+docu
+src/main/resources/static/uploads
+README.md
+*.log

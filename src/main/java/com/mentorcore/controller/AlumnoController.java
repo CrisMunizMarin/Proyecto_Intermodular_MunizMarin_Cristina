@@ -6,12 +6,14 @@ import com.mentorcore.model.Notificacion;
 import com.mentorcore.model.Valoracion;
 import com.mentorcore.model.Tarea;
 import com.mentorcore.model.Documento;
+import com.mentorcore.model.Convenio;
 import com.mentorcore.model.TipoDocumento;
 import com.mentorcore.model.FaltaAsistencia;
 import com.mentorcore.model.enums.ContextoDocumentoEnum;
 import com.mentorcore.model.enums.TipoNotificacionEnum;
 import com.mentorcore.service.AlumnoService;
 import com.mentorcore.service.AsignacionService;
+import com.mentorcore.service.ConvenioService;
 import com.mentorcore.service.DocumentoService;
 import com.mentorcore.service.FaltaAsistenciaService;
 import com.mentorcore.service.NotificacionService;
@@ -23,6 +25,11 @@ import com.mentorcore.util.ControllerMessageUtil;
 import com.mentorcore.util.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,12 +37,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Set;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -56,6 +63,7 @@ public class AlumnoController {
     private final AsignacionService asignacionService;
     private final TareaService tareaService;
     private final DocumentoService documentoService;
+    private final ConvenioService convenioService;
     private final FaltaAsistenciaService faltaAsistenciaService;
     private final NotificacionService notificacionService;
     private final ValoracionService valoracionService;
@@ -140,13 +148,18 @@ public class AlumnoController {
         cargarDatosBase(model, alumno);
 
         model.addAttribute("seccionActiva", "documentos");
-        model.addAttribute("documentos",
-                documentoService.findByAlumnoAndContexto(alumno, ContextoDocumentoEnum.EXPEDIENTE));
+        model.addAttribute("documentosPersonales",
+                documentoService.findPersonalesByAlumno(alumno));
+        model.addAttribute("documentosFe",
+                documentoService.findFormacionEmpresaByAlumno(alumno));
+        model.addAttribute("convenios", convenioService.findByAlumno(alumno));
         model.addAttribute("documentosPendientes",
                 documentoService.findPendientesByAlumno(alumno));
-        model.addAttribute("tiposDocumento", tipoDocumentoService.findActivos().stream()
-                .filter(tipo -> !"Justificante de Falta".equalsIgnoreCase(tipo.getNombre()))
-                .toList());
+        model.addAttribute("tiposDocumentoPersonales",
+                tipoDocumentoService.findActivosPorNombres(
+                        "DNI / NIE del Alumno",
+                        "Seguro Escolar"
+                ));
 
         return "alumno/documentos";
     }
@@ -163,6 +176,15 @@ public class AlumnoController {
             TipoDocumento tipoDocumento = tipoDocumentoService.findById(idTipoDocumento)
                     .orElseThrow(() -> new RuntimeException(
                             "Tipo de documento no encontrado con id: " + idTipoDocumento));
+
+            Set<String> tiposPermitidosAlumno = Set.of(
+                    "DNI / NIE del Alumno",
+                    "Seguro Escolar"
+            );
+            if (!tiposPermitidosAlumno.contains(tipoDocumento.getNombre())) {
+                throw new IllegalArgumentException(
+                        "Solo puedes subir tu DNI/NIE o tu seguro escolar desde esta sección");
+            }
 
             if (archivo == null || archivo.isEmpty()) {
                 throw new IllegalArgumentException("Debes seleccionar un archivo");
@@ -195,7 +217,7 @@ public class AlumnoController {
                     archivo.getContentType(),
                     archivo.getSize(),
                     tipoDocumento.isEsObligatorio(),
-                    ContextoDocumentoEnum.EXPEDIENTE
+                    ContextoDocumentoEnum.PERSONAL_ALUMNO
             );
 
             redirectAttributes.addFlashAttribute("successMsg",
@@ -504,6 +526,31 @@ public class AlumnoController {
 
 
         return "alumno/valoracion";
+    }
+
+    @GetMapping("/valoracion/{idValoracion}/pdf")
+    public ResponseEntity<byte[]> descargarValoracionPdf(@PathVariable Long idValoracion,
+                                                         Principal principal) {
+        Alumno alumno = getAlumnoAutenticado(principal);
+        Valoracion valoracion = valoracionService.findById(idValoracion)
+                .orElseThrow(() -> new RuntimeException(
+                        "Valoración no encontrada con id: " + idValoracion));
+
+        if (valoracion.getAlumno() == null || !valoracion.getAlumno().getId().equals(alumno.getId())) {
+            throw new RuntimeException("No puedes descargar una valoración que no te pertenece");
+        }
+
+        byte[] pdf = valoracionService.generarPdf(valoracion);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(ContentDisposition.attachment()
+                .filename("valoracion-" + alumno.getNombreUsuario() + "-" + idValoracion + ".pdf")
+                .build());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdf);
     }
 
     //CREAR TAREA

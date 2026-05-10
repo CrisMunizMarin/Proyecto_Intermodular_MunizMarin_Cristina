@@ -61,28 +61,30 @@
                         </p>
                     </div>
 
-                    <div th:if="${tareasPendientes != null and !#lists.isEmpty(tareasPendientes)}" class="table-responsive">
-                        <table class="table table-hover align-middle table-mc">
-                            <caption class="visually-hidden">Tareas pendientes de revisión</caption>
-                            <thead>
-                            <tr>
-                                <th scope="col">Alumno</th>
-                                <th scope="col">Fecha</th>
-                                <th scope="col">Horas</th>
-                                <th scope="col">Área</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="tarea : ${tareasPendientes}">
-                                <td th:text="${tarea.nombreAlumno}">Alumno</td>
-                                <td th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</td>
-                                <td th:text="${tarea.horasDedicadas}">0</td>
-                                <td th:text="${tarea.areaActividad != null and !#strings.isEmpty(tarea.areaActividad) ? tarea.areaActividad : 'Sin especificar'}">
-                                    Sin especificar
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                    <div th:if="${tareasPendientes != null and !#lists.isEmpty(tareasPendientes)}" class="mc-card-list">
+                        <article th:each="tarea : ${tareasPendientes}" class="border rounded p-3">
+                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                <div class="mc-min-w-0">
+                                    <h3 class="h6 mb-2" th:text="${tarea.nombreAlumno}">Alumno</h3>
+                                    <p class="mb-1 text-muted">
+                                        <strong>Fecha:</strong>
+                                        <span th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</span>
+                                    </p>
+                                    <p class="mb-0 text-muted">
+                                        <strong>Área:</strong>
+                                        <span th:text="${tarea.areaActividad != null and !#strings.isEmpty(tarea.areaActividad) ? tarea.areaActividad : 'Sin especificar'}">
+                                            Sin especificar
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="text-lg-end">
+                                    <p class="mb-0 small text-muted">
+                                        <strong>Horas:</strong>
+                                        <span th:text="${tarea.horasDedicadas}">0</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
                     </div>
                 </div>
             </article>

@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -87,7 +88,10 @@ public class AdminController {
     public String usuarios(Model model, Principal principal) {
         cargarAdminActual(model, principal);
 
-        model.addAttribute("usuarios", usuarioService.findAll());
+        model.addAttribute("usuarios",
+                usuarioService.findAll().stream()
+                        .map(usuario -> cargarUsuarioDetalle(usuario.getId()))
+                        .toList());
         model.addAttribute("roles", RolEnum.values());
 
         return "admin/usuarios";
@@ -114,6 +118,8 @@ public class AdminController {
                                @RequestParam(value = "idTutorCentro", required = false) Long idTutorCentro,
                                @RequestParam(value = "grupo", required = false) String grupo,
                                @RequestParam(value = "dni", required = false) String dni,
+                               @RequestParam(value = "fechaNacimiento", required = false) String fechaNacimiento,
+                               @RequestParam(value = "numSeguridadSocial", required = false) String numSeguridadSocial,
                                @RequestParam(value = "departamento", required = false) String departamento,
                                @RequestParam(value = "especialidad", required = false) String especialidad,
                                @RequestParam(value = "numExpedienteDocente", required = false) String numExpedienteDocente,
@@ -137,6 +143,8 @@ public class AdminController {
                     idTutorCentro,
                     grupo,
                     dni,
+                    fechaNacimiento,
+                    numSeguridadSocial,
                     departamento,
                     especialidad,
                     numExpedienteDocente,
@@ -203,6 +211,8 @@ public class AdminController {
                                 @RequestParam(value = "idTutorCentro", required = false) Long idTutorCentro,
                                 @RequestParam(value = "grupo", required = false) String grupo,
                                 @RequestParam(value = "dni", required = false) String dni,
+                                @RequestParam(value = "fechaNacimiento", required = false) String fechaNacimiento,
+                                @RequestParam(value = "numSeguridadSocial", required = false) String numSeguridadSocial,
                                 @RequestParam(value = "departamento", required = false) String departamento,
                                 @RequestParam(value = "especialidad", required = false) String especialidad,
                                 @RequestParam(value = "numExpedienteDocente", required = false) String numExpedienteDocente,
@@ -221,7 +231,15 @@ public class AdminController {
             configurarBaseUsuario(usuario, nombreUsuario, email, nombre, apellidos, telefono);
 
             switch (rol) {
-                case ALUMNO -> actualizarAlumno((Alumno) usuario, idCurso, idTutorCentro, grupo, dni);
+                case ALUMNO -> actualizarAlumno(
+                        (Alumno) usuario,
+                        idCurso,
+                        idTutorCentro,
+                        grupo,
+                        dni,
+                        fechaNacimiento,
+                        numSeguridadSocial
+                );
                 case TUTOR_CENTRO -> actualizarTutorCentro((TutorCentro) usuario, departamento, especialidad, numExpedienteDocente);
                 case TUTOR_EMPRESA -> actualizarTutorEmpresa((TutorEmpresa) usuario, idEmpresa, cargo, departamentoEmpresa);
                 case ADMIN -> {
@@ -573,6 +591,8 @@ public class AdminController {
                                      Long idTutorCentro,
                                      String grupo,
                                      String dni,
+                                     String fechaNacimiento,
+                                     String numSeguridadSocial,
                                      String departamento,
                                      String especialidad,
                                      String numExpedienteDocente,
@@ -591,6 +611,8 @@ public class AdminController {
                 alumno.setTutorCentro(tutorCentro);
                 alumno.setGrupo(normalizarOpcional(grupo));
                 alumno.setDni(normalizarOpcional(dni));
+                alumno.setFechaNacimiento(parseFechaOpcional(fechaNacimiento));
+                alumno.setNumSeguridadSocial(normalizarOpcional(numSeguridadSocial));
                 yield alumno;
             }
             case TUTOR_CENTRO -> {
@@ -635,7 +657,9 @@ public class AdminController {
                                   Long idCurso,
                                   Long idTutorCentro,
                                   String grupo,
-                                  String dni) {
+                                  String dni,
+                                  String fechaNacimiento,
+                                  String numSeguridadSocial) {
         CursoAcademico curso = cursoAcademicoService.findById(idCurso)
                 .orElseThrow(() -> new RuntimeException("Debes seleccionar un curso"));
         TutorCentro tutorCentro = tutorCentroService.findById(idTutorCentro)
@@ -645,6 +669,8 @@ public class AdminController {
         alumno.setTutorCentro(tutorCentro);
         alumno.setGrupo(normalizarOpcional(grupo));
         alumno.setDni(normalizarOpcional(dni));
+        alumno.setFechaNacimiento(parseFechaOpcional(fechaNacimiento));
+        alumno.setNumSeguridadSocial(normalizarOpcional(numSeguridadSocial));
     }
 
     private void actualizarTutorCentro(TutorCentro tutorCentro,
@@ -680,5 +706,12 @@ public class AdminController {
             return null;
         }
         return texto.trim();
+    }
+
+    private LocalDate parseFechaOpcional(String texto) {
+        if (texto == null || texto.isBlank()) {
+            return null;
+        }
+        return LocalDate.parse(texto.trim());
     }
 }

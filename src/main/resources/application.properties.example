@@ -2,15 +2,15 @@
 # MENTORCORE - Plantilla de configuración local
 # =====================================================
 # Uso recomendado:
-# 1. Copia los valores necesarios a application-dev.properties
+# 1. Usa SPRING_PROFILES_ACTIVE=dev o prod segun el entorno
 # 2. Sustituye los campos TU_... por los datos de tu entorno
-# 3. Crea previamente una base de datos vacía con el nombre elegido
+# 3. Crea previamente una base de datos vacia con el nombre elegido
 # =====================================================
 
 spring.application.name=MentorCore
 
-# Perfil activo
-spring.profiles.active=dev
+# Perfil activo (recomendado definirlo como variable de entorno)
+spring.profiles.active=${SPRING_PROFILES_ACTIVE:dev}
 
 # Servidor
 server.port=8080
@@ -42,7 +42,8 @@ spring.thymeleaf.encoding=UTF-8
 spring.servlet.multipart.enabled=true
 spring.servlet.multipart.max-file-size=10MB
 spring.servlet.multipart.max-request-size=50MB
-mentorcore.uploads.ruta-base=src/main/resources/static/uploads
+mentorcore.uploads.ruta-base=${MENTORCORE_UPLOADS_PATH:src/main/resources/static/uploads}
+mentorcore.app.base-url=${MENTORCORE_APP_BASE_URL:http://localhost:8080}
 
 # Actuator
 management.endpoints.web.exposure.include=health,info

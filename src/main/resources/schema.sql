@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS tipo_documento (
 
 -- -----------------------------------------------------
 -- TABLA: documento
--- Expediente digital: archivos subidos por los usuarios
+-- Repositorio documental: personales, FE y justificantes
 -- RF3, RF6, RF22
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS documento (
@@ -227,7 +227,7 @@ CREATE TABLE IF NOT EXISTS documento (
     mime_type               VARCHAR(100),
     estado                  ENUM('PENDIENTE','VALIDADO','RECHAZADO') NOT NULL DEFAULT 'PENDIENTE',
     comentario_revision     TEXT,
-    contexto                ENUM('EXPEDIENTE','JUSTIFICANTE_FALTA') NOT NULL DEFAULT 'EXPEDIENTE',
+    contexto                ENUM('EXPEDIENTE','PERSONAL_ALUMNO','FORMACION_EMPRESA','JUSTIFICANTE_FALTA') NOT NULL DEFAULT 'PERSONAL_ALUMNO',
     es_obligatorio          BOOLEAN         NOT NULL DEFAULT FALSE,
     fecha_subida            DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_revision          DATETIME,

@@ -85,10 +85,19 @@
                     <div class="col-12 col-lg-4">
                         <label for="grupo" class="form-label">Grupo</label>
                         <input id="grupo" name="grupo" class="form-control" th:value="${usuario.grupo}">
+                        <div class="form-text">Subgrupo o clase dentro del curso, no sustituye al curso académico.</div>
                     </div>
                     <div class="col-12 col-lg-4">
                         <label for="dni" class="form-label">DNI</label>
                         <input id="dni" name="dni" class="form-control" th:value="${usuario.dni}">
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="fechaNacimiento" class="form-label">Fecha de nacimiento</label>
+                        <input id="fechaNacimiento" name="fechaNacimiento" type="date" class="form-control" th:value="${usuario.fechaNacimiento}">
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <label for="numSeguridadSocial" class="form-label">N.º Seguridad Social</label>
+                        <input id="numSeguridadSocial" name="numSeguridadSocial" class="form-control" th:value="${usuario.numSeguridadSocial}">
                     </div>
                 </div>
             </section>

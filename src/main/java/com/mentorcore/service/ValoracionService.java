@@ -6,6 +6,7 @@ import com.mentorcore.model.Valoracion;
 import com.mentorcore.model.enums.ResultadoEnum;
 import com.mentorcore.model.enums.TipoEvaluadorEnum;
 import com.mentorcore.repository.ValoracionRepository;
+import com.mentorcore.util.PdfGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,13 +27,14 @@ import java.util.Optional;
 public class ValoracionService {
 
     private final ValoracionRepository valoracionRepository;
+    private final PdfGeneratorUtil pdfGeneratorUtil;
 
 
     // BÚSQUEDAS
 
     @Transactional(readOnly = true)
     public Optional<Valoracion> findById(Long id) {
-        return valoracionRepository.findById(id);
+        return valoracionRepository.findDetalleById(id);
     }
 
     /**
@@ -199,14 +201,18 @@ public class ValoracionService {
         return valoracionRepository.existsByAlumnoAndTipoEvaluador(alumno, tipoEvaluador);
     }
 
+    @Transactional(readOnly = true)
+    public byte[] generarPdf(Valoracion valoracion) {
+        Valoracion detalle = getOrThrow(valoracion.getId());
+        return pdfGeneratorUtil.generarValoracionAlumno(detalle.getAlumno(), detalle);
+    }
+
 
     // HELPERS PRIVADOS
 
     private Valoracion getOrThrow(Long id) {
-        return valoracionRepository.findById(id)
+        return valoracionRepository.findDetalleById(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Valoración no encontrada con id: " + id));
     }
 }
-
-

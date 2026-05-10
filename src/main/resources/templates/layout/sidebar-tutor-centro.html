@@ -3,6 +3,9 @@
         <p class="mb-1 small text-uppercase fw-bold" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
             Panel Tutor Centro
         </p>
+        <p class="mb-1 fw-semibold" th:if="${tutorCentroActual != null}" th:text="${'Hola, ' + tutorCentroActual.nombre}">
+            Hola, Nombre
+        </p>
         <p class="mb-0 text-muted small">
             Seguimiento académico de la formación en empresa
         </p>

@@ -32,64 +32,158 @@
                 <p class="mb-0 text-muted">Todavía no hay usuarios registrados.</p>
             </div>
 
-            <div th:if="${usuarios != null and !#lists.isEmpty(usuarios)}" class="table-responsive">
-                <table class="table table-hover align-middle table-mc">
-                    <thead>
-                    <tr>
-                        <th>Usuario</th>
-                        <th>Nombre</th>
-                        <th>Rol</th>
-                        <th>Estado</th>
-                        <th>Contacto</th>
-                        <th>Último acceso</th>
-                        <th class="text-end">Acciones</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="usuario : ${usuarios}">
-                        <td th:text="${usuario.nombreUsuario}">usuario</td>
-                        <td th:text="${usuario.nombreCompleto}">Nombre</td>
-                        <td><span class="badge bg-secondary" th:text="${usuario.rol}">ROL</span></td>
-                        <td>
-                            <span class="badge"
-                                  th:classappend="${usuario.estado.name() == 'ACTIVO'} ? ' bg-success' : ' bg-warning text-dark'"
-                                  th:text="${usuario.estado}">
-                                ACTIVO
-                            </span>
-                        </td>
-                        <td>
-                            <div class="small" th:text="${usuario.email}">mail</div>
-                            <div class="small text-muted" th:text="${usuario.telefono != null ? usuario.telefono : 'Sin teléfono'}">Sin teléfono</div>
-                        </td>
-                        <td class="small text-muted"
-                            th:text="${usuario.ultimoLogin != null ? #temporals.format(usuario.ultimoLogin, 'dd/MM/yyyy HH:mm') : 'Sin accesos registrados'}">
-                            Sin accesos registrados
-                        </td>
-                        <td>
-                            <div class="d-flex justify-content-end flex-wrap gap-2">
-                                <a th:href="@{/admin/usuarios/editar/{id}(id=${usuario.id})}" class="btn btn-sm btn-outline-primary">Editar</a>
-
-                                <form th:if="${usuario.estado.name() == 'ACTIVO'}"
-                                      th:action="@{/admin/usuarios/suspender/{id}(id=${usuario.id})}" method="post">
-                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                    <button type="submit" class="btn btn-sm btn-outline-warning">Suspender</button>
-                                </form>
-
-                                <form th:if="${usuario.estado.name() != 'ACTIVO'}"
-                                      th:action="@{/admin/usuarios/activar/{id}(id=${usuario.id})}" method="post">
-                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                    <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
-                                </form>
-
-                                <form th:action="@{/admin/usuarios/eliminar/{id}(id=${usuario.id})}" method="post">
-                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                                </form>
+            <div th:if="${usuarios != null and !#lists.isEmpty(usuarios)}" class="mc-card-list">
+                <article th:each="usuario : ${usuarios}" class="border rounded p-3">
+                    <div class="d-flex flex-column flex-xl-row justify-content-between gap-3">
+                        <div class="mc-min-w-0">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <h2 class="h6 mb-0" th:text="${usuario.nombreUsuario}">usuario</h2>
+                                <span class="badge bg-secondary" th:text="${usuario.rol}">ROL</span>
+                                <span class="badge"
+                                      th:classappend="${usuario.estado.name() == 'ACTIVO'} ? ' bg-success' : ' bg-warning text-dark'"
+                                      th:text="${usuario.estado}">
+                                    ACTIVO
+                                </span>
                             </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                            <p class="mb-0 text-muted" th:text="${usuario.nombreCompleto}">Nombre completo</p>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <a th:href="@{/admin/usuarios/editar/{id}(id=${usuario.id})}" class="btn btn-sm btn-outline-primary">Editar</a>
+
+                            <form th:if="${usuario.estado.name() == 'ACTIVO'}"
+                                  th:action="@{/admin/usuarios/suspender/{id}(id=${usuario.id})}" method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-sm btn-outline-warning">Suspender</button>
+                            </form>
+
+                            <form th:if="${usuario.estado.name() != 'ACTIVO'}"
+                                  th:action="@{/admin/usuarios/activar/{id}(id=${usuario.id})}" method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                            </form>
+
+                            <form th:action="@{/admin/usuarios/eliminar/{id}(id=${usuario.id})}" method="post">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <details class="mc-details-toggle mt-3">
+                        <summary class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2">
+                            <span>Datos</span>
+                            <i class="fas fa-chevron-down mc-details-toggle__icon" aria-hidden="true"></i>
+                        </summary>
+                        <div class="mt-3 small">
+                            <p class="mb-1">
+                                <strong>Usuario:</strong>
+                                <span th:text="${usuario.nombreUsuario}">usuario</span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Email:</strong>
+                                <span th:text="${usuario.email}">mail</span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Teléfono:</strong>
+                                <span th:text="${usuario.telefono != null ? usuario.telefono : 'Sin teléfono'}">Sin teléfono</span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Rol:</strong>
+                                <span th:text="${usuario.rol}">ROL</span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Estado:</strong>
+                                <span th:text="${usuario.estado}">ACTIVO</span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Fecha alta:</strong>
+                                <span th:text="${usuario.fechaCreacion != null ? #temporals.format(usuario.fechaCreacion, 'dd/MM/yyyy HH:mm') : 'Sin registrar'}">
+                                    Sin registrar
+                                </span>
+                            </p>
+                            <p class="mb-0">
+                                <strong>Último acceso:</strong>
+                                <span th:text="${usuario.ultimoLogin != null ? #temporals.format(usuario.ultimoLogin, 'dd/MM/yyyy HH:mm') : 'Sin accesos registrados'}">
+                                    Sin accesos registrados
+                                </span>
+                            </p>
+
+                            <div th:if="${usuario.rol.name() == 'ALUMNO'}" class="mt-3 pt-3 border-top">
+                                <p class="mb-1">
+                                    <strong>Curso:</strong>
+                                    <span th:text="${usuario.cursoAcademico != null ? usuario.cursoAcademico.nombreCompleto : 'Sin curso'}">Sin curso</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Grupo:</strong>
+                                    <span th:text="${usuario.grupo != null ? usuario.grupo : 'Sin grupo'}">Sin grupo</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>DNI:</strong>
+                                    <span th:text="${usuario.dni != null ? usuario.dni : 'Sin DNI'}">Sin DNI</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Fecha nacimiento:</strong>
+                                    <span th:text="${usuario.fechaNacimiento != null ? #temporals.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : 'Sin registrar'}">Sin registrar</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>N.º Seguridad Social:</strong>
+                                    <span th:text="${usuario.numSeguridadSocial != null ? usuario.numSeguridadSocial : 'Sin registrar'}">Sin registrar</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Horas FE:</strong>
+                                    <span th:text="${usuario.horasCompletadas != null ? usuario.horasCompletadas + ' / ' + usuario.horasTotalesFe + ' h' : 'Sin registrar'}">
+                                        Sin registrar
+                                    </span>
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Tutor centro:</strong>
+                                    <span th:text="${usuario.tutorCentro != null ? usuario.tutorCentro.nombreCompleto : 'Sin tutor asignado'}">Sin tutor asignado</span>
+                                </p>
+                            </div>
+
+                            <div th:if="${usuario.rol.name() == 'TUTOR_CENTRO'}" class="mt-3 pt-3 border-top">
+                                <p class="mb-1">
+                                    <strong>Departamento:</strong>
+                                    <span th:text="${usuario.departamento != null ? usuario.departamento : 'Sin registrar'}">Sin registrar</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Especialidad:</strong>
+                                    <span th:text="${usuario.especialidad != null ? usuario.especialidad : 'Sin registrar'}">Sin registrar</span>
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Expediente docente:</strong>
+                                    <span th:text="${usuario.numExpedienteDocente != null ? usuario.numExpedienteDocente : 'Sin registrar'}">Sin registrar</span>
+                                </p>
+                            </div>
+
+                            <div th:if="${usuario.rol.name() == 'TUTOR_EMPRESA'}" class="mt-3 pt-3 border-top">
+                                <p class="mb-1">
+                                    <strong>Empresa:</strong>
+                                    <span th:text="${usuario.empresa != null ? usuario.empresa.nombre : 'Sin empresa'}">Sin empresa</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>CIF empresa:</strong>
+                                    <span th:text="${usuario.empresa != null and usuario.empresa.cif != null ? usuario.empresa.cif : 'Sin registrar'}">Sin registrar</span>
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Cargo:</strong>
+                                    <span th:text="${usuario.cargo != null ? usuario.cargo : 'Sin registrar'}">Sin registrar</span>
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Departamento empresa:</strong>
+                                    <span th:text="${usuario.departamentoEmpresa != null ? usuario.departamentoEmpresa : 'Sin registrar'}">Sin registrar</span>
+                                </p>
+                            </div>
+
+                            <div th:if="${usuario.rol.name() == 'ADMIN'}" class="mt-3 pt-3 border-top">
+                                <p class="mb-0 text-muted">
+                                    Perfil de administración del sistema sin datos profesionales adicionales.
+                                </p>
+                            </div>
+                        </div>
+                    </details>
+                </article>
             </div>
         </div>
     </section>

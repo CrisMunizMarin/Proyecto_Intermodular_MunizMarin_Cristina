@@ -25,7 +25,11 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Long> {
     Optional<Alumno> findDetalleById(@Param("id") Long id);
 
     // Buscar por tutor centro asignado (RF4)
-    List<Alumno> findByTutorCentro(TutorCentro tutorCentro);
+    @Query("SELECT a FROM Alumno a " +
+           "LEFT JOIN FETCH a.tutorCentro " +
+           "LEFT JOIN FETCH a.cursoAcademico " +
+           "WHERE a.tutorCentro = :tutorCentro")
+    List<Alumno> findByTutorCentro(@Param("tutorCentro") TutorCentro tutorCentro);
 
     // Buscar por curso académico (RF13)
     List<Alumno> findByCursoAcademico_Id(Long idCurso);

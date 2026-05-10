@@ -39,7 +39,7 @@
             <div class="col-12 col-lg-6" th:each="alumno : ${alumnos}">
                 <article class="card h-100">
                     <div class="card-body">
-                        <header class="mb-3">
+                        <header class="mb-3 mc-min-w-0">
                             <h3 class="h5 mb-1" th:text="${alumno.nombreCompleto}">Alumno</h3>
                             <p class="text-muted mb-0">
                                 Grupo:
@@ -49,19 +49,34 @@
                             </p>
                         </header>
 
-                        <dl class="row mb-4">
+                        <dl class="row mb-4 small">
                             <dt class="col-sm-5">Correo</dt>
-                            <dd class="col-sm-7" th:text="${alumno.email}">mail@example.com</dd>
+                            <dd class="col-sm-7 mc-break-anywhere" th:text="${alumno.email}">mail@example.com</dd>
 
-                            <dt class="col-sm-5">Horas completadas</dt>
+                            <dt class="col-sm-5">Curso</dt>
+                            <dd class="col-sm-7"
+                                th:text="${alumno.cursoAcademico != null ? alumno.cursoAcademico.nombreCompleto : '—'}">
+                                —
+                            </dd>
+
+                            <dt class="col-sm-5">DNI</dt>
+                            <dd class="col-sm-7" th:text="${alumno.dni != null ? alumno.dni : '—'}">—</dd>
+
+                            <dt class="col-sm-5">Seguridad Social</dt>
+                            <dd class="col-sm-7" th:text="${alumno.numSeguridadSocial != null ? alumno.numSeguridadSocial : '—'}">—</dd>
+
+                            <dt class="col-sm-5">Fecha nacimiento</dt>
+                            <dd class="col-sm-7"
+                                th:text="${alumno.fechaNacimiento != null ? #temporals.format(alumno.fechaNacimiento, 'dd/MM/yyyy') : '—'}">
+                                —
+                            </dd>
+
+                            <dt class="col-sm-5">Horas FE</dt>
                             <dd class="col-sm-7">
                                 <span th:text="${alumno.horasCompletadas}">0</span>
                                 /
                                 <span th:text="${alumno.horasTotalesFe}">400</span>
                             </dd>
-
-                            <dt class="col-sm-5">DNI</dt>
-                            <dd class="col-sm-7" th:text="${alumno.dni != null ? alumno.dni : '—'}">—</dd>
                         </dl>
 
                         <a th:href="@{/tutor-centro/alumnos/{id}(id=${alumno.id})}" class="btn btn-mc-primary">

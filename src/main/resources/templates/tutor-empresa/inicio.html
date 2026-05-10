@@ -64,26 +64,25 @@
                         </p>
                     </div>
 
-                    <div th:if="${asignacionesActivas != null and !#lists.isEmpty(asignacionesActivas)}" class="table-responsive">
-                        <table class="table table-hover align-middle table-mc">
-                            <caption class="visually-hidden">Alumnos asignados al tutor de empresa</caption>
-                            <thead>
-                            <tr>
-                                <th scope="col">Alumno</th>
-                                <th scope="col">Grupo</th>
-                                <th scope="col">Inicio</th>
-                                <th scope="col">Estado</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="asignacion : ${asignacionesActivas}">
-                                <td th:text="${asignacion.alumno != null ? asignacion.alumno.nombreCompleto : 'Alumno'}">Alumno</td>
-                                <td th:text="${asignacion.alumno != null and asignacion.alumno.grupo != null ? asignacion.alumno.grupo : '—'}">—</td>
-                                <td th:text="${asignacion.fechaInicio != null ? #temporals.format(asignacion.fechaInicio, 'dd/MM/yyyy') : '—'}">01/01/2026</td>
-                                <td th:text="${asignacion.estado}">EN_CURSO</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                    <div th:if="${asignacionesActivas != null and !#lists.isEmpty(asignacionesActivas)}" class="mc-card-list">
+                        <article th:each="asignacion : ${asignacionesActivas}" class="border rounded p-3">
+                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                <div class="mc-min-w-0">
+                                    <h3 class="h6 mb-2" th:text="${asignacion.alumno != null ? asignacion.alumno.nombreCompleto : 'Alumno'}">Alumno</h3>
+                                    <p class="mb-1 text-muted">
+                                        <strong>Grupo:</strong>
+                                        <span th:text="${asignacion.alumno != null and asignacion.alumno.grupo != null ? asignacion.alumno.grupo : '—'}">—</span>
+                                    </p>
+                                    <p class="mb-0 text-muted">
+                                        <strong>Inicio:</strong>
+                                        <span th:text="${asignacion.fechaInicio != null ? #temporals.format(asignacion.fechaInicio, 'dd/MM/yyyy') : '—'}">01/01/2026</span>
+                                    </p>
+                                </div>
+                                <div class="text-lg-end">
+                                    <span class="badge bg-secondary" th:text="${asignacion.estado}">EN_CURSO</span>
+                                </div>
+                            </div>
+                        </article>
                     </div>
                 </div>
             </article>

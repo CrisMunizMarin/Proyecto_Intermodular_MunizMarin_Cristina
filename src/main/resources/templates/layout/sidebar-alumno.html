@@ -3,6 +3,9 @@
         <p class="mb-1 small text-uppercase fw-bold" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
             Panel Alumno
         </p>
+        <p class="mb-1 fw-semibold" th:if="${alumnoActual != null}" th:text="${'Hola, ' + alumnoActual.nombre}">
+            Hola, Nombre
+        </p>
         <p class="mb-0 text-muted small">
             Seguimiento de tu formación en empresa
         </p>
@@ -76,4 +79,3 @@
         </li>
     </ul>
 </nav>
-

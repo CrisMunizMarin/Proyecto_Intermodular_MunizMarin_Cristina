@@ -35,6 +35,17 @@
             </a>
 
             <div class="ms-auto d-flex align-items-center gap-3" sec:authorize="isAuthenticated()">
+                <button type="button"
+                        class="btn btn-outline-light btn-sm d-md-none"
+                        th:if="${sidebar != null}"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#mcSidebarMobile"
+                        aria-controls="mcSidebarMobile"
+                        aria-label="Abrir menú de secciones">
+                    <i class="fas fa-bars me-1" aria-hidden="true"></i>
+                    Menú
+                </button>
+
                 <p class="mb-0 text-white" aria-label="Usuario autenticado">
                     <i class="fas fa-user-circle me-1" aria-hidden="true"></i>
                     <span sec:authentication="name">usuario</span>
@@ -54,22 +65,42 @@
     </nav>
 </header>
 
+<div th:if="${sidebar != null}"
+     sec:authorize="isAuthenticated()"
+     class="offcanvas offcanvas-start mc-mobile-sidebar"
+     tabindex="-1"
+     id="mcSidebarMobile"
+     aria-labelledby="mcSidebarMobileLabel">
+    <div class="offcanvas-header">
+        <div>
+            <p id="mcSidebarMobileLabel" class="mc-caption text-uppercase fw-bold mb-1" style="color: var(--mc-indigo); letter-spacing: 0.08em;">
+                Navegación
+            </p>
+            <h2 class="h5 mb-0">Secciones</h2>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar menú"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <th:block th:replace="${sidebar}"></th:block>
+    </div>
+</div>
+
 <div class="container-fluid">
-    <div class="row flex-nowrap">
-        <aside class="col-12 col-md-3 col-xl-2 sidebar p-0"
+    <div class="row mc-shell__content-row">
+        <aside class="d-none d-md-block col-md-3 col-xl-2 sidebar p-0"
                sec:authorize="isAuthenticated()"
                aria-label="Menú lateral">
             <th:block th:if="${sidebar != null}" th:replace="${sidebar}"></th:block>
         </aside>
 
         <main id="contenido-principal"
-              class="col-12 col-md-9 col-xl-10 p-4"
+              class="col-12 col-md-9 col-xl-10 p-4 mc-main-content"
               sec:authorize="isAuthenticated()">
             <th:block th:replace="${contenido}"></th:block>
         </main>
 
         <main id="contenido-principal-publico"
-              class="col-12 p-4"
+              class="col-12 p-4 mc-main-content"
               sec:authorize="!isAuthenticated()">
             <th:block th:replace="${contenido}"></th:block>
         </main>

@@ -60,4 +60,9 @@ public class TipoDocumentoService {
         return tipoDocumentoRepository.findByActivoTrueAndRolResponsableIn(Arrays.asList(rolesResponsables));
     }
 
+    @Transactional(readOnly = true)
+    public List<TipoDocumento> findActivosPorNombres(String... nombres) {
+        return tipoDocumentoRepository.findByActivoTrueAndNombreIn(Arrays.asList(nombres));
+    }
+
 }

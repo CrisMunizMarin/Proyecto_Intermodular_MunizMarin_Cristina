@@ -49,7 +49,7 @@
                  )}">
                 <article class="card h-100">
                     <div class="card-body">
-                        <h3 class="h5 mb-2"
+                        <h3 class="h5 mb-2 mc-min-w-0"
                             th:text="${asignacion.alumno != null ? asignacion.alumno.nombreCompleto : 'Alumno'}">
                             Alumno
                         </h3>
@@ -61,22 +61,10 @@
                             <span th:text="${asignacion.alumno != null and asignacion.alumno.grupo != null ? asignacion.alumno.grupo : '—'}">—</span>
                         </p>
 
-                        <dl class="row mb-0">
-                            <dt class="col-sm-4">Empresa</dt>
-                            <dd class="col-sm-8" th:text="${asignacion.empresa != null ? asignacion.empresa.nombre : '—'}">—</dd>
-
-                            <dt class="col-sm-4">Curso</dt>
-                            <dd class="col-sm-8"
-                                th:text="${asignacion.alumno != null and asignacion.alumno.cursoAcademico != null ? asignacion.alumno.cursoAcademico.nombreCompleto : '—'}">
-                                —
-                            </dd>
-
-                            <dt class="col-sm-4">Tutor centro</dt>
-                            <dd class="col-sm-8"
-                                th:text="${asignacion.alumno != null and asignacion.alumno.tutorCentro != null ? asignacion.alumno.tutorCentro.nombreCompleto : '—'}">
-                                —
-                            </dd>
-                        </dl>
+                        <p class="mb-3 text-muted">
+                            Empresa:
+                            <span th:text="${asignacion.empresa != null ? asignacion.empresa.nombre : '—'}">—</span>
+                        </p>
 
                         <a th:href="@{/tutor-empresa/alumnos/{id}(id=${asignacion.alumno.id})}"
                            class="btn btn-mc-primary mt-3">

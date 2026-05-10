@@ -32,21 +32,26 @@
             <div class="col-12 col-lg-6" th:each="empresa : ${empresas}">
                 <article class="card h-100">
                     <div class="card-body">
-                        <h3 class="h5 mb-2" th:text="${empresa.nombre}">Empresa</h3>
+                        <h3 class="h5 mb-2 mc-min-w-0" th:text="${empresa.nombre}">Empresa</h3>
                         <p class="text-muted mb-3">
                             CIF: <span th:text="${empresa.cif}">B00000000</span>
                             · Sector: <span th:text="${empresa.sector != null ? empresa.sector : '—'}">—</span>
                         </p>
-
-                        <dl class="row mb-0">
+                        <dl class="row mb-0 small">
                             <dt class="col-sm-4">Municipio</dt>
                             <dd class="col-sm-8" th:text="${empresa.municipio != null ? empresa.municipio : '—'}">—</dd>
 
                             <dt class="col-sm-4">Provincia</dt>
                             <dd class="col-sm-8" th:text="${empresa.provincia != null ? empresa.provincia : '—'}">—</dd>
 
+                            <dt class="col-sm-4">Dirección</dt>
+                            <dd class="col-sm-8" th:text="${empresa.direccion != null ? empresa.direccion : '—'}">—</dd>
+
+                            <dt class="col-sm-4">Teléfono</dt>
+                            <dd class="col-sm-8" th:text="${empresa.telefono != null ? empresa.telefono : '—'}">—</dd>
+
                             <dt class="col-sm-4">Contacto</dt>
-                            <dd class="col-sm-8" th:text="${empresa.emailContacto != null ? empresa.emailContacto : '—'}">—</dd>
+                            <dd class="col-sm-8 mc-break-anywhere" th:text="${empresa.emailContacto != null ? empresa.emailContacto : '—'}">—</dd>
                         </dl>
                     </div>
                 </article>

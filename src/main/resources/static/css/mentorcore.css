@@ -29,15 +29,15 @@ html {
 body {
     margin: 0;
     font-family: 'Lato', sans-serif;
-    font-size: 1rem;
-    line-height: 1.6;
+    font-size: 0.98rem;
+    line-height: 1.5;
     color: var(--mc-texto);
     background-color: var(--mc-gris-hielo);
 }
 
 h1, .mc-h1 {
     font-family: 'Poppins', sans-serif;
-    font-size: 2.5rem;
+    font-size: clamp(1.9rem, 1.35rem + 1.5vw, 2.5rem);
     font-weight: 700;
     line-height: 1.2;
     color: var(--mc-indigo);
@@ -46,7 +46,7 @@ h1, .mc-h1 {
 
 h2, .mc-h2 {
     font-family: 'Roboto', sans-serif;
-    font-size: 1.75rem;
+    font-size: clamp(1.35rem, 1.05rem + 0.9vw, 1.75rem);
     font-weight: 500;
     line-height: 1.3;
     color: var(--mc-indigo);
@@ -77,10 +77,37 @@ img {
     width: 7rem;
 }
 
+.mc-shell__content-row {
+    flex-wrap: wrap;
+}
+
 .sidebar {
     min-height: calc(100vh - 56px);
     background-color: var(--mc-lavanda);
     padding-top: 1rem;
+    overflow-y: auto;
+}
+
+.mc-mobile-sidebar {
+    max-width: 21rem;
+}
+
+.mc-mobile-sidebar .offcanvas-header {
+    border-bottom: 1px solid rgba(67, 42, 165, 0.12);
+    background-color: var(--mc-blanco);
+}
+
+.mc-mobile-sidebar .offcanvas-body {
+    background-color: var(--mc-gris-hielo);
+}
+
+.mc-mobile-sidebar .sidebar {
+    min-height: 100%;
+    padding-top: 0;
+}
+
+.mc-main-content {
+    min-width: 0;
 }
 
 .sidebar a {
@@ -227,6 +254,28 @@ img {
     min-width: 0;
 }
 
+.mc-details-toggle summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.mc-details-toggle summary::-webkit-details-marker {
+    display: none;
+}
+
+.mc-details-toggle[open] .mc-details-toggle__icon {
+    transform: rotate(180deg);
+}
+
+.mc-details-toggle__icon {
+    transition: transform 0.2s ease;
+}
+
+.mc-card-list {
+    display: grid;
+    gap: 1rem;
+}
+
 .form-label {
     font-weight: 700;
     color: var(--mc-indigo);
@@ -237,7 +286,25 @@ img {
     background-color: var(--mc-blanco);
     border: 1px solid var(--mc-lavanda);
     border-radius: 0.5rem;
+    min-height: 2.75rem;
+    font-size: 0.98rem;
+}
+
+.form-control-lg,
+.form-select-lg {
     min-height: 3rem;
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+    font-size: 1rem;
+}
+
+.btn {
+    font-size: 0.95rem;
+}
+
+.btn-lg {
+    padding: 0.7rem 1rem;
+    font-size: 1rem;
 }
 
 .form-control:focus,
@@ -250,6 +317,7 @@ img {
     min-height: 100vh;
     display: flex;
     align-items: center;
+    padding: 1.5rem 0;
     background:
         radial-gradient(circle at top left, rgba(180, 171, 207, 0.35), transparent 30%),
         radial-gradient(circle at bottom right, rgba(252, 114, 152, 0.18), transparent 24%),
@@ -261,32 +329,33 @@ img {
 }
 
 .mc-auth__card {
-    max-width: 34rem;
+    max-width: 30rem;
     margin: 0 auto;
     overflow: hidden;
 }
 
 .mc-auth__body {
-    padding: 2.5rem;
+    padding: 2rem;
 }
 
 .mc-auth__brand {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .mc-auth__title {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
 }
 
 .mc-auth__subtitle {
     color: var(--mc-texto-suave);
     margin-bottom: 0;
+    font-size: 0.95rem;
 }
 
 .mc-auth__actions {
     display: grid;
-    gap: 1rem;
+    gap: 0.85rem;
 }
 
 .mc-auth__footer {
@@ -324,6 +393,69 @@ img {
 
     .mc-auth__body {
         padding: 1.5rem;
+    }
+
+    .img {
+        width: 5.5rem;
+    }
+
+    .sidebar {
+        min-height: auto;
+        padding-bottom: 1rem;
+    }
+
+    .sidebar nav,
+    .sidebar > div {
+        overflow-x: auto;
+    }
+
+    .mc-main-content {
+        padding: 1.25rem !important;
+    }
+
+    .card-body,
+    .card-header-mc,
+    .card-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .mc-main-content {
+        padding: 1.5rem !important;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+@media (max-height: 860px) {
+    .mc-auth {
+        align-items: flex-start;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .mc-auth__card {
+        max-width: 29rem;
+    }
+
+    .mc-auth__body {
+        padding: 1.5rem;
+    }
+
+    .mc-auth__brand {
+        margin-bottom: 1rem;
+    }
+
+    .mc-auth__title {
+        font-size: 1.85rem;
+    }
+
+    .mc-auth__footer {
+        padding: 0.85rem 1rem;
     }
 
     .img {

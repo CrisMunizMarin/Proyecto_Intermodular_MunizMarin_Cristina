@@ -266,6 +266,33 @@ WHERE NOT EXISTS (
 );
 
 -- -----------------------------------------------------
+-- CONVENIO DE PRUEBA
+-- Permite probar la visualización y actualización del PDF
+-- sin depender de creación manual adicional.
+-- -----------------------------------------------------
+INSERT INTO convenio
+    (id_alumno, id_empresa, id_tutor_centro, numero_convenio, fecha_firma, fecha_inicio, fecha_fin,
+     horas_semanales, horario_descripcion, actividades_previstas, estado, archivo_pdf_url)
+SELECT
+    (SELECT id FROM usuario WHERE nombre_usuario = 'alumno1'),
+    (SELECT id FROM empresa WHERE cif = 'B33123456'),
+    (SELECT id FROM usuario WHERE nombre_usuario = 'tutorcentro1'),
+    'MC-2025-0001',
+    '2026-01-10',
+    '2026-01-12',
+    '2026-03-27',
+    35,
+    'Lunes a viernes de 08:00 a 15:00',
+    'Apoyo al desarrollo web, seguimiento de incidencias, pruebas funcionales y documentación técnica.',
+    'VIGENTE',
+    NULL
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM convenio
+    WHERE numero_convenio = 'MC-2025-0001'
+);
+
+-- -----------------------------------------------------
 -- PARÁMETROS GLOBALES DEL SISTEMA
 -- -----------------------------------------------------
 INSERT IGNORE INTO parametro_sistema
@@ -312,7 +339,7 @@ VALUES
     'Convenio de Formación en Empresa',
     'Documento legal que formaliza la relación entre el centro y la empresa',
     TRUE,
-    'TUTOR_CENTRO',
+    'TODOS',
     'pdf',
     TRUE
 ),
@@ -336,8 +363,8 @@ VALUES
     'Anexo I - Plan de Formación',
     'Documento con las actividades y resultados de aprendizaje previstos',
     TRUE,
-    'TUTOR_CENTRO',
-    'pdf,docx',
+    'TODOS',
+    'pdf,doc,docx,odt',
     TRUE
 ),
 (
@@ -356,3 +383,45 @@ VALUES
     'pdf,doc,docx',
     TRUE
 );
+
+UPDATE tipo_documento
+SET rol_responsable = 'TODOS',
+    descripcion = 'Documento legal que formaliza la relación entre el centro y la empresa',
+    extensiones_permitidas = 'pdf',
+    activo = TRUE
+WHERE nombre = 'Convenio de Formación en Empresa';
+
+UPDATE tipo_documento
+SET rol_responsable = 'ALUMNO',
+    descripcion = 'Documento nacional de identidad del alumno',
+    extensiones_permitidas = 'pdf,jpg,png',
+    activo = TRUE
+WHERE nombre = 'DNI / NIE del Alumno';
+
+UPDATE tipo_documento
+SET rol_responsable = 'ALUMNO',
+    descripcion = 'Comprobante del seguro escolar vigente',
+    extensiones_permitidas = 'pdf',
+    activo = TRUE
+WHERE nombre = 'Seguro Escolar';
+
+UPDATE tipo_documento
+SET rol_responsable = 'TODOS',
+    descripcion = 'Documento con las actividades y resultados de aprendizaje previstos',
+    extensiones_permitidas = 'pdf,doc,docx,odt',
+    activo = TRUE
+WHERE nombre = 'Anexo I - Plan de Formación';
+
+UPDATE tipo_documento
+SET rol_responsable = 'ALUMNO',
+    descripcion = 'Documento justificativo de ausencia del alumno',
+    extensiones_permitidas = 'pdf,jpg,png',
+    activo = TRUE
+WHERE nombre = 'Justificante de Falta';
+
+UPDATE tipo_documento
+SET rol_responsable = 'TUTOR_EMPRESA',
+    descripcion = 'Documento subido por el tutor de empresa con información de seguimiento o incidencias',
+    extensiones_permitidas = 'pdf,doc,docx',
+    activo = TRUE
+WHERE nombre = 'Informe de Seguimiento Empresa';

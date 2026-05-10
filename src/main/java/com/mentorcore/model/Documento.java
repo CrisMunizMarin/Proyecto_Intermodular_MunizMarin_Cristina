@@ -71,7 +71,7 @@ public class Documento {
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "contexto", nullable = false)
-    private ContextoDocumentoEnum contexto = ContextoDocumentoEnum.EXPEDIENTE;
+    private ContextoDocumentoEnum contexto = ContextoDocumentoEnum.PERSONAL_ALUMNO;
 
     @Column(name = "es_obligatorio", nullable = false)
     private boolean esObligatorio = false;

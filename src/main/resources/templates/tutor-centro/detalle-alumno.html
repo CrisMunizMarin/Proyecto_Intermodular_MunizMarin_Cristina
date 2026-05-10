@@ -75,8 +75,23 @@
                         <dt class="col-sm-5">Correo</dt>
                         <dd class="col-sm-7" th:text="${alumno.email}">correo</dd>
 
+                        <dt class="col-sm-5">Teléfono</dt>
+                        <dd class="col-sm-7" th:text="${alumno.telefono != null ? alumno.telefono : '—'}">—</dd>
+
                         <dt class="col-sm-5">Grupo</dt>
                         <dd class="col-sm-7" th:text="${alumno.grupo != null ? alumno.grupo : '—'}">—</dd>
+
+                        <dt class="col-sm-5">Curso</dt>
+                        <dd class="col-sm-7"
+                            th:text="${alumno.cursoAcademico != null ? alumno.cursoAcademico.nombreCompleto : '—'}">
+                            —
+                        </dd>
+
+                        <dt class="col-sm-5">Tutor centro</dt>
+                        <dd class="col-sm-7"
+                            th:text="${alumno.tutorCentro != null ? alumno.tutorCentro.nombreCompleto : '—'}">
+                            —
+                        </dd>
 
                         <dt class="col-sm-5">DNI</dt>
                         <dd class="col-sm-7" th:text="${alumno.dni != null ? alumno.dni : '—'}">—</dd>
@@ -106,52 +121,68 @@
                     <div th:if="${tareas == null or #lists.isEmpty(tareas)}">
                         <p class="mb-0 text-muted">No hay tareas registradas.</p>
                     </div>
-                    <div th:if="${tareas != null and !#lists.isEmpty(tareas)}" class="table-responsive">
-                        <table class="table table-hover align-middle table-mc">
-                            <caption class="visually-hidden">Listado de tareas del alumno</caption>
-                            <thead>
-                            <tr>
-                                <th scope="col">Fecha</th>
-                                <th scope="col">Horas</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col">Seguimiento empresa</th>
-                                <th scope="col">Comentario tutor centro</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="tarea : ${tareas}">
-                                <td th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</td>
-                                <td th:text="${tarea.horasDedicadas}">0</td>
-                                <td th:text="${tarea.estadoValidacion}">PENDIENTE</td>
-                                <td>
-                                    <div class="small">
-                                        <p class="mb-1">
-                                            Valoración:
-                                            <strong th:text="${tarea.valoracionTutorEmpresa != null ? tarea.valoracionTutorEmpresa + '/5' : '—'}">—</strong>
-                                        </p>
-                                        <p class="mb-0 text-muted"
-                                           th:text="${tarea.comentarioTutorEmpresa != null and !#strings.isEmpty(tarea.comentarioTutorEmpresa) ? tarea.comentarioTutorEmpresa : 'Sin comentario'}">
-                                            Sin comentario
-                                        </p>
+                    <div th:if="${tareas != null and !#lists.isEmpty(tareas)}" class="mc-card-list">
+                        <article th:each="tarea : ${tareas}" class="border rounded p-3">
+                            <div class="d-flex flex-column flex-xl-row justify-content-between gap-3">
+                                <div class="mc-min-w-0">
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                        <span class="badge bg-secondary" th:text="${tarea.estadoValidacion}">PENDIENTE</span>
+                                        <span class="small text-muted" th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</span>
                                     </div>
-                                </td>
-                                <td th:text="${tarea.comentarioTutor != null and !#strings.isEmpty(tarea.comentarioTutor) ? tarea.comentarioTutor : '—'}">—</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                    <p class="mb-1 text-muted">
+                                        <strong>Horas:</strong>
+                                        <span th:text="${tarea.horasDedicadas}">0</span>
+                                    </p>
+                                    <p class="mb-0 text-muted">
+                                        <strong>Comentario tutor centro:</strong>
+                                        <span th:text="${tarea.comentarioTutor != null and !#strings.isEmpty(tarea.comentarioTutor) ? tarea.comentarioTutor : '—'}">—</span>
+                                    </p>
+                                </div>
+                                <div class="mc-min-w-0">
+                                    <p class="mb-1 small">
+                                        <strong>Seguimiento empresa:</strong>
+                                        <span th:text="${tarea.valoracionTutorEmpresa != null ? tarea.valoracionTutorEmpresa + '/5' : '—'}">—</span>
+                                    </p>
+                                    <p class="mb-0 small text-muted"
+                                       th:text="${tarea.comentarioTutorEmpresa != null and !#strings.isEmpty(tarea.comentarioTutorEmpresa) ? tarea.comentarioTutorEmpresa : 'Sin comentario'}">
+                                        Sin comentario
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
                     </div>
+                </div>
+            </article>
+
+            <article class="card mb-4">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Expediente documental</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        Documentos personales:
+                        <strong th:text="${documentosPersonales != null ? #lists.size(documentosPersonales) : 0}">0</strong>
+                    </p>
+                    <p class="mb-2">
+                        Documentación FE:
+                        <strong th:text="${documentosFe != null ? #lists.size(documentosFe) : 0}">0</strong>
+                    </p>
+                    <p class="mb-3">
+                        Convenios:
+                        <strong th:text="${convenios != null ? #lists.size(convenios) : 0}">0</strong>
+                    </p>
+                    <p class="mb-0 text-muted">
+                        La consulta detallada y las descargas están disponibles en
+                        <a th:href="@{/tutor-centro/documentos}">Documentos</a>.
+                    </p>
                 </div>
             </article>
 
             <article class="card">
                 <div class="card-header-mc">
-                    <h2 class="h5 mb-0">Documentación y valoración</h2>
+                    <h2 class="h5 mb-0">Valoraciones</h2>
                 </div>
                 <div class="card-body">
-                    <p class="mb-3">
-                        Documentos registrados:
-                        <strong th:text="${#lists.size(documentos)}">0</strong>
-                    </p>
                     <p class="mb-0">
                         Valoraciones emitidas:
                         <strong th:text="${#lists.size(valoraciones)}">0</strong>

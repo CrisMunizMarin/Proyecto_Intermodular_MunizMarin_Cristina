@@ -1,6 +1,8 @@
 package com.mentorcore.util;
 
 import com.mentorcore.dto.InformeDTO;
+import com.mentorcore.model.Alumno;
+import com.mentorcore.model.Valoracion;
 import com.lowagie.text.*;
 import com.lowagie.text.Font;
 import com.lowagie.text.pdf.PdfWriter;
@@ -114,6 +116,44 @@ public class PdfGeneratorUtil {
         } catch (Exception e) {
             log.error("Error generando PDF: {}", e.getMessage());
             throw new RuntimeException("Error al generar el informe PDF", e);
+        }
+    }
+
+    public byte[] generarValoracionAlumno(Alumno alumno, Valoracion valoracion) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Document doc = new Document(PageSize.A4, 40, 40, 60, 40);
+            PdfWriter.getInstance(doc, baos);
+            doc.open();
+
+            agregarCabecera(doc);
+            agregarSeccion(doc, "Alumno");
+            agregarFila(doc, "Nombre:", alumno.getNombreCompleto());
+            agregarFila(doc, "Curso:", alumno.getCursoAcademico() != null ? alumno.getCursoAcademico().getNombreCompleto() : "—");
+            agregarFila(doc, "Grupo:", alumno.getGrupo());
+            doc.add(Chunk.NEWLINE);
+
+            agregarSeccion(doc, "Valoración");
+            agregarFila(doc, "Tipo evaluador:", valoracion.getTipoEvaluador() != null ? valoracion.getTipoEvaluador().name() : "—");
+            agregarFila(doc, "Resultado:", valoracion.getResultado() != null ? valoracion.getResultado().name() : "PENDIENTE");
+            agregarFila(doc, "Nota global:", valoracion.getNotaGlobal() != null ? valoracion.getNotaGlobal().toString() : "—");
+            agregarFila(doc, "Diario de prácticas / Actitud:", valoracion.getPuntacionActitud() != null ? valoracion.getPuntacionActitud().toString() : "—");
+            agregarFila(doc, "Puntualidad en entregas / Competencias:", valoracion.getPuntacionCompetencias() != null ? valoracion.getPuntacionCompetencias().toString() : "—");
+            agregarFila(doc, "Profundidad técnica / Integración:", valoracion.getPuntacionIntegracion() != null ? valoracion.getPuntacionIntegracion().toString() : "—");
+            agregarFila(doc, "Relación con módulos / Iniciativa:", valoracion.getPuntacionIniciativa() != null ? valoracion.getPuntacionIniciativa().toString() : "—");
+            agregarFila(doc, "Observaciones:", valoracion.getObservaciones());
+
+            doc.add(Chunk.NEWLINE);
+            Paragraph pie = new Paragraph(
+                    "Documento generado automáticamente por MentorCore",
+                    new Font(Font.HELVETICA, 8, Font.ITALIC, Color.GRAY));
+            pie.setAlignment(Element.ALIGN_CENTER);
+            doc.add(pie);
+
+            doc.close();
+            return baos.toByteArray();
+        } catch (Exception e) {
+            log.error("Error generando PDF de valoración: {}", e.getMessage());
+            throw new RuntimeException("Error al generar el PDF de la valoración", e);
         }
     }
 

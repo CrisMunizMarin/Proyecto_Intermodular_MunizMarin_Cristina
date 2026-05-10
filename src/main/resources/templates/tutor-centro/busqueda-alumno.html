@@ -38,11 +38,32 @@
                  th:attr="data-search=${#strings.toLowerCase(alumno.nombreCompleto + ' ' + alumno.nombreUsuario)}">
                 <article class="card h-100">
                     <div class="card-body">
-                        <h3 class="h5 mb-2" th:text="${alumno.nombreCompleto}">Alumno</h3>
+                        <h3 class="h5 mb-2 mc-min-w-0" th:text="${alumno.nombreCompleto}">Alumno</h3>
                         <p class="text-muted mb-3">
                             Usuario: <span th:text="${alumno.nombreUsuario}">usuario</span>
                             · Grupo: <span th:text="${alumno.grupo != null ? alumno.grupo : '—'}">—</span>
                         </p>
+
+                        <dl class="row mb-4 small">
+                            <dt class="col-sm-4">Correo</dt>
+                            <dd class="col-sm-8 mc-break-anywhere" th:text="${alumno.email}">correo</dd>
+
+                            <dt class="col-sm-4">Curso</dt>
+                            <dd class="col-sm-8"
+                                th:text="${alumno.cursoAcademico != null ? alumno.cursoAcademico.nombreCompleto : '—'}">
+                                —
+                            </dd>
+
+                            <dt class="col-sm-4">Tutor</dt>
+                            <dd class="col-sm-8"
+                                th:text="${alumno.tutorCentro != null ? alumno.tutorCentro.nombreCompleto : '—'}">
+                                —
+                            </dd>
+
+                            <dt class="col-sm-4">DNI</dt>
+                            <dd class="col-sm-8" th:text="${alumno.dni != null ? alumno.dni : '—'}">—</dd>
+                        </dl>
+
                         <a th:href="@{/tutor-centro/alumnos/{id}(id=${alumno.id})}" class="btn btn-mc-primary">
                             <i class="fas fa-arrow-right me-2" aria-hidden="true"></i>
                             Abrir detalle

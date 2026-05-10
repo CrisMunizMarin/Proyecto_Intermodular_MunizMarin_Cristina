@@ -80,6 +80,8 @@ public class PeriodoController {
 
             redirectAttributes.addFlashAttribute("successMsg",
                     "Periodo creado correctamente.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
         } catch (Exception e) {
             ControllerMessageUtil.addSafeErrorMessage(
                     redirectAttributes,
@@ -102,6 +104,8 @@ public class PeriodoController {
             periodoFormacionService.activar(id);
             redirectAttributes.addFlashAttribute("successMsg",
                     "Periodo activado correctamente.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
         } catch (Exception e) {
             ControllerMessageUtil.addSafeErrorMessage(
                     redirectAttributes,
@@ -124,6 +128,8 @@ public class PeriodoController {
             periodoFormacionService.cerrar(id);
             redirectAttributes.addFlashAttribute("successMsg",
                     "Periodo cerrado correctamente.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
         } catch (Exception e) {
             ControllerMessageUtil.addSafeErrorMessage(
                     redirectAttributes,

@@ -1,6 +1,7 @@
 package com.mentorcore.controller;
 
 import com.mentorcore.service.UsuarioService;
+import com.mentorcore.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -23,6 +24,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AuthController {
 
     private final UsuarioService usuarioService;
+    private final EmailService emailService;
 
 
     // LOGIN (RF1)
@@ -69,9 +71,7 @@ public class AuthController {
             RedirectAttributes redirectAttributes) {
         try {
             String token = usuarioService.generarTokenRecuperacion(email);
-
-            // TODO: Llamar a EmailService para enviar el email con el token
-            // emailService.enviarEmailRecuperacion(email, token);
+            emailService.enviarRecuperacionPassword(email, token);
             log.info("Token generado para {}: {}", email, token);
 
             redirectAttributes.addFlashAttribute("successMsg",

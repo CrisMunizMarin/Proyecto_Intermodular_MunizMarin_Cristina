@@ -86,6 +86,21 @@
                         <dt class="col-sm-5">Grupo</dt>
                         <dd class="col-sm-7" th:text="${alumno.grupo != null ? alumno.grupo : '—'}">—</dd>
 
+                        <dt class="col-sm-5">DNI</dt>
+                        <dd class="col-sm-7" th:text="${alumno.dni != null ? alumno.dni : '—'}">—</dd>
+
+                        <dt class="col-sm-5">Nacimiento</dt>
+                        <dd class="col-sm-7"
+                            th:text="${alumno.fechaNacimiento != null ? #temporals.format(alumno.fechaNacimiento, 'dd/MM/yyyy') : '—'}">
+                            —
+                        </dd>
+
+                        <dt class="col-sm-5">Seguridad Social</dt>
+                        <dd class="col-sm-7"
+                            th:text="${alumno.numSeguridadSocial != null ? alumno.numSeguridadSocial : '—'}">
+                            —
+                        </dd>
+
                         <dt class="col-sm-5">Curso</dt>
                         <dd class="col-sm-7"
                             th:text="${alumno.cursoAcademico != null ? alumno.cursoAcademico.nombreCompleto : '—'}">
@@ -130,39 +145,35 @@
                     <div th:if="${tareas == null or #lists.isEmpty(tareas)}">
                         <p class="mb-0 text-muted">No hay tareas registradas.</p>
                     </div>
-                    <div th:if="${tareas != null and !#lists.isEmpty(tareas)}" class="table-responsive">
-                        <table class="table table-hover align-middle table-mc">
-                            <caption class="visually-hidden">Listado de tareas del alumno</caption>
-                            <thead>
-                            <tr>
-                                <th scope="col">Fecha</th>
-                                <th scope="col">Horas</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col">Comentario tutor centro</th>
-                                <th scope="col">Seguimiento empresa</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="tarea : ${tareas}">
-                                <td th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</td>
-                                <td th:text="${tarea.horasDedicadas}">0</td>
-                                <td th:text="${tarea.estadoValidacion}">PENDIENTE</td>
-                                <td th:text="${tarea.comentarioTutor != null and !#strings.isEmpty(tarea.comentarioTutor) ? tarea.comentarioTutor : '—'}">—</td>
-                                <td>
-                                    <div class="small">
-                                        <p class="mb-1">
-                                            Valoración:
-                                            <strong th:text="${tarea.valoracionTutorEmpresa != null ? tarea.valoracionTutorEmpresa + '/5' : '—'}">—</strong>
-                                        </p>
-                                        <p class="mb-0 text-muted"
-                                           th:text="${tarea.comentarioTutorEmpresa != null and !#strings.isEmpty(tarea.comentarioTutorEmpresa) ? tarea.comentarioTutorEmpresa : 'Sin comentario'}">
-                                            Sin comentario
-                                        </p>
+                    <div th:if="${tareas != null and !#lists.isEmpty(tareas)}" class="mc-card-list">
+                        <article th:each="tarea : ${tareas}" class="border rounded p-3">
+                            <div class="d-flex flex-column flex-xl-row justify-content-between gap-3">
+                                <div class="mc-min-w-0">
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                        <span class="badge bg-secondary" th:text="${tarea.estadoValidacion}">PENDIENTE</span>
+                                        <span class="small text-muted" th:text="${#temporals.format(tarea.fechaRegistro, 'dd/MM/yyyy')}">01/01/2026</span>
                                     </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                    <p class="mb-1 text-muted">
+                                        <strong>Horas:</strong>
+                                        <span th:text="${tarea.horasDedicadas}">0</span>
+                                    </p>
+                                    <p class="mb-0 text-muted">
+                                        <strong>Comentario tutor centro:</strong>
+                                        <span th:text="${tarea.comentarioTutor != null and !#strings.isEmpty(tarea.comentarioTutor) ? tarea.comentarioTutor : '—'}">—</span>
+                                    </p>
+                                </div>
+                                <div class="mc-min-w-0">
+                                    <p class="mb-1 small">
+                                        <strong>Seguimiento empresa:</strong>
+                                        <span th:text="${tarea.valoracionTutorEmpresa != null ? tarea.valoracionTutorEmpresa + '/5' : '—'}">—</span>
+                                    </p>
+                                    <p class="mb-0 small text-muted"
+                                       th:text="${tarea.comentarioTutorEmpresa != null and !#strings.isEmpty(tarea.comentarioTutorEmpresa) ? tarea.comentarioTutorEmpresa : 'Sin comentario'}">
+                                        Sin comentario
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
                     </div>
 
                     <div th:if="${tareas != null and !#lists.isEmpty(tareas)}" class="mt-4">
@@ -226,39 +237,116 @@
                     <div th:if="${faltas == null or #lists.isEmpty(faltas)}">
                         <p class="mb-0 text-muted">No hay faltas registradas.</p>
                     </div>
-                    <div th:if="${faltas != null and !#lists.isEmpty(faltas)}" class="table-responsive">
-                        <table class="table table-hover align-middle table-mc">
-                            <caption class="visually-hidden">Listado de faltas del alumno</caption>
-                            <thead>
-                            <tr>
-                                <th scope="col">Fecha</th>
-                                <th scope="col">Tipo</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col">Justificante</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="falta : ${faltas}">
-                                <td th:text="${#temporals.format(falta.fechaFalta, 'dd/MM/yyyy')}">01/01/2026</td>
-                                <td th:text="${falta.tipo}">INJUSTIFICADA</td>
-                                <td th:text="${falta.estado}">PENDIENTE_REVISION</td>
-                                <td th:text="${falta.justificante != null ? falta.justificante.nombreArchivo : '—'}">—</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                    <div th:if="${faltas != null and !#lists.isEmpty(faltas)}" class="mc-card-list">
+                        <article th:each="falta : ${faltas}" class="border rounded p-3">
+                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                <div class="mc-min-w-0">
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                        <span class="badge bg-secondary" th:text="${falta.estado}">PENDIENTE_REVISION</span>
+                                        <span class="small text-muted" th:text="${#temporals.format(falta.fechaFalta, 'dd/MM/yyyy')}">01/01/2026</span>
+                                    </div>
+                                    <p class="mb-1 text-muted">
+                                        <strong>Tipo:</strong>
+                                        <span th:text="${falta.tipo}">INJUSTIFICADA</span>
+                                    </p>
+                                    <p class="mb-0 text-muted">
+                                        <strong>Justificante:</strong>
+                                        <span th:text="${falta.justificante != null ? falta.justificante.nombreArchivo : '—'}">—</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card mb-4">
+                <div class="card-header-mc">
+                    <h2 class="h5 mb-0">Expediente documental</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        Aquí ves el resumen documental del alumno. La gestión completa de documentos FE sigue disponible en
+                        <a th:href="@{/tutor-empresa/documentos}">Documentos</a>.
+                    </p>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-6">
+                            <div class="border rounded p-3 h-100">
+                                <h3 class="h6 mb-3">Documentos personales del alumno</h3>
+                                <div th:if="${documentosPersonales == null or #lists.isEmpty(documentosPersonales)}">
+                                    <p class="mb-0 text-muted">No hay documentos personales registrados.</p>
+                                </div>
+                                <ul th:if="${documentosPersonales != null and !#lists.isEmpty(documentosPersonales)}"
+                                    class="list-unstyled mb-0">
+                                    <li th:each="documento : ${documentosPersonales}" class="mb-2">
+                                        <strong th:text="${documento.tipoDocumento != null ? documento.tipoDocumento.nombre : 'Documento'}">Documento</strong>
+                                        <span class="text-muted"> · </span>
+                                        <a th:href="@{/documentos/{id}/ver(id=${documento.id})}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           th:text="${documento.nombreArchivo}">
+                                            archivo.pdf
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-6">
+                            <div class="border rounded p-3 h-100">
+                                <h3 class="h6 mb-3">Documentación relativa a la FE</h3>
+                                <div th:if="${(documentosFe == null or #lists.isEmpty(documentosFe)) and (convenios == null or #lists.isEmpty(convenios))}">
+                                    <p class="mb-0 text-muted">No hay documentación FE registrada.</p>
+                                </div>
+
+                                <ul th:if="${documentosFe != null and !#lists.isEmpty(documentosFe)}"
+                                    class="list-unstyled mb-3">
+                                    <li th:each="documento : ${documentosFe}" class="mb-2">
+                                        <strong th:text="${documento.tipoDocumento != null ? documento.tipoDocumento.nombre : 'Documento FE'}">Documento FE</strong>
+                                        <span class="text-muted"> · </span>
+                                        <a th:href="@{/documentos/{id}/ver(id=${documento.id})}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           th:text="${documento.nombreArchivo}">
+                                            archivo.pdf
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <div th:if="${convenios != null and !#lists.isEmpty(convenios)}">
+                                    <h4 class="small text-uppercase fw-bold mb-2" style="color: var(--mc-indigo);">Convenios</h4>
+                                    <ul class="list-unstyled mb-0">
+                                        <li th:each="convenio : ${convenios}" class="mb-2">
+                                            <strong th:text="${convenio.numeroConvenio}">MC-2025-0001</strong>
+                                            <span class="text-muted"> · </span>
+                                            <span th:text="${convenio.estado}">VIGENTE</span>
+                                            <div class="mt-1">
+                                                <a th:if="${convenio.archivoPdfUrl != null and !#strings.isEmpty(convenio.archivoPdfUrl)}"
+                                                   th:href="@{/convenios/{id}/ver(id=${convenio.id})}"
+                                                   target="_blank"
+                                                   rel="noopener">
+                                                    Ver o descargar PDF del convenio
+                                                </a>
+                                                <span th:if="${convenio.archivoPdfUrl == null or #strings.isEmpty(convenio.archivoPdfUrl)}"
+                                                      class="text-muted">
+                                                    PDF todavía no disponible
+                                                </span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </article>
 
             <article class="card">
                 <div class="card-header-mc">
-                    <h2 class="h5 mb-0">Documentación y valoración</h2>
+                    <h2 class="h5 mb-0">Valoraciones</h2>
                 </div>
                 <div class="card-body">
-                    <p class="mb-2">
-                        Documentos registrados:
-                        <strong th:text="${#lists.size(documentos)}">0</strong>
-                    </p>
                     <p class="mb-0">
                         Valoraciones emitidas:
                         <strong th:text="${#lists.size(valoraciones)}">0</strong>

@@ -15,7 +15,7 @@
         </p>
         <h1 class="mc-h1 mb-2">Documentos pendientes</h1>
         <p class="text-muted mb-0">
-            Valida o rechaza la documentación pendiente subida por tus alumnos.
+            Revisa la documentación pendiente y consulta el expediente documental completo de tus alumnos.
         </p>
     </header>
 
@@ -80,7 +80,12 @@
                                         Alumno:
                                         <span th:text="${documento.alumno != null ? documento.alumno.nombreCompleto : 'Alumno'}">Alumno</span>
                                         · Archivo:
-                                        <span th:text="${documento.nombreArchivo}">archivo.pdf</span>
+                                        <a th:href="@{/documentos/{id}/ver(id=${documento.id})}"
+                                           target="_blank"
+                                           rel="noopener"
+                                           th:text="${documento.nombreArchivo}">
+                                            archivo.pdf
+                                        </a>
                                         · Fecha:
                                         <span th:text="${#temporals.format(documento.fechaSubida, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</span>
                                     </p>
@@ -96,10 +101,13 @@
                             </div>
 
                             <aside class="col-12 col-xl-4">
-                                <div class="border rounded p-3 h-100">
-                                    <h4 class="h6 mb-3">Acciones</h4>
+                                <details class="mc-details-toggle border rounded p-3 h-100">
+                                    <summary class="d-flex align-items-center justify-content-between">
+                                        <span class="fw-semibold">Acciones</span>
+                                        <i class="fas fa-chevron-down mc-details-toggle__icon" aria-hidden="true"></i>
+                                    </summary>
 
-                                    <form th:action="@{/tutor-centro/documentos/{id}/validar(id=${documento.id})}" method="post" class="mb-3">
+                                    <form class="mt-3 mb-3" th:action="@{/tutor-centro/documentos/{id}/validar(id=${documento.id})}" method="post">
                                         <input type="hidden"
                                                th:name="${_csrf.parameterName}"
                                                th:value="${_csrf.token}">
@@ -138,7 +146,7 @@
                                             Rechazar
                                         </button>
                                     </form>
-                                </div>
+                                </details>
                             </aside>
                         </div>
                     </div>
@@ -215,12 +223,15 @@
                             </div>
 
                             <aside class="col-12 col-xl-4">
-                                <div class="border rounded p-3 h-100">
-                                    <h4 class="h6 mb-3">Acciones sobre la falta</h4>
+                                <details class="mc-details-toggle border rounded p-3 h-100">
+                                    <summary class="d-flex align-items-center justify-content-between">
+                                        <span class="fw-semibold">Acciones sobre la falta</span>
+                                        <i class="fas fa-chevron-down mc-details-toggle__icon" aria-hidden="true"></i>
+                                    </summary>
 
-                                    <form th:action="@{/tutor-centro/faltas/{idFalta}/aprobar(idFalta=${falta.id})}"
-                                          method="post"
-                                          class="mb-3">
+                                    <form class="mt-3 mb-3"
+                                          th:action="@{/tutor-centro/faltas/{idFalta}/aprobar(idFalta=${falta.id})}"
+                                          method="post">
                                         <input type="hidden"
                                                th:name="${_csrf.parameterName}"
                                                th:value="${_csrf.token}">
@@ -267,7 +278,183 @@
                                        th:if="${falta.estado.name() == 'PENDIENTE_REVISION'}">
                                         Esperando verificación del tutor de empresa antes de la revisión final del centro.
                                     </p>
+                                </details>
+                            </aside>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section th:if="${documentacion != null and !#lists.isEmpty(documentacion)}"
+             aria-labelledby="expediente-documental-alumnos"
+             class="mt-4">
+        <h2 id="expediente-documental-alumnos" class="h4 mb-3">Expediente documental por alumno</h2>
+
+        <div class="row g-4">
+            <div class="col-12" th:each="item : ${documentacion}">
+                <article class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-4">
+                            <div class="flex-grow-1">
+                                <header class="mb-3">
+                                    <h3 class="h5 mb-2" th:text="${item.nombreAlumno}">Alumno</h3>
+                                    <p class="text-muted mb-0">
+                                        Usuario:
+                                        <span th:text="${item.nombreUsuario}">usuario</span>
+                                        · Grupo:
+                                        <span th:text="${item.grupo != null ? item.grupo : '—'}">—</span>
+                                    </p>
+                                </header>
+
+                                <div class="row g-3">
+                                    <div class="col-12 col-lg-6">
+                                        <div class="border rounded p-3 h-100">
+                                            <h4 class="h6 mb-3">Documentos personales del alumno</h4>
+                                            <div th:if="${item.documentosPersonales == null or #lists.isEmpty(item.documentosPersonales)}">
+                                                <p class="mb-0 text-muted">No hay documentos personales registrados.</p>
+                                            </div>
+                                            <ul th:if="${item.documentosPersonales != null and !#lists.isEmpty(item.documentosPersonales)}"
+                                                class="list-unstyled mb-0">
+                                                <li th:each="documento : ${item.documentosPersonales}" class="mb-2">
+                                                    <strong th:text="${documento.tipoDocumento != null ? documento.tipoDocumento.nombre : 'Documento'}">Documento</strong>
+                                                    <span class="text-muted"> · </span>
+                                                    <a th:href="@{/documentos/{id}/ver(id=${documento.id})}"
+                                                       target="_blank"
+                                                       rel="noopener"
+                                                       th:text="${documento.nombreArchivo}">
+                                                        archivo.pdf
+                                                    </a>
+                                                    <span class="text-muted"> · </span>
+                                                    <span th:text="${documento.estado}">PENDIENTE</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-lg-6">
+                                        <div class="border rounded p-3 h-100">
+                                            <h4 class="h6 mb-3">Documentación relativa a la FE</h4>
+                                            <div th:if="${item.documentosFe == null or #lists.isEmpty(item.documentosFe)}">
+                                                <p class="mb-0 text-muted">No hay planes o informes FE registrados.</p>
+                                            </div>
+                                            <ul th:if="${item.documentosFe != null and !#lists.isEmpty(item.documentosFe)}"
+                                                class="list-unstyled mb-3">
+                                                <li th:each="documento : ${item.documentosFe}" class="mb-2">
+                                                    <strong th:text="${documento.tipoDocumento != null ? documento.tipoDocumento.nombre : 'Documento FE'}">Documento FE</strong>
+                                                    <span class="text-muted"> · </span>
+                                                    <a th:href="@{/documentos/{id}/ver(id=${documento.id})}"
+                                                       target="_blank"
+                                                       rel="noopener"
+                                                       th:text="${documento.nombreArchivo}">
+                                                        archivo.pdf
+                                                    </a>
+                                                    <span class="text-muted"> · </span>
+                                                    <span th:text="${documento.estado}">PENDIENTE</span>
+                                                </li>
+                                            </ul>
+
+                                            <h5 class="small text-uppercase fw-bold mb-2" style="color: var(--mc-indigo);">Convenios</h5>
+                                            <div th:if="${item.convenios == null or #lists.isEmpty(item.convenios)}">
+                                                <p class="mb-2 text-muted">No hay convenios registrados para este alumno.</p>
+                                                <form th:action="@{/tutor-centro/documentos/convenio/crear}"
+                                                      method="post"
+                                                      class="mt-2">
+                                                    <input type="hidden"
+                                                           th:name="${_csrf.parameterName}"
+                                                           th:value="${_csrf.token}">
+                                                    <input type="hidden" name="idAlumno" th:value="${item.idAlumno}">
+                                                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                                        Generar convenio inicial
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            <ul th:if="${item.convenios != null and !#lists.isEmpty(item.convenios)}"
+                                                class="list-unstyled mb-0">
+                                                <li th:each="convenio : ${item.convenios}" class="mb-2">
+                                                    <strong th:text="${convenio.numeroConvenio}">CONV-001</strong>
+                                                    <span class="text-muted"> · </span>
+                                                    <span th:text="${convenio.estado}">VIGENTE</span>
+                                                    <span class="text-muted"> · </span>
+                                                    <span th:text="${#temporals.format(convenio.fechaInicio, 'dd/MM/yyyy')}">01/01/2026</span>
+                                                    <div class="mt-1">
+                                                        <a th:if="${convenio.archivoPdfUrl != null and !#strings.isEmpty(convenio.archivoPdfUrl)}"
+                                                           th:href="@{/convenios/{id}/ver(id=${convenio.id})}"
+                                                           target="_blank"
+                                                           rel="noopener">
+                                                            Ver o descargar PDF del convenio
+                                                        </a>
+                                                        <span th:if="${convenio.archivoPdfUrl == null or #strings.isEmpty(convenio.archivoPdfUrl)}"
+                                                              class="text-muted">
+                                                            PDF todavía no disponible
+                                                        </span>
+                                                    </div>
+                                                    <form th:action="@{/tutor-centro/documentos/convenio/{idConvenio}/subir(idConvenio=${convenio.id})}"
+                                                          method="post"
+                                                          enctype="multipart/form-data"
+                                                          class="mt-2">
+                                                        <input type="hidden"
+                                                               th:name="${_csrf.parameterName}"
+                                                               th:value="${_csrf.token}">
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="file" name="archivo" class="form-control" required>
+                                                            <button type="submit" class="btn btn-outline-secondary">Subir PDF</button>
+                                                        </div>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <aside class="col-12 col-xl-4">
+                                <details class="mc-details-toggle border rounded p-3 h-100">
+                                    <summary class="d-flex align-items-center justify-content-between">
+                                        <span class="fw-semibold">Subir documentación FE</span>
+                                        <i class="fas fa-chevron-down mc-details-toggle__icon" aria-hidden="true"></i>
+                                    </summary>
+
+                                    <form class="mt-3"
+                                          th:action="@{/tutor-centro/documentos/subir}"
+                                          method="post"
+                                          enctype="multipart/form-data">
+                                        <input type="hidden"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}">
+                                        <input type="hidden" name="idAlumno" th:value="${item.idAlumno}">
+
+                                        <div class="mb-3">
+                                            <label th:for="'tipoDocumento-fe-centro-' + ${item.idAlumno}" class="form-label">Tipo de documento</label>
+                                            <select th:id="'tipoDocumento-fe-centro-' + ${item.idAlumno}"
+                                                    name="idTipoDocumento"
+                                                    class="form-select"
+                                                    required>
+                                                <option value="">Selecciona un tipo</option>
+                                                <option th:each="tipo : ${tiposDocumentoFeTutorCentro}"
+                                                        th:value="${tipo.id}"
+                                                        th:text="${tipo.nombre}">
+                                                    Tipo
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label th:for="'archivo-fe-centro-' + ${item.idAlumno}" class="form-label">Archivo</label>
+                                            <input type="file"
+                                                   th:id="'archivo-fe-centro-' + ${item.idAlumno}"
+                                                   name="archivo"
+                                                   class="form-control"
+                                                   required>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-mc-primary w-100">
+                                            <i class="fas fa-upload me-2" aria-hidden="true"></i>
+                                            Subir documento FE
+                                        </button>
+                                    </form>
+                                </details>
                             </aside>
                         </div>
                     </div>

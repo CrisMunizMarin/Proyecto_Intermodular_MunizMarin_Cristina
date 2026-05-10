@@ -275,10 +275,14 @@
 
                             <aside class="col-12 col-xl-4"
                                    th:if="${falta.estado.name() == 'INJUSTIFICADA'}">
-                                <div class="border rounded p-3 h-100">
-                                    <h4 class="h6 mb-3">Adjuntar justificante</h4>
+                                <details class="mc-details-toggle border rounded p-3 h-100" open>
+                                    <summary class="d-flex align-items-center justify-content-between">
+                                        <span class="fw-semibold">Adjuntar justificante</span>
+                                        <i class="fas fa-chevron-down mc-details-toggle__icon" aria-hidden="true"></i>
+                                    </summary>
 
-                                    <form th:action="@{/alumno/faltas/{id}/justificar(id=${falta.id})}"
+                                    <form class="mt-3"
+                                          th:action="@{/alumno/faltas/{id}/justificar(id=${falta.id})}"
                                           method="post"
                                           enctype="multipart/form-data"
                                           novalidate>
@@ -326,7 +330,7 @@
                                             Enviar justificante
                                         </button>
                                     </form>
-                                </div>
+                                </details>
                             </aside>
                         </div>
                     </div>

@@ -51,28 +51,40 @@
                         <div class="row g-3 mb-4">
                             <div class="col-12 col-md-6 col-xl-3">
                                 <div class="border rounded p-3 h-100 text-center">
-                                    <p class="mc-caption text-muted mb-2">Actitud</p>
+                                    <p class="mc-caption text-muted mb-2"
+                                       th:text="${valoracion.tipoEvaluador != null and valoracion.tipoEvaluador.name() == 'TUTOR_CENTRO' ? 'Diario de prácticas' : 'Actitud'}">
+                                        Actitud
+                                    </p>
                                     <p class="h3 mb-0" th:text="${valoracion.puntacionActitud}">0</p>
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-6 col-xl-3">
                                 <div class="border rounded p-3 h-100 text-center">
-                                    <p class="mc-caption text-muted mb-2">Competencias</p>
+                                    <p class="mc-caption text-muted mb-2"
+                                       th:text="${valoracion.tipoEvaluador != null and valoracion.tipoEvaluador.name() == 'TUTOR_CENTRO' ? 'Puntualidad en entregas' : 'Competencias'}">
+                                        Competencias
+                                    </p>
                                     <p class="h3 mb-0" th:text="${valoracion.puntacionCompetencias}">0</p>
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-6 col-xl-3">
                                 <div class="border rounded p-3 h-100 text-center">
-                                    <p class="mc-caption text-muted mb-2">Integración</p>
+                                    <p class="mc-caption text-muted mb-2"
+                                       th:text="${valoracion.tipoEvaluador != null and valoracion.tipoEvaluador.name() == 'TUTOR_CENTRO' ? 'Profundidad técnica' : 'Integración'}">
+                                        Integración
+                                    </p>
                                     <p class="h3 mb-0" th:text="${valoracion.puntacionIntegracion}">0</p>
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-6 col-xl-3">
                                 <div class="border rounded p-3 h-100 text-center">
-                                    <p class="mc-caption text-muted mb-2">Iniciativa</p>
+                                    <p class="mc-caption text-muted mb-2"
+                                       th:text="${valoracion.tipoEvaluador != null and valoracion.tipoEvaluador.name() == 'TUTOR_CENTRO' ? 'Relación con los módulos' : 'Iniciativa'}">
+                                        Iniciativa
+                                    </p>
                                     <p class="h3 mb-0" th:text="${valoracion.puntacionIniciativa}">0</p>
                                 </div>
                             </div>
@@ -100,6 +112,13 @@
                                 Esta valoración está bloqueada y ya no admite cambios.
                             </p>
                         </section>
+
+                        <div class="mt-3">
+                            <a th:href="@{/alumno/valoracion/{id}/pdf(id=${valoracion.id})}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-file-pdf me-2" aria-hidden="true"></i>
+                                Descargar valoración
+                            </a>
+                        </div>
                     </div>
                 </article>
             </div>

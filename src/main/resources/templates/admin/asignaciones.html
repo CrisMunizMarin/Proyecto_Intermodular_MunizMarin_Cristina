@@ -28,8 +28,16 @@
                         <label class="form-label">Alumno</label>
                         <select name="idAlumno" class="form-select" required>
                             <option value="">Selecciona un alumno</option>
-                            <option th:each="alumno : ${alumnosSinAsignacion}" th:value="${alumno.id}" th:text="${alumno.nombreCompleto}">Alumno</option>
+                            <option th:each="alumno : ${alumnos}"
+                                    th:value="${alumno.id}"
+                                    th:disabled="${alumnosConAsignacionActivaIds != null and alumnosConAsignacionActivaIds.contains(alumno.id)}"
+                                    th:text="${alumno.nombreCompleto + ((alumnosConAsignacionActivaIds != null and alumnosConAsignacionActivaIds.contains(alumno.id)) ? ' · ya tiene asignación activa' : '')}">
+                                Alumno
+                            </option>
                         </select>
+                        <div class="form-text">
+                            Los alumnos con asignación activa aparecen bloqueados hasta que se finalice o reasigne su relación actual.
+                        </div>
                     </div>
                     <div class="col-12 col-lg-3">
                         <label class="form-label">Empresa</label>
@@ -55,6 +63,7 @@
                                 Periodo
                             </option>
                         </select>
+                        <div class="form-text">Si ves varios similares, fíjate en las fechas y en el ID.</div>
                     </div>
                     <div class="col-12 col-lg-1">
                         <label class="form-label">Inicio</label>
@@ -79,7 +88,7 @@
                 <article class="card">
                     <div class="card-body">
                         <div class="row g-4">
-                            <div class="col-12 col-xl-5">
+                            <div class="col-12 col-xl-6">
                                 <h3 class="h5 mb-2" th:text="${asignacion.alumno.nombreCompleto}">Alumno</h3>
                                 <p class="mb-1 text-muted">Empresa: <span th:text="${asignacion.empresa.nombre}">Empresa</span></p>
                                 <p class="mb-1 text-muted">Tutor empresa: <span th:text="${asignacion.tutorEmpresa.nombreCompleto}">Tutor</span></p>
@@ -92,66 +101,72 @@
                                 <p class="mb-0 text-muted">Inicio: <span th:text="${#temporals.format(asignacion.fechaInicio, 'dd/MM/yyyy')}">01/01/2026</span></p>
                             </div>
 
-                            <div class="col-12 col-xl-3">
-                                <div class="border rounded p-3 h-100">
-                                    <h4 class="h6 mb-3">Finalizar</h4>
-                                    <form th:action="@{/admin/asignaciones/{id}/finalizar(id=${asignacion.id})}" method="post">
-                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                        <div class="mb-2">
-                                            <label class="form-label">Fecha fin</label>
-                                            <input name="fechaFin" type="date" class="form-control" required>
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label">Motivo</label>
-                                            <textarea name="motivo" rows="2" class="form-control"></textarea>
-                                        </div>
-                                        <button type="submit" class="btn btn-outline-secondary w-100">Finalizar</button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-xl-4">
-                                <div class="border rounded p-3 h-100">
-                                    <h4 class="h6 mb-3">Reasignar</h4>
-                                    <form th:action="@{/admin/asignaciones/reasignar/{idAlumno}(idAlumno=${asignacion.alumno.id})}" method="post">
-                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                                        <div class="row g-2">
-                                            <div class="col-12">
-                                                <label class="form-label">Nueva empresa</label>
-                                                <select name="idEmpresa" class="form-select" required>
-                                                    <option value="">Selecciona una empresa</option>
-                                                    <option th:each="empresa : ${empresasActivas}" th:value="${empresa.id}" th:text="${empresa.nombre}">Empresa</option>
-                                                </select>
+                            <div class="col-12 col-xl-6">
+                                <div class="d-grid gap-3">
+                                    <details class="mc-details-toggle border rounded p-3">
+                                        <summary class="d-flex align-items-center justify-content-between">
+                                            <span class="fw-semibold">Finalizar asignación</span>
+                                            <i class="fas fa-chevron-down mc-details-toggle__icon" aria-hidden="true"></i>
+                                        </summary>
+                                        <form class="mt-3" th:action="@{/admin/asignaciones/{id}/finalizar(id=${asignacion.id})}" method="post">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <div class="mb-2">
+                                                <label class="form-label">Fecha fin</label>
+                                                <input name="fechaFin" type="date" class="form-control" required>
                                             </div>
-                                            <div class="col-12">
-                                                <label class="form-label">Nuevo tutor</label>
-                                                <select name="idTutorEmpresa" class="form-select" required>
-                                                    <option value="">Selecciona un tutor</option>
-                                                    <option th:each="tutor : ${tutoresEmpresa}" th:value="${tutor.id}" th:text="${tutor.nombreCompleto}">Tutor</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-12">
-                                                <label class="form-label">Periodo</label>
-                                                <select name="idPeriodo" class="form-select" required>
-                                                    <option value="">Selecciona un periodo</option>
-                                                    <option th:each="periodo : ${periodosDisponibles}"
-                                                            th:value="${periodo.id}"
-                                                            th:text="${periodo.cursoAcademico.codigoCurso + ' · ' + periodo.tipo + ' · ' + periodo.anioAcademico + ' · ' + #temporals.format(periodo.fechaInicio, 'dd/MM/yyyy') + ' - ' + #temporals.format(periodo.fechaFin, 'dd/MM/yyyy') + ' · ID ' + periodo.id}">
-                                                        Periodo
-                                                    </option>
-                                                </select>
-                                            </div>
-                                            <div class="col-12 col-lg-6">
-                                                <label class="form-label">Nueva fecha de inicio</label>
-                                                <input name="nuevaFechaInicio" type="date" class="form-control" required>
-                                            </div>
-                                            <div class="col-12 col-lg-6">
+                                            <div class="mb-2">
                                                 <label class="form-label">Motivo</label>
-                                                <textarea name="motivoCambio" rows="2" class="form-control"></textarea>
+                                                <textarea name="motivo" rows="2" class="form-control"></textarea>
                                             </div>
-                                        </div>
-                                        <button type="submit" class="btn btn-mc-primary w-100 mt-3">Reasignar</button>
-                                    </form>
+                                            <button type="submit" class="btn btn-outline-secondary w-100">Finalizar</button>
+                                        </form>
+                                    </details>
+
+                                    <details class="mc-details-toggle border rounded p-3">
+                                        <summary class="d-flex align-items-center justify-content-between">
+                                            <span class="fw-semibold">Reasignar alumno</span>
+                                            <i class="fas fa-chevron-down mc-details-toggle__icon" aria-hidden="true"></i>
+                                        </summary>
+                                        <form class="mt-3" th:action="@{/admin/asignaciones/reasignar/{idAlumno}(idAlumno=${asignacion.alumno.id})}" method="post">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <div class="row g-2">
+                                                <div class="col-12">
+                                                    <label class="form-label">Nueva empresa</label>
+                                                    <select name="idEmpresa" class="form-select" required>
+                                                        <option value="">Selecciona una empresa</option>
+                                                        <option th:each="empresa : ${empresasActivas}" th:value="${empresa.id}" th:text="${empresa.nombre}">Empresa</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">Nuevo tutor</label>
+                                                    <select name="idTutorEmpresa" class="form-select" required>
+                                                        <option value="">Selecciona un tutor</option>
+                                                        <option th:each="tutor : ${tutoresEmpresa}" th:value="${tutor.id}" th:text="${tutor.nombreCompleto}">Tutor</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">Periodo</label>
+                                                    <select name="idPeriodo" class="form-select" required>
+                                                        <option value="">Selecciona un periodo</option>
+                                                        <option th:each="periodo : ${periodosDisponibles}"
+                                                                th:value="${periodo.id}"
+                                                                th:text="${periodo.cursoAcademico.codigoCurso + ' · ' + periodo.tipo + ' · ' + periodo.anioAcademico + ' · ' + #temporals.format(periodo.fechaInicio, 'dd/MM/yyyy') + ' - ' + #temporals.format(periodo.fechaFin, 'dd/MM/yyyy') + ' · ID ' + periodo.id}">
+                                                            Periodo
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12 col-lg-6">
+                                                    <label class="form-label">Nueva fecha de inicio</label>
+                                                    <input name="nuevaFechaInicio" type="date" class="form-control" required>
+                                                </div>
+                                                <div class="col-12 col-lg-6">
+                                                    <label class="form-label">Motivo</label>
+                                                    <textarea name="motivoCambio" rows="2" class="form-control"></textarea>
+                                                </div>
+                                            </div>
+                                            <button type="submit" class="btn btn-mc-primary w-100 mt-3">Reasignar</button>
+                                        </form>
+                                    </details>
                                 </div>
                             </div>
                         </div>
@@ -162,37 +177,54 @@
     </section>
 
     <section>
-        <h2 class="h4 mb-3">Histórico</h2>
+        <h2 class="h4 mb-3">Historial completo</h2>
         <div th:if="${asignacionesHistoricas == null or #lists.isEmpty(asignacionesHistoricas)}" class="card">
-            <div class="card-body"><p class="mb-0 text-muted">Todavía no hay asignaciones finalizadas o suspendidas.</p></div>
+            <div class="card-body"><p class="mb-0 text-muted">Todavía no hay asignaciones registradas.</p></div>
         </div>
-        <div th:if="${asignacionesHistoricas != null and !#lists.isEmpty(asignacionesHistoricas)}" class="table-responsive card">
+        <div th:if="${asignacionesHistoricas != null and !#lists.isEmpty(asignacionesHistoricas)}" class="card">
             <div class="card-body">
-                <table class="table table-hover align-middle table-mc mb-0">
-                    <thead>
-                    <tr>
-                        <th>Alumno</th>
-                        <th>Empresa</th>
-                        <th>Estado</th>
-                        <th>Periodo</th>
-                        <th>Fechas</th>
-                        <th>Motivo</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="asignacion : ${asignacionesHistoricas}">
-                        <td th:text="${asignacion.alumno.nombreCompleto}">Alumno</td>
-                        <td th:text="${asignacion.empresa.nombre}">Empresa</td>
-                        <td th:text="${asignacion.estado}">FINALIZADO</td>
-                        <td th:text="${asignacion.periodo != null ? asignacion.periodo.cursoAcademico.codigoCurso + ' · ' + asignacion.periodo.tipo + ' · ID ' + asignacion.periodo.id : 'Sin periodo'}">Periodo</td>
-                        <td class="small text-muted">
-                            <div th:text="${#temporals.format(asignacion.fechaInicio, 'dd/MM/yyyy')}">01/01/2026</div>
-                            <div th:text="${asignacion.fechaFin != null ? #temporals.format(asignacion.fechaFin, 'dd/MM/yyyy') : 'Sin fecha fin'}">31/01/2026</div>
-                        </td>
-                        <td th:text="${asignacion.motivoCambio != null and !#strings.isEmpty(asignacion.motivoCambio) ? asignacion.motivoCambio : 'Sin motivo registrado'}">Motivo</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <p class="text-muted small mb-3">Aquí se conserva el registro completo de asignaciones, incluidas las activas y las cerradas.</p>
+                <div class="mc-card-list">
+                    <article th:each="asignacion : ${asignacionesHistoricas}" class="border rounded p-3">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-3">
+                            <div class="mc-min-w-0">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <h3 class="h6 mb-0" th:text="${asignacion.alumno.nombreCompleto}">Alumno</h3>
+                                    <span class="badge bg-secondary" th:text="${asignacion.estado}">EN_CURSO</span>
+                                </div>
+                                <p class="mb-1 text-muted">
+                                    <strong>Empresa:</strong>
+                                    <span th:text="${asignacion.empresa.nombre}">Empresa</span>
+                                </p>
+                                <p class="mb-1 text-muted">
+                                    <strong>Periodo:</strong>
+                                    <span th:text="${asignacion.periodo != null ? asignacion.periodo.cursoAcademico.codigoCurso + ' · ' + asignacion.periodo.tipo + ' · ID ' + asignacion.periodo.id : 'Sin periodo'}">
+                                        Periodo
+                                    </span>
+                                </p>
+                                <p class="mb-0 text-muted">
+                                    <strong>Fechas:</strong>
+                                    <span th:text="${#temporals.format(asignacion.fechaInicio, 'dd/MM/yyyy')}">01/01/2026</span>
+                                    <span> · </span>
+                                    <span th:text="${asignacion.fechaFin != null ? #temporals.format(asignacion.fechaFin, 'dd/MM/yyyy') : 'Sin fecha fin'}">Sin fecha fin</span>
+                                </p>
+                            </div>
+
+                            <div class="mc-min-w-0 text-xl-end">
+                                <p class="mb-1 small text-muted">
+                                    <strong>Tutor empresa:</strong>
+                                    <span th:text="${asignacion.tutorEmpresa != null ? asignacion.tutorEmpresa.nombreCompleto : 'Sin tutor'}">Tutor</span>
+                                </p>
+                                <p class="mb-0 small text-muted">
+                                    <strong>Motivo:</strong>
+                                    <span th:text="${asignacion.motivoCambio != null and !#strings.isEmpty(asignacion.motivoCambio) ? asignacion.motivoCambio : 'Sin motivo registrado'}">
+                                        Sin motivo registrado
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
             </div>
         </div>
     </section>

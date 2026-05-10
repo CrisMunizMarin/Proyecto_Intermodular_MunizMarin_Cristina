@@ -59,8 +59,9 @@ public class SecurityConfig {
      * Redirige a cada rol a su panel correspondiente tras el login. RF1
      */
     @Bean
-    public AuthenticationSuccessHandler successHandler() {
+    public AuthenticationSuccessHandler successHandler(UsuarioService usuarioService) {
         return (request, response, authentication) -> {
+            usuarioService.registrarLogin(authentication.getName());
             String rol = authentication.getAuthorities()
                     .iterator().next().getAuthority();
             switch (rol) {
@@ -124,7 +125,7 @@ public class SecurityConfig {
                 .loginProcessingUrl("/auth/login")  // URL que procesa el formulario POST
                 .usernameParameter("nombreUsuario") // Nombre del campo en el HTML
                 .passwordParameter("password")
-                .successHandler(successHandler())   // Redirige según el rol
+                .successHandler(successHandler(usuarioService))   // Redirige según el rol
                 .failureUrl("/auth/login?error=true") // Redirige si falla
                 .permitAll()
             )
