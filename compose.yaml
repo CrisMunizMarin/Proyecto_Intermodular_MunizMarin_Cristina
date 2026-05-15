@@ -1,0 +1,52 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: mentorcore-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: mentorcore
+      MYSQL_USER: mentorcore
+      MYSQL_PASSWORD: mentorcore123
+      MYSQL_ROOT_PASSWORD: root123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mentorcore-app:local
+    container_name: mentorcore-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MENTORCORE_DB_URL: jdbc:mysql://db:3306/mentorcore?useSSL=false&serverTimezone=Europe/Madrid&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      MENTORCORE_DB_USERNAME: mentorcore
+      MENTORCORE_DB_PASSWORD: mentorcore123
+      MENTORCORE_UPLOADS_PATH: /data/uploads
+      MENTORCORE_APP_BASE_URL: http://localhost:8080
+      MENTORCORE_MAIL_HOST: smtp.gmail.com
+      MENTORCORE_MAIL_PORT: 587
+      MENTORCORE_MAIL_USERNAME: cambia-este-email
+      MENTORCORE_MAIL_PASSWORD: cambia-esta-password
+      MENTORCORE_SQL_INIT_MODE: ${MENTORCORE_SQL_INIT_MODE:-always}
+      JAVA_OPTS: -Xms256m -Xmx512m
+    volumes:
+      - uploads_data:/data/uploads
+
+volumes:
+  mysql_data:
+  uploads_data:

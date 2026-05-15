@@ -26,7 +26,8 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
            "JOIN FETCH a.empresa " +
            "JOIN FETCH a.tutorEmpresa te " +
            "LEFT JOIN FETCH te.empresa " +
-           "LEFT JOIN FETCH a.periodo " +
+           "LEFT JOIN FETCH a.periodo p " +
+           "LEFT JOIN FETCH p.cursoAcademico " +
            "LEFT JOIN FETCH a.reasignadoPor " +
            "WHERE a.id = :id")
     Optional<Asignacion> findDetalleById(@Param("id") Long id);
@@ -38,7 +39,8 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
            "JOIN FETCH a.empresa " +
            "JOIN FETCH a.tutorEmpresa te " +
            "LEFT JOIN FETCH te.empresa " +
-           "LEFT JOIN FETCH a.periodo " +
+           "LEFT JOIN FETCH a.periodo p " +
+           "LEFT JOIN FETCH p.cursoAcademico " +
            "LEFT JOIN FETCH a.reasignadoPor " +
            "ORDER BY a.fechaCreacion DESC, a.id DESC")
     List<Asignacion> findAllDetalleOrderByFechaCreacionDesc();
@@ -50,13 +52,26 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
            "LEFT JOIN FETCH al.cursoAcademico " +
            "JOIN FETCH a.empresa " +
            "JOIN FETCH a.tutorEmpresa " +
-           "LEFT JOIN FETCH a.periodo " +
+           "LEFT JOIN FETCH a.periodo p " +
+           "LEFT JOIN FETCH p.cursoAcademico " +
            "WHERE a.alumno = :alumno AND a.estado = :estado")
     Optional<Asignacion> findByAlumnoAndEstado(@Param("alumno") Alumno alumno,
                                                @Param("estado") EstadoFeEnum estado);
 
     // Historial completo de asignaciones de un alumno (RF21)
-    List<Asignacion> findByAlumnoOrderByFechaCreacionDesc(Alumno alumno);
+    @Query("SELECT a FROM Asignacion a " +
+           "JOIN FETCH a.alumno al " +
+           "LEFT JOIN FETCH al.tutorCentro " +
+           "LEFT JOIN FETCH al.cursoAcademico " +
+           "JOIN FETCH a.empresa " +
+           "LEFT JOIN FETCH a.tutorEmpresa te " +
+           "LEFT JOIN FETCH te.empresa " +
+           "LEFT JOIN FETCH a.periodo p " +
+           "LEFT JOIN FETCH p.cursoAcademico " +
+           "LEFT JOIN FETCH a.reasignadoPor " +
+           "WHERE a.alumno = :alumno " +
+           "ORDER BY a.fechaCreacion DESC, a.id DESC")
+    List<Asignacion> findByAlumnoOrderByFechaCreacionDesc(@Param("alumno") Alumno alumno);
 
     // Alumnos activos asignados a un tutor empresa (RF9)
     @Query("SELECT a FROM Asignacion a " +
@@ -65,7 +80,8 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
            "LEFT JOIN FETCH al.cursoAcademico " +
            "JOIN FETCH a.empresa " +
            "JOIN FETCH a.tutorEmpresa te " +
-           "LEFT JOIN FETCH a.periodo " +
+           "LEFT JOIN FETCH a.periodo p " +
+           "LEFT JOIN FETCH p.cursoAcademico " +
            "WHERE te = :tutor AND a.estado = :estado " +
            "ORDER BY al.apellidos ASC, al.nombre ASC")
     List<Asignacion> findByTutorEmpresaAndEstado(@Param("tutor") TutorEmpresa tutor,
@@ -77,7 +93,8 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
            "LEFT JOIN FETCH al.cursoAcademico " +
            "JOIN FETCH a.empresa " +
            "JOIN FETCH a.tutorEmpresa te " +
-           "LEFT JOIN FETCH a.periodo " +
+           "LEFT JOIN FETCH a.periodo p " +
+           "LEFT JOIN FETCH p.cursoAcademico " +
            "WHERE te.id = :idTutorEmpresa AND a.estado = :estado " +
            "ORDER BY al.apellidos ASC, al.nombre ASC")
     List<Asignacion> findByTutorEmpresaIdAndEstado(@Param("idTutorEmpresa") Long idTutorEmpresa,

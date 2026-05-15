@@ -17,10 +17,29 @@ El proyecto incluye un `Dockerfile` multi-stage que:
 2. genera el JAR
 3. arranca la app con perfil `prod`
 
+Además, el proyecto incluye [`compose.yaml`](compose.yaml) para levantar la aplicación completa con:
+
+- aplicación Spring Boot
+- base de datos MySQL
+- volumen persistente para base de datos
+- volumen persistente para documentos subidos
+
 Construcción local:
 
 ```bash
 docker build -t mentorcore:latest .
+```
+
+Arranque completo en local con Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Reinicio limpio borrando volúmenes:
+
+```bash
+docker compose down -v
 ```
 
 Ejecución local con variables:
@@ -41,13 +60,31 @@ docker run --rm -p 8080:8080 \
   mentorcore:latest
 ```
 
-### Despliegue en Railway
+### Publicación en Docker Hub
 
-#### 1. Subir el proyecto a GitHub
+En entornos Mac, especialmente con Apple Silicon, es recomendable publicar la imagen para `linux/amd64` si el hosting no garantiza ejecución nativa ARM.
 
-Railway puede desplegar directamente desde el repositorio.
+Ejemplo:
 
-#### 2. Crear un proyecto en Railway
+```bash
+docker buildx build --platform linux/amd64 -t TU_USUARIO/mentorcore:1.0.0 --push .
+```
+
+También puede publicarse una etiqueta `latest`:
+
+```bash
+docker buildx build --platform linux/amd64 -t TU_USUARIO/mentorcore:latest --push .
+```
+
+### Despliegue en Railway o Render
+
+Para una tarea de despliegue basada en imagen Docker, la opción más limpia es:
+
+1. construir la imagen localmente
+2. publicarla en Docker Hub
+3. desplegar el servicio desde esa imagen
+
+#### 1. Crear un proyecto en Railway o Render
 
 - Añadir un servicio para la aplicación
 - Añadir un servicio MySQL en el mismo proyecto
@@ -58,7 +95,7 @@ Documentación oficial:
 - [Railway MySQL](https://docs.railway.com/databases/mysql)
 - [Variables](https://docs.railway.com/variables)
 
-#### 3. Variables necesarias en Railway
+#### 2. Variables necesarias en el hosting
 
 Configura estas variables en el servicio de la app:
 
@@ -77,7 +114,7 @@ Variables recomendadas opcionales:
 
 - `JAVA_OPTS=-Xms256m -Xmx512m`
 
-#### 4. Primer arranque de una base vacía
+#### 3. Primer arranque de una base vacía
 
 En el **primer despliegue** contra una base nueva:
 
@@ -92,13 +129,29 @@ Una vez creada la estructura y sembrados los datos iniciales, cambia la variable
 
 - `MENTORCORE_SQL_INIT_MODE=never`
 
-#### 5. Volumen persistente para uploads
+#### 4. Volumen persistente para uploads
 
 Los documentos y convenios se guardan en disco. En Railway debes montar almacenamiento persistente y apuntar:
 
 - `MENTORCORE_UPLOADS_PATH=/data/uploads`
 
 Sin ese volumen, los archivos podrían perderse tras reinicios o redeploys.
+
+### Memoria de despliegue
+
+Se ha preparado una base en Markdown para la tarea en:
+
+- [`docu/memoria-despliegue.md`](docu/memoria-despliegue.md)
+
+Incluye:
+
+- descripción de componentes
+- dockerización
+- persistencia
+- publicación en Docker Hub
+- despliegue en hosting
+- problemas encontrados
+- apartados para completar enlaces finales
 
 ### Variables y perfiles
 

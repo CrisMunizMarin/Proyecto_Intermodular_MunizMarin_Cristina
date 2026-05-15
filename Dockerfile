@@ -22,8 +22,6 @@ RUN mkdir -p /data/uploads \
 
 COPY --from=builder /app/target/*.jar /app/mentorcore.jar
 
-USER mentorcore
-
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/mentorcore.jar"]
+ENTRYPOINT ["sh", "-c", "mkdir -p /data/uploads && chmod -R 775 /data/uploads && java $JAVA_OPTS -jar /app/mentorcore.jar"]
